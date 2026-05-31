@@ -23,7 +23,7 @@ function FieldError({ message }) {
 }
 
 export default function EditWorkDialog({ work, open, onClose, onConfirm }) {
-    const { form, loading, setLoading } = useEditWork(work)
+    const { form, loading, setLoading } = useEditWork(work, open)
     const { register, handleSubmit, control, formState: { errors } } = form
 
     const onSubmit = handleSubmit(async (data) => {

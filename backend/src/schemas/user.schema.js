@@ -4,19 +4,17 @@ import { z } from 'zod';
 export const CreateUserSchema = z.object({
     firstName: z.string().trim().min(1).max(50).optional(),
     lastName:  z.string().trim().min(1).max(50).optional(),
-    phone:     z.string().trim().optional(),
+    phone:     z.string().trim().optional().nullable(),
     email:     z.email().trim().toLowerCase(),
     password:  z.string()
         .min(8).max(16)
         .regex(/[a-z]/)
         .regex(/[A-Z]/)
         .regex(/[0-9]/)
-        .regex(/[!@#$%^&*(),.?":{}|<>]/),
-    roleId:    z.number().int().positive().optional()
+        .regex(/[!@#$%^&*(),.?":{}|<>]/)
 });
 
 // Schema di validazione dei dati per la modifica di un utente
-// La modifica del campo roleId non è consentita, il cambio ruolo è gestito da role.service
 export const UpdateUserSchema = z.object({
     firstName: z.string().trim().min(1).max(50).optional(),
     lastName:  z.string().trim().min(1).max(50).optional(),
@@ -27,7 +25,7 @@ export const UpdateUserSchema = z.object({
         .regex(/[a-z]/)
         .regex(/[A-Z]/)
         .regex(/[0-9]/)
-        .regex(/[!@#$%^&*(),.?":{}|<>]/).optional(),
+        .regex(/[!@#$%^&*(),.?":{}|<>]/).optional()
 });
 
 // Schema di validazione dei dati per la ricerca degli utenti tramite searchbar

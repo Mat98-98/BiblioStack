@@ -5,9 +5,8 @@ import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { useEditUser } from "@/features/admin/users/dialogs/editUserDialog/useEditUser.js";
 
-
 export default function EditUserDialog({ user, open, onClose, onConfirm }) {
-    const { form, loading, setLoading } = useEditUser(user)
+    const { form, loading, setLoading } = useEditUser(user, open)
 
     const {
         register,

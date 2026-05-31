@@ -5,7 +5,7 @@ import { editUserSchema } from "@/features/admin/users/dialogs/editUserDialog/ed
 import api from "@/api/axios.js";
 
 
-export function useEditUser(user) {
+export function useEditUser(user, open) {
     const [loading, setLoading] = useState(false)
 
     const form = useForm({
@@ -20,7 +20,10 @@ export function useEditUser(user) {
 
     // Fetch dati utente quando si apre il dialog
     useEffect(() => {
-        if (!user?.id) return
+
+        if (!open || !user?.id) {
+            return;
+        }
 
         const fetchUser = async () => {
             try {
@@ -32,11 +35,11 @@ export function useEditUser(user) {
                     email:     data.email     ?? "",
                     phone:     data.phone     ?? "",
                 })
-            } catch (err) {}
+            } catch (error) {}
         }
 
         fetchUser()
-    }, [user?.id])
+    }, [user?.id, open])
 
     return { form, loading, setLoading }
 }

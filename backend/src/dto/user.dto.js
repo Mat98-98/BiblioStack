@@ -48,7 +48,8 @@ const UserCore = z.object({
 
 // ======== DTO base ========
 export const UserBaseDTO = UserCore.extend({
-    role: RoleSchema
+    role: RoleSchema,
+    email: z.email()
 });
 
 export const UserBaseListDTO = z.array(UserBaseDTO);
@@ -76,7 +77,7 @@ export const AdminDashboardDTO = UserCore.extend({
 
 // DTO sicuro per la risposta dopo register/login — niente passwordHash @todo Probabilmente da rimuovere
 export const UserSafeDTO = UserCore.extend({
-    email:     z.string().email(),
+    email:     z.email(),
     phone:     z.string().nullable().optional(),
     role:      RoleSchema,
     createdAt: z.date().nullable().optional(),

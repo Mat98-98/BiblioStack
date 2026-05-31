@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/layout/navbar/Navbar.jsx";
 import WorkDetail from "@/features/works/components/workDetail/WorkDetail.jsx";
-import { useWorkDetail } from "@/features/works/components/workDetail/useWorkDetail";
+import { useWorkDetail } from "@/features/works/components/workDetail/useWorkDetail.js";
 
 export default function WorkDetailPage() {
     const { id } = useParams()

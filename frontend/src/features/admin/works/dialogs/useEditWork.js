@@ -22,7 +22,7 @@ function mapWorkToForm(data) {
     }
 }
 
-export function useEditWork(work) {
+export function useEditWork(work, open) {
     const [loading, setLoading] = useState(false)
 
     const form = useForm({
@@ -42,9 +42,17 @@ export function useEditWork(work) {
     })
 
     useEffect(() => {
-        if (!work?.id) return
+        if (!open || !work?.id) return
         let cancelled = false
 
+        const fetchWork = async () => {
+            try {
+                const { data } = await api.get(`/works/${work.id}`);
+
+                form.reset(mapWorkToForm(data));
+            } catch (error) {}
+        }
+            /*
         api.get(`/works/${work.id}`)
             .then(({ data }) => {
                 if (!cancelled) form.reset(mapWorkToForm(data))
@@ -52,7 +60,10 @@ export function useEditWork(work) {
             .catch(() => {})
 
         return () => { cancelled = true }
-    }, [work?.id])
+
+             */
+        fetchWork()
+    }, [work?.id, open])
 
     return { form, loading, setLoading }
 }

@@ -31,18 +31,18 @@ export default App;
 import React from "react"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
-import HomePage        from "./pages/HomePage.jsx"
-import LoginPage       from "./pages/LoginPage.jsx"
+import HomePage        from "./pages/public/HomePage.jsx"
+import LoginPage       from "./pages/public/LoginPage.jsx"
 import ProfilePage     from "./pages/ProfilePage.jsx"
-import AddWorkPage     from "./pages/AddWorkPage.jsx"
-import WorkDetailPage  from "./pages/WorkDetailPage.jsx"
-import CatalogPage     from "./pages/CatalogPage.jsx"
+import AddWorkPage     from "./pages/admin/AddWorkPage.jsx"
+import WorkDetailPage  from "./pages/public/WorkDetailPage.jsx"
+import CatalogPage     from "./pages/public/CatalogPage.jsx"
 
 import AdminGuard           from "./features/admin/AdminGuard.jsx"
 import AdminLayout          from "./features/admin/AdminLayout.jsx"
 import AdminDashboardPage   from "./features/admin/AdminDashboardPage.jsx"
-import AdminUsersPage       from "./features/admin/users/AdminUsersPage.jsx"
-import AdminWorksPage from "@/features/admin/works/AdminWorksPage.jsx";
+import AdminUsersPage       from "./pages/admin/AdminUsersPage.jsx"
+import AdminWorksPage from "@/pages/admin/AdminWorksPage.jsx";
 
 function App() {
     return (
