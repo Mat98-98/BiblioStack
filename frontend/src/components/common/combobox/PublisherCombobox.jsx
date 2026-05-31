@@ -1,28 +1,27 @@
-import { useState } from "react"
-import { Check, ChevronsUpDown, Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button.jsx"
+import { useState } from "react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils.js";
+import { Button } from "@/components/ui/button.jsx";
 import {
     Popover,
     PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover.jsx"
+    PopoverTrigger
+} from "@/components/ui/popover.jsx";
 import {
     Command,
     CommandEmpty,
     CommandGroup,
     CommandInput,
     CommandItem,
-    CommandList,
-} from "@/components/ui/command.jsx"
-import { useDeweyCodes } from "../hooks/useDeweyCodes"
+    CommandList
+} from "@/components/ui/command.jsx";
+import { usePublishers } from "@/hooks/usePublishers.js";
 
-export default function DeweyCombobox({ value, onChange }) {
-    const [open, setOpen] = useState(false)
-    const [search, setSearch] = useState("")
-    const { codes, loading } = useDeweyCodes(search)
+export default function PublisherCombobox({ value, onChange }) {
+    const [open, setOpen]         = useState(false)
+    const { publishers, loading } = usePublishers()
 
-    const selected = codes.find(d => d.code === value)
+    const selected = publishers.find(p => p.id === Number(value))
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -34,48 +33,41 @@ export default function DeweyCombobox({ value, onChange }) {
                     className="w-full justify-between font-normal"
                 >
                     {selected
-                        ? <span className="truncate">{selected.code} — {selected.description}</span>
-                        : <span className="text-muted-foreground">Seleziona codice Dewey...</span>
+                        ? <span className="truncate">{selected.name}</span>
+                        : <span className="text-muted-foreground">Seleziona editore...</span>
                     }
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
 
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command shouldFilter={true}>
-                    <CommandInput
-                        placeholder="Cerca codice o descrizione..."
-                        value={search}
-                        onValueChange={setSearch}
-                    />
+                <Command>
+                    <CommandInput placeholder="Cerca editore..." />
                     <CommandList>
                         {loading && (
                             <div className="flex items-center justify-center py-4">
                                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             </div>
                         )}
-
-                        {!loading && codes.length === 0 && (
+                        {!loading && publishers.length === 0 && (
                             <CommandEmpty>Nessun risultato.</CommandEmpty>
                         )}
-
-                        {!loading && codes.length > 0 && (
+                        {!loading && (
                             <CommandGroup>
-                                {codes.map(d => (
+                                {publishers.map(p => (
                                     <CommandItem
-                                        key={d.code}
-                                        value={`${d.code} ${d.description}`}
+                                        key={p.id}
+                                        value={p.name}
                                         onSelect={() => {
-                                            onChange(d.code === value ? "" : d.code)
+                                            onChange(p.id === Number(value) ? "" : String(p.id))
                                             setOpen(false)
                                         }}
                                     >
                                         <Check className={cn(
                                             "mr-2 h-4 w-4 shrink-0",
-                                            value === d.code ? "opacity-100" : "opacity-0"
+                                            Number(value) === p.id ? "opacity-100" : "opacity-0"
                                         )} />
-                                        <span className="font-mono text-sm mr-2">{d.code}</span>
-                                        <span className="text-muted-foreground text-sm truncate">{d.description}</span>
+                                        <span className="text-sm">{p.name}</span>
                                     </CommandItem>
                                 ))}
                             </CommandGroup>

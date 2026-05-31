@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react"
-import {data, useSearchParams} from "react-router-dom"
-import api from "@/api/axios.js"
-import { notify } from "@/lib/notify.js"
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import api from "@/api/axios.js";
+import { notify } from "@/lib/notify.js";
 
 export function useAdminWorks() {
     const [searchParams, setSearchParams] = useSearchParams()
@@ -55,10 +55,14 @@ export function useAdminWorks() {
         }
     }
 
-    const updateWork = async (workId) => {
+    const updateWork = async (workId, payload) => {
         try {
-            await api.patch(`/works/${workId}`)
-            setWorks(prev => prev.filter(w => w.id !== workId))
+            const { data } = await api.patch(`/works/${workId}`, payload)
+
+            setWorks(prev =>
+                prev.map(w => w.id === workId ? data : w)
+            )
+
             notify.success("Opera modificata con successo")
         } catch {
             notify.error("Errore nella modifica dell'opera")
@@ -68,6 +72,6 @@ export function useAdminWorks() {
     return {
         works, loading, hasMore, page, search,
         setSearch, setPage,
-        deleteWork
+        updateWork, deleteWork
     }
 }

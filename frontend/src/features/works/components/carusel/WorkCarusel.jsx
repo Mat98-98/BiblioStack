@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { WheelGesturesPlugin } from "embla-carousel-wheel-gestures"
-import WorkCard from "@/components/works/WorkCard.jsx"
+import WorkCard from "@/components/common/works/cards/WorkCard.jsx"
 import { Skeleton } from "@/components/ui/skeleton.jsx"
 import { cn } from "@/lib/utils.js"
 

@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label.jsx";
 import { Separator } from "@/components/ui/separator.jsx";
 
 import { notify } from "@/lib/notify.js";
+import { useLogin } from "@/features/auth/useLogin.js";
 
-import { useLogin } from "./useLogin";
+
 
 export default function LoginPanel({ onGoogleLogin }) {
 

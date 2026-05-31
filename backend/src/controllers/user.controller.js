@@ -1,8 +1,9 @@
 import { userService } from "../services/user.service.js";
-import { UserDashboardDTO, AdminDashboardDTO, UserBaseListDTO, UserSafeDTO } from "../dto/user.dto.js";
+import {UserDashboardDTO, AdminDashboardDTO, UserBaseListDTO, UserSafeDTO, UserBaseDTO} from "../dto/user.dto.js";
 import { UpdateUserSchema, CreateUserSchema, UserSearchSchema } from "../schemas/user.schema.js";
 import { AppError } from "../utils/appError.js";
 import { ROLE_IDS } from "../constants.js";
+import { ChangeRoleSchema } from "../schemas/role.schema.js";
 
 export const userController = {
 
@@ -80,10 +81,27 @@ export const userController = {
     update: async (req, res, next) => {
         try {
             const validatedData = UpdateUserSchema.parse(req.body);
-            const updatedUser = await userService.update(Number(req.params.id), validatedData);
+            const updatedUser = await userService.update(req.params.id, validatedData);
             res.json(UserSafeDTO.parse(updatedUser));
         } catch (error) {
             next(error);
+        }
+    },
+
+    setUserRole: async (req, res, next) => {
+        try {
+            const userId = Number(req.params.id);
+
+            const { role } = ChangeRoleSchema.parse(req.body);
+
+            const updatedUser = await userService.setUserRole(userId, role);
+
+            res.json({
+                code: "SUCCESS",
+                user: UserBaseDTO.parse(updatedUser)
+            });
+        } catch (err) {
+            next(err);
         }
     },
 

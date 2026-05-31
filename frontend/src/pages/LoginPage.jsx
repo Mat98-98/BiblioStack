@@ -1,5 +1,5 @@
 import React from "react";
-import LoginHero from "@/features/auth/LoginHero"
+import LoginHero from "@/features/auth/LoginHero";
 import LoginPanel from "@/features/auth/LoginPanel.jsx";
 
 export default function LoginPage() {

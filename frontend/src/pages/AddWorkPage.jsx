@@ -1,11 +1,9 @@
-import Navbar from "@/components/layout/navbar/Navbar.jsx"
-import AddWorkFeature from "@/features/works/addWorkPage"
+import AddWorkFeature from "@/features/works/addWorkPage";
 
 export default function AddWorkPage() {
     return (
         <main className="min-h-screen bg-background">
-            <Navbar />
-            <div className="mx-auto max-w-2xl px-4 pt-24 pb-12 space-y-8">
+            <div className="mx-auto w-full max-w-4xl px-4 pt-10 md:pt-18 pb-12">
                 <AddWorkFeature />
             </div>
         </main>

@@ -1,4 +1,4 @@
-import { notify } from "@/lib/notify"
+import { notify } from "@/lib/notify";
 
 export function handleApiError(error, navigate) {
     const data = error.response?.data

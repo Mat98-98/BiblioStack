@@ -14,6 +14,11 @@ export function useAddWork() {
 
     const navigate = useNavigate()
 
+    // mapping lingua da ISO 639-1 a ISO 639-2
+    const langMap = {
+        it: "ita", en: "eng", fr: "fra",
+        de: "deu", es: "spa", pt: "por",
+    }
     // Chiamata alle api esterne per recuperare i dati dell'opera
     const fetchByIsbn = async (isbn) => {
         if (!isbn.trim()) return
@@ -29,13 +34,12 @@ export function useAddWork() {
                 publicationDate: data.publicationDate ?? "",
                 publisherName:   data.publishers?.[0] ?? "",
                 authors:         data.authors         ?? [],
-                pages:           data.pages           ?? "",
-                languageCode:    data.language        ?? "",
+                pages:           data.pages           || "",
+                languageCode:    langMap[data.language] ?? data.language ?? "",
                 coverUrl:        data.coverUrl        ?? "",
             }))
             notify.success("Dati recuperati")
         } catch {
-            // Se la chiamata alle api esterne non restituisce informazioni inserisce comunque il codice isbn nel form manuale
             setForm(prev => ({ ...prev, isbn: isbn.trim() }))
             notify.error("ISBN non trovato — compila il form manualmente")
         } finally {
@@ -43,16 +47,19 @@ export function useAddWork() {
         }
     }
 
-
     const submit = async (validatedData, resolvedAuthors = []) => {
+        const payload = {
+            ...(validatedData ?? form),
+            resolvedAuthors,
+        }
+
+        setForm(payload)
         setSubmitLoading(true)
         try {
-            await api.post("/works/from-external", {
-                ...(validatedData ?? form),
-                resolvedAuthors,
-            })
+            await api.post("/works/from-external", payload)
             notify.success("Opera aggiunta con successo")
-            navigate("/works")
+            navigate("/admin/works")
+
         } catch (err) {
             if (err.response?.status === 409) {
                 setConflicts(err.response.data.details)

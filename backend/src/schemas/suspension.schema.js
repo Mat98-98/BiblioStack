@@ -5,7 +5,6 @@ export const CreateSuspensionSchema = z.object({
     userId: z.coerce.number().int().positive(),
     handledBy: z.coerce.number().int().positive(),
     reason: z.string().max(2056).optional().nullable(),
-    startDate: z.coerce.date().default(() => new Date()), // L'inserimento di data e ora corrente è gestito anche da database
     endDate: z.coerce.date().optional(),
 });
 

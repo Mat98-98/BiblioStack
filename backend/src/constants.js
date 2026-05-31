@@ -9,9 +9,6 @@ export const ROLE_IDS = {
 // Costante globale che definisce il ruolo predefinito
 export const DEFAULT_USER_ROLE_ID = ROLE_IDS.STUDENT;
 
-// Costante globale che definisce la gerarchia dei ruoli, dal più basso al più alto
-export const ROLE_HIERARCHY = ["student", "librarian", "admin"]
-
 // Costante globale per i possibili stati delle prenotazioni
 export const RESERVATION_STATUS = {
     PENDING: "pending",

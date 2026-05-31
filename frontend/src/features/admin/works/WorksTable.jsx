@@ -1,24 +1,24 @@
-import { useState } from "react"
+import { useState } from "react";
 import {
     flexRender,
     getCoreRowModel,
-    useReactTable,
-} from "@tanstack/react-table"
+    useReactTable
+} from "@tanstack/react-table";
 import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from "@/components/ui/table.jsx"
+    TableRow
+} from "@/components/ui/table.jsx";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu.jsx"
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu.jsx";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -27,15 +27,17 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog.jsx"
-import { Button } from "@/components/ui/button.jsx"
-import { Skeleton } from "@/components/ui/skeleton.jsx"
-import { MoreHorizontal, Trash2 } from "lucide-react"
+    AlertDialogTitle
+} from "@/components/ui/alert-dialog.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { Skeleton } from "@/components/ui/skeleton.jsx";
+import {MoreHorizontal, Pencil, Trash2} from "lucide-react";
+import EditWorkDialog from "@/features/admin/works/dialogs/EditWorkDialog.jsx";
 
 
-function WorkActions({ work, onDelete }) {
+function WorkActions({ work, onDelete, onEdit }) {
     const [deleteOpen, setDeleteOpen]   = useState(false)
+    const [editOpen, setEditOpen]   = useState(false)
 
     return (
         <>
@@ -46,6 +48,11 @@ function WorkActions({ work, onDelete }) {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Modifica
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                         onClick={() => setDeleteOpen(true)}
                         className="text-destructive focus:text-destructive"
@@ -75,6 +82,13 @@ function WorkActions({ work, onDelete }) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <EditWorkDialog
+                work={work}
+                open={editOpen}
+                onClose= {() => setEditOpen(false)}
+                onConfirm={onEdit}
+            />
         </>
     )
 }
@@ -89,7 +103,7 @@ function TableSkeleton() {
     )
 }
 
-export default function WorksTable({ works, loading, onDelete }) {
+export default function WorksTable({ works, loading, onDelete, onEdit }) {
     const columns = [
         {
             id: "work",
@@ -130,6 +144,7 @@ export default function WorksTable({ works, loading, onDelete }) {
                     <WorkActions
                         work={row.original}
                         onDelete={onDelete}
+                        onEdit={onEdit}
                     />
                 </div>
             )

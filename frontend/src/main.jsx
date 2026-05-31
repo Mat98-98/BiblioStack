@@ -5,8 +5,8 @@ import App from "./App.jsx";
 import "./App.css";
 
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import { Toaster } from "@/components/ui/sonner"
-import { AuthProvider } from "@/context/AuthContext.jsx"
+import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/context/AuthContext.jsx";
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>

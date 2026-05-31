@@ -1,4 +1,3 @@
-// index.jsx
 import NavbarLogo from "./NavbarLogo"
 import { DesktopSearch } from "./NavbarSearch"
 import NavbarActions from "./NavbarActions"

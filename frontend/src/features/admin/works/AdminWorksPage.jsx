@@ -1,30 +1,43 @@
-import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input.jsx"
+import { Search, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input.jsx";
 import {
     Pagination,
     PaginationContent,
     PaginationItem,
     PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination.jsx"
-import { useAdminWorks } from "./useAdminWorks"
-import WorksTable from "./WorksTable"
+    PaginationPrevious
+} from "@/components/ui/pagination.jsx";
+import { useAdminWorks } from "@/features/admin/works/useAdminWorks.js";
+import WorksTable from "@/features/admin/works/WorksTable.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { Link } from "react-router-dom";
 
 export default function AdminWorksPage() {
     const {
         works, loading, hasMore, page, search,
         setSearch, setPage,
-        deleteWork,
+        deleteWork, updateWork
     } = useAdminWorks()
 
     return (
         <div className="space-y-6">
 
-            <div className="space-y-1">
-                <h1 className="text-2xl font-bold">Opere</h1>
-                <p className="text-sm text-muted-foreground">
-                    Gestisci le opere della biblioteca
-                </p>
+            <div className="flex items-start justify-between gap-4">
+
+                <div className="space-y-1">
+                    <h1 className="text-2xl font-bold">Opere</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Gestisci le opere della biblioteca
+                    </p>
+                </div>
+
+                <Button asChild>
+                    <Link to="/admin/works/add" className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Aggiungi opera
+                    </Link>
+                </Button>
+
             </div>
 
             <div className="relative max-w-sm">
@@ -44,6 +57,7 @@ export default function AdminWorksPage() {
                 works={works}
                 loading={loading}
                 onDelete={deleteWork}
+                onEdit={updateWork}
             />
 
             {(page > 1 || hasMore) && (

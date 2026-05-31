@@ -1,6 +1,6 @@
-import { BookOpen } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton.jsx"
-import WorkCard from "@/components/works/WorkCard.jsx";
+import { BookOpen } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton.jsx";
+import WorkCard from "@/components/common/works/cards/WorkCard.jsx";
 
 function GridSkeleton() {
     return (

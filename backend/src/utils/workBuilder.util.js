@@ -59,8 +59,37 @@ export const createAuthor = async (tx, authorName) => {
  * - conflicts: autori ambigui da far risolvere all'utente
  * - resolved: autori già matchati o nuovi da creare
  */
-// workBuilder.util.js — preCheckAuthors
 
+export const preCheckAuthors = async (authorNames, manualResolutions = new Map()) => {
+    const conflicts = []
+    const resolved  = []
+
+    for (const authorName of authorNames) {
+        if (manualResolutions.has(authorName)) {
+            resolved.push({ name: authorName, id: manualResolutions.get(authorName) })
+            continue
+        }
+
+        const { firstName, lastName } = parseAuthorName(authorName)
+        const { match, candidates }   = await findSimilarAuthor(firstName, lastName)
+
+        // Va sempre in conflicts — anche se non ci sono candidati
+        conflicts.push({
+            inputName:      authorName,
+            suggestedMatch: match?.id ?? null,
+            candidates:     candidates.map(c => ({
+                id:             c.id,
+                firstName:      c.firstName,
+                lastName:       c.lastName,
+                candidateWorks: c.works?.map(w => w.title) ?? []
+            }))
+        })
+    }
+
+    return { conflicts, resolved }
+}
+
+/*
 export const preCheckAuthors = async (authorNames, manualResolutions = new Map()) => {
     const conflicts = [];
     const resolved  = [];
@@ -95,3 +124,5 @@ export const preCheckAuthors = async (authorNames, manualResolutions = new Map()
 
     return { conflicts, resolved };
 };
+
+ */

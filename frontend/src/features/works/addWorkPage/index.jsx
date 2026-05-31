@@ -1,4 +1,3 @@
-import Navbar from "@/components/layout/navbar/Navbar.jsx"
 import WorkFormStep from "./steps/WorkFormStep"
 import AuthorConflictStep from "./steps/AuthorConflictStep"
 import { useAddWork } from "./useAddWork"
@@ -25,12 +24,11 @@ export default function AddWorkPage() {
 
     return (
         <main className="min-h-screen bg-background">
-            <Navbar />
-            <div className="mx-auto max-w-2xl px-4 pt-24 pb-12 space-y-8">
+            <div className="space-y-8">
 
                 <div className="space-y-1">
                     <h1 className="text-2xl font-bold">Aggiungi opera</h1>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm pt-2 pb-4 text-muted-foreground">
                         Cerca per ISBN per compilare automaticamente i dati, poi completa le informazioni mancanti.
                     </p>
                 </div>

@@ -1,14 +1,16 @@
-import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input.jsx"
+import { Plus, Search } from "lucide-react";
+import { Input } from "@/components/ui/input.jsx";
 import {
     Pagination,
     PaginationContent,
     PaginationItem,
     PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination.jsx"
-import { useAdminUsers } from "./useAdminUsers"
-import UsersTable from "./UsersTable"
+    PaginationPrevious
+} from "@/components/ui/pagination.jsx";
+import { useAdminUsers } from "@/features/admin/users/useAdminUsers.js";
+import UsersTable from "@/features/admin/users/UsersTable.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { Link } from "react-router-dom";
 
 export default function AdminUsersPage() {
     const {
@@ -20,11 +22,22 @@ export default function AdminUsersPage() {
     return (
         <div className="space-y-6">
 
-            <div className="space-y-1">
-                <h1 className="text-2xl font-bold">Utenti</h1>
-                <p className="text-sm text-muted-foreground">
-                    Gestisci gli utenti della biblioteca
-                </p>
+            <div className="flex items-start justify-between gap-4">
+
+                <div className="space-y-1">
+                    <h1 className="text-2xl font-bold">Utenti</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Gestisci gli utenti della biblioteca
+                    </p>
+                </div>
+
+                <Button asChild>
+                    <Link to="/admin/users/add" className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Aggiungi utente
+                    </Link>
+                </Button>
+
             </div>
 
             <div className="relative max-w-sm">

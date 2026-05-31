@@ -51,7 +51,7 @@ export const workService = {
 
         if (conflicts.length > 0) {
             throw new AppError(
-                "Author conflicts detected — please resolve before saving",
+                "Author confirmation required",
                 "AUTHOR_CONFLICT",
                 409,
                 conflicts

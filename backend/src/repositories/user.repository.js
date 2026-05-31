@@ -4,10 +4,10 @@ import { normalizeSearch } from "../utils/search.util.js";
 import { eq, ilike, or, sql, desc } from "drizzle-orm";
 
 export const userRepository = {
-    findAll: ({ page, limit }) => {
+    findAll: async ({ page, limit }) => {
         const offset = (page - 1) * limit;
 
-        return db.query.users.findMany({
+        return await db.query.users.findMany({
             offset: offset,
             limit: limit,
             with: {
@@ -16,8 +16,8 @@ export const userRepository = {
         });
     },
 
-    findById: (id) =>
-        db.query.users.findFirst({
+    findById: async (id) =>
+        await db.query.users.findFirst({
             where: { id: id },
             with: {
                 role: true,
@@ -34,15 +34,15 @@ export const userRepository = {
             }
         }),
 
-    findByEmail: (email) =>
-        db.query.users.findFirst({
+    findByEmail: async (email) =>
+        await db.query.users.findFirst({
             where: { email: email },
             with: { role: true }
         }),
 
     // Query di estrazione dati per la dashboard utente (sia visione studente che admin)
-    findUserProfileDataById: (id) =>
-        db.query.users.findFirst({
+    findUserProfileDataById: async (id) =>
+        await db.query.users.findFirst({
             where: { id: id },
             with: {
                 role: true,
@@ -67,18 +67,16 @@ export const userRepository = {
             .values(data)
             .returning(),
 
-    update: (id, data) =>
-        db
-            .update(users)
-            .set(data)
-            .where(eq(users.id, id))
-            .returning(),
+    update: async (id, data) => {
+        await db.update(users).set(data).where(eq(users.id, id))
+        return db.query.users.findFirst({
+            where: { id },
+            with: { role: true }
+        })
+    },
 
-    delete: (id) =>
-        db
-            .delete(users)
-            .where(eq(users.id, id))
-            .returning(),
+    delete: async (id) =>
+        await db.delete(users).where(eq(users.id, id)).returning(),
 
 
     search: async ({ search, page, limit }) => {

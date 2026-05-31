@@ -14,7 +14,7 @@ export default function WorkIsbnSearch({ onSearch, loading }) {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                     className="pl-10"
-                    placeholder="Cerca per ISBN (es. 9788884516107)"
+                    placeholder="Cerca per ISBN (es. 9788818039283)"
                     value={isbn}
                     onChange={e => setIsbn(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && handleSearch()}

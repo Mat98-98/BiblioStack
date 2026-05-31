@@ -30,6 +30,8 @@ router.post("/", verifyUser, permit("admin"), userController.create);
 // PATCH /users/:id
 router.patch("/:id", verifyUser, permit("admin"), userController.update);
 
+// PATCH /users/:id/role
+router.patch("/:id/role", userController.setUserRole);
 
 // DELETE /users/:id
 router.delete("/:id", verifyUser, permit("admin"), userController.delete);

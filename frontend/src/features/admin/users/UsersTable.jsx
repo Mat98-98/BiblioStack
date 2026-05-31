@@ -1,24 +1,21 @@
-import { useState } from "react"
-import {
-    flexRender,
-    getCoreRowModel,
-    useReactTable,
-} from "@tanstack/react-table"
+import { useState } from "react";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+
 import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from "@/components/ui/table.jsx"
+    TableRow
+} from "@/components/ui/table.jsx";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu.jsx"
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu.jsx";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -27,15 +24,16 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog.jsx"
-import { Badge } from "@/components/ui/badge.jsx"
-import { Button } from "@/components/ui/button.jsx"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx"
-import { Skeleton } from "@/components/ui/skeleton.jsx"
-import { MoreHorizontal, Shield, Ban, Trash2, Pencil } from "lucide-react"
-import SuspendUserDialog from "./SuspendUserDialog"
-import EditUserDialog from "./EditUserDialog"
+    AlertDialogTitle
+} from "@/components/ui/alert-dialog.jsx";
+import { Badge } from "@/components/ui/badge.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
+import { Skeleton } from "@/components/ui/skeleton.jsx";
+import { MoreHorizontal, Shield, Ban, Trash2, Pencil } from "lucide-react";
+import SuspendUserDialog from "@/features/admin/users/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
+import EditUserDialog from "@/features/admin/users/dialogs/editUserDialog/EditUserDialog.jsx";
+import ChangeRoleDialog from "@/features/admin/users/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 
 const roleColors = {
     admin:     "border-red-500/20 bg-red-500/10 text-red-600",
@@ -53,6 +51,7 @@ function UserActions({ user, onUpdateRole, onDelete, onSuspend, onEdit }) {
     const [deleteOpen, setDeleteOpen]   = useState(false)
     const [suspendOpen, setSuspendOpen] = useState(false)
     const [editOpen, setEditOpen]       = useState(false)
+    const [roleOpen, setRoleOpen] = useState(false)
 
     return (
         <>
@@ -68,19 +67,9 @@ function UserActions({ user, onUpdateRole, onDelete, onSuspend, onEdit }) {
                         Modifica
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        onClick={() => onUpdateRole(user.id, "librarian")}
-                        disabled={user.role.name === "librarian"}
-                    >
+                    <DropdownMenuItem onClick={() => setRoleOpen(true)}>
                         <Shield className="mr-2 h-4 w-4" />
-                        Rendi Bibliotecario
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={() => onUpdateRole(user.id, "student")}
-                        disabled={user.role.name === "student"}
-                    >
-                        <Shield className="mr-2 h-4 w-4" />
-                        Rendi Studente
+                        Cambia ruolo
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -132,6 +121,16 @@ function UserActions({ user, onUpdateRole, onDelete, onSuspend, onEdit }) {
                 open={editOpen}
                 onClose={() => setEditOpen(false)}
                 onConfirm={onEdit}
+            />
+
+            <ChangeRoleDialog
+                user={user}
+                open={roleOpen}
+                onClose={() => setRoleOpen(false)}
+                onUpdated={async (userId, role) => {
+                    await onUpdateRole(userId, role);
+                    setRoleOpen(false);
+                }}
             />
         </>
     )

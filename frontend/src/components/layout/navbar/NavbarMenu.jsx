@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { User, BookMarked, Settings, LogOut, Menu } from "lucide-react"
+import { User, BookMarked, Settings, LogOut, Menu, LayoutDashboard } from "lucide-react"
 import { useAuth } from "@/context/AuthContext.jsx"
 
 import { Button } from "@/components/ui/button.jsx"

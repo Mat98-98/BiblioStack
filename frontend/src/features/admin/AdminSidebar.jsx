@@ -1,12 +1,12 @@
-import { NavLink, useNavigate } from "react-router-dom"
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
     Users,
     BookOpen,
     BookMarked,
     CalendarClock,
-    LogOut,
-} from "lucide-react"
+    LogOut
+} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -17,10 +17,10 @@ import {
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
-    SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx"
-import { useAuth } from "@/context/AuthContext.jsx"
+    SidebarMenuItem
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
+import { useAuth } from "@/context/AuthContext.jsx";
 
 const navItems = [
     {
@@ -56,15 +56,16 @@ export default function AdminSidebar() {
     return (
         <Sidebar>
             <SidebarHeader className="p-4 border-b border-border">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                        <BookOpen className="h-4 w-4 text-primary-foreground" />
+                <Link to="/" className="flex items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary">
+                        <BookOpen className="h-5 w-5 text-primary-foreground" />
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-sm font-bold">BiblioStack</span>
+
+                    <div className="hidden sm:flex flex-col">
+                        <span className="font-bold">BiblioStack</span>
                         <span className="text-xs text-muted-foreground">Admin</span>
                     </div>
-                </div>
+                </Link>
             </SidebarHeader>
 
             <SidebarContent>

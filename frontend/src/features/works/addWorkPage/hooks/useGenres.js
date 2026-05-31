@@ -2,13 +2,20 @@ import { useState, useEffect } from "react"
 import api from "@/api/axios.js"
 
 export function useGenres() {
-    const [genres, setGenres] = useState([])
+    const [genres, setGenres]     = useState([])
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        api.get("/genres?limit=100")
-            .then(r => setGenres(r.data))
-            .catch(() => {})
+        const fetch = async () => {
+            setLoading(true)
+            try {
+                const { data } = await api.get("/genres", { params: { limit: 1000 } })
+                setGenres(data)
+            } catch {}
+            finally { setLoading(false) }
+        }
+        fetch()
     }, [])
 
-    return genres
+    return { genres, loading }
 }

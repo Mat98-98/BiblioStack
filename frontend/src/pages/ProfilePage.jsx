@@ -1,5 +1,3 @@
-import { useAuth } from "@/context/AuthContext.jsx"
-
 import ProfileHero from "@/features/profile/ProfileHero";
 import ActiveLoans from "@/features/profile/ActiveLoans";
 import LoanHistory from "@/features/profile/LoanHistory";

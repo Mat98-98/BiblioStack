@@ -5,29 +5,22 @@ import { Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input.jsx"
 import { Button } from "@/components/ui/button.jsx"
 import { Textarea } from "@/components/ui/textarea.jsx"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select.jsx"
-
-import DeweyCombobox from "./DeweyCombobox"
+import DeweyCombobox from "../../../../components/common/combobox/DeweyCombobox.jsx"
 import FormField from "./FormField.jsx"
 import AuthorsField from "./AuthorsField"
 import GenresField from "./GenresField.jsx"
 import { useGenres } from "../hooks/useGenres"
-import { useDeweyCodes } from "../hooks/useDeweyCodes"
+import { useDeweyCodes } from "@/hooks/useDeweyCodes.js"
 import { workFormSchema } from "../workForm.schema"
+import LanguageCombobox from "@/components/common/combobox/LanguageCombobox.jsx";
 
 export default function WorkForm({ form: externalForm, onSubmit, loading }) {
-    const genres    = useGenres()
+    const { genres } = useGenres()
     const deweyCodes = useDeweyCodes()
 
     const { register, handleSubmit, control, watch, formState: { errors } } = useForm({
         resolver: zodResolver(workFormSchema),
-        values:   externalForm,
+        values: externalForm,
     })
 
     const coverUrl = watch("coverUrl")
@@ -35,9 +28,15 @@ export default function WorkForm({ form: externalForm, onSubmit, loading }) {
     const handleValidSubmit = (data) => {
         onSubmit({
             ...data,
-            pages:           data.pages           || null,
-            publicationDate: data.publicationDate || null,
-            coverUrl:        data.coverUrl        || null,
+            pages:              data.pages              || null,
+            publicationDate:    data.publicationDate    || null,
+            coverUrl:           data.coverUrl           || null,
+            publicationCountry: data.publicationCountry?.trim().toUpperCase() || null,
+            languageCode:       data.languageCode       || null,
+            deweyCode:          data.deweyCode          || null,
+            subtitle:           data.subtitle           || null,
+            description:        data.description        || null,
+            publisherName:      data.publisherName      || null,
         })
     }
 
@@ -50,10 +49,10 @@ export default function WorkForm({ form: externalForm, onSubmit, loading }) {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
 
                 <FormField label="ISBN *" error={errors.isbn?.message}>
-                    <Input {...register("isbn")} placeholder="es. 9788884516107" />
+                    <Input {...register("isbn")} />
                 </FormField>
 
                 <FormField label="Titolo *" error={errors.title?.message}>
@@ -76,12 +75,18 @@ export default function WorkForm({ form: externalForm, onSubmit, loading }) {
                     <Input type="number" {...register("pages")} />
                 </FormField>
 
-                <FormField label="Lingua (3 lettere)" error={errors.languageCode?.message}>
-                    <Input {...register("languageCode")} maxLength={3} placeholder="ita" />
+                <FormField label="Lingua" error={errors.languageCode?.message}>
+                    <Controller
+                        name="languageCode"
+                        control={control}
+                        render={({ field }) => (
+                            <LanguageCombobox value={field.value ?? ""} onChange={field.onChange} />
+                        )}
+                    />
                 </FormField>
 
-                <FormField label="Paese pubblicazione (2 lettere)" error={errors.publicationCountry?.message}>
-                    <Input {...register("publicationCountry")} maxLength={2} placeholder="IT" />
+                <FormField label="Paese pubblicazione" error={errors.publicationCountry?.message}>
+                    <Input {...register("publicationCountry")} maxLength={2} />
                 </FormField>
 
                 <FormField label="Codice Dewey" error={errors.deweyCode?.message}>

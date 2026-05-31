@@ -11,7 +11,7 @@ export const workFormSchema = z.object({
     pages:              z.coerce.number().int().positive("Deve essere un numero positivo").optional().or(z.literal("")),
     languageCode:       z.string().max(3).optional(),
     coverUrl:           z.string().url("URL non valido").optional().or(z.literal("")),
-    publicationCountry: z.string().max(2).optional(),
+    publicationCountry: z.string().length(2, "Deve essere un codice di 2 lettere").toUpperCase().optional().nullable(),
     deweyCode:          z.string().optional(),
     genreIds:           z.array(z.number()).default([]),
 })

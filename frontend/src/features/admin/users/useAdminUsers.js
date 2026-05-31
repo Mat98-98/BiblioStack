@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react"
-import { useSearchParams } from "react-router-dom"
-import api from "@/api/axios.js"
-import { notify } from "@/lib/notify.js"
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import api from "@/api/axios.js";
+import { notify } from "@/lib/notify.js";
 
 export function useAdminUsers() {
     const [searchParams, setSearchParams] = useSearchParams()
@@ -13,10 +13,6 @@ export function useAdminUsers() {
     const [users, setUsers]     = useState([])
     const [loading, setLoading] = useState(true)
     const [hasMore, setHasMore] = useState(false)
-
-
-    const roleRank = { student: 1, librarian: 2, admin: 3 }
-    const getRoleRank = (role) => roleRank[role] ?? 0
 
 
     const fetchUsers = useCallback(async () => {
@@ -49,13 +45,12 @@ export function useAdminUsers() {
         return next
     })
 
-    const updateRole = async (userId, roleName) => {
+    const updateRole = async (userId, role) => {
         try {
-            const currentRole = users.find(u => u.id === userId)?.role?.name
-            const isPromotion = getRoleRank(roleName) > getRoleRank(currentRole)
+            await api.patch(`/users/${userId}/role`, {
+                role
+            })
 
-            const endpoint = isPromotion ? "/roles/promote" : "/roles/demote"
-            await api.post(endpoint, { userId, newRole: roleName })
             await fetchUsers()
             notify.success("Ruolo aggiornato")
         } catch {

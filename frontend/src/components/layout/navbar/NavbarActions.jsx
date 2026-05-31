@@ -1,44 +1,44 @@
-import { Search, X, Bell } from "lucide-react"
+import { Search, X, Bell, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
+import { Link } from "react-router-dom"
 import NavbarThemeToggle from "./NavbarThemeToggle"
 import { DesktopMenu, MobileMenu } from "./NavbarMenu"
 import { useMobileSearch, MobileSearchBar } from "./NavbarSearch"
-import { useAuth } from "@/context/AuthContext.jsx";
-import NavbarLogin from "@/components/layout/navbar/NavbarLogin.jsx";
-
+import { useAuth } from "@/context/AuthContext.jsx"
+import NavbarLogin from "@/components/layout/navbar/NavbarLogin.jsx"
 
 export default function NavbarActions() {
-
     const { open, toggle } = useMobileSearch()
-    const { isAuthenticated } = useAuth()
+    const { user, isAuthenticated } = useAuth()
 
-    // Se l'utente non è loggato mostra solo searchBar e button login
     return (
         <>
             <div className="flex items-center gap-2">
 
-                {/* Searchbar */}
                 <Button variant="ghost" size="icon" className="md:hidden" onClick={toggle}>
                     {open ? <X /> : <Search />}
                 </Button>
 
-                {/* Modalità chiara/scura/sistema */}
+                {user?.role === "admin" && (
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link to="/admin">
+                            <LayoutDashboard className="h-5 w-5 text-muted-foreground" />
+                        </Link>
+                    </Button>
+                )}
+
                 <NavbarThemeToggle />
 
                 {isAuthenticated ? (
                     <>
-                        {/* Notifiche */}
                         <Button variant="ghost" size="icon">
                             <Bell />
                         </Button>
-                        {/* Desktop avatar menu */}
                         <DesktopMenu />
-                        {/* Mobile hamburger menu */}
                         <MobileMenu />
                     </>
                 ) : (
-                    // Pulsante login
-                    <NavbarLogin/>
+                    <NavbarLogin />
                 )}
             </div>
 

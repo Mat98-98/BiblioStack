@@ -59,7 +59,7 @@ function PaginationLink({
 
 function PaginationPrevious({
   className,
-  text = "Previous",
+  text = "Precedente",
   ...props
 }) {
   return (
@@ -76,7 +76,7 @@ function PaginationPrevious({
 
 function PaginationNext({
   className,
-  text = "Next",
+  text = "Successiva",
   ...props
 }) {
   return (
