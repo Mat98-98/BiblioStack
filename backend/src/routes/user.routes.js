@@ -8,7 +8,7 @@ const router = express.Router();
 
 
 // GET /users/search?name=marco?page=1&limit=20
-router.get("/search", paginationMiddleware, userController.search);
+router.get("/search", paginationMiddleware, verifyUser, permit( "admin"), userController.search);
 
 // GET /users/me/dashboard -> Serve per visualizzare la dashboard personale
 router.get("/me/dashboard", verifyUser, userController.getUserProfileData);
@@ -17,10 +17,10 @@ router.get("/me/dashboard", verifyUser, userController.getUserProfileData);
 router.get("/:id/dashboard", verifyUser, permit("admin"), userController.getUserProfileData);
 
 // GET /users?page=1&limit=20
-router.get("/", paginationMiddleware, userController.getAll);
+router.get("/", paginationMiddleware,verifyUser, permit( "admin"), userController.getAll);
 
 // GET /users/:id
-router.get("/:id", userController.getById);
+router.get("/:id", verifyUser, permit( "admin"),  userController.getById);
 
 
 //POST /users
@@ -31,7 +31,7 @@ router.post("/", verifyUser, permit("admin"), userController.create);
 router.patch("/:id", verifyUser, permit("admin"), userController.update);
 
 // PATCH /users/:id/role
-router.patch("/:id/role", userController.setUserRole);
+router.patch("/:id/role", verifyUser, permit( "admin"), userController.setUserRole);
 
 // DELETE /users/:id
 router.delete("/:id", verifyUser, permit("admin"), userController.delete);

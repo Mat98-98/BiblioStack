@@ -1,6 +1,8 @@
 import express from 'express';
 import { workController } from "../controllers/work.controller.js";
 import { paginationMiddleware } from "../middleware/pagination.middleware.js";
+import { verifyUser } from "../middleware/auth.middleware.js";
+import { permit } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -18,17 +20,17 @@ router.get('/:id', workController.getById);
 
 
 // POST /works/from-external/:isbn
-router.post("/from-external", workController.createFromExternal);
+router.post("/from-external", verifyUser, permit( "admin"), workController.createFromExternal);
 
 // POST /works/:isbn
-router.post('/', workController.create);
+router.post('/',verifyUser, permit( "admin"), workController.create);
 
 
 // PATCH /works/:id
-router.patch('/:id', workController.update);
+router.patch('/:id',verifyUser, permit( "admin"), workController.update);
 
 
 // DELETE /works/:id
-router.delete('/:id', workController.delete);
+router.delete('/:id',verifyUser, permit( "admin"), workController.delete);
 
 export default router;

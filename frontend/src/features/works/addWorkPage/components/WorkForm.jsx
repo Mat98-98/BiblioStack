@@ -31,7 +31,7 @@ export default function WorkForm({ form: externalForm, onSubmit, loading }) {
             pages:              data.pages              || null,
             publicationDate:    data.publicationDate    || null,
             coverUrl:           data.coverUrl           || null,
-            publicationCountry: data.publicationCountry?.trim().toUpperCase() || null,
+            publicationCountry: data.publicationCountry?.trim().toLowerCase() || null,
             languageCode:       data.languageCode       || null,
             deweyCode:          data.deweyCode          || null,
             subtitle:           data.subtitle           || null,

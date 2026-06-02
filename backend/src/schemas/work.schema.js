@@ -5,7 +5,7 @@ export const CreateWorkSchema = z.object({
     publisherId: z.coerce.number().int().positive(),
     deweyCode: z.string(),
     languageCode: z.string().max(3),
-    publicationCountry: z.string().max(2).optional().nullable(),
+    publicationCountry: z.string().max(2).toLowerCase().optional().nullable(),
     title: z.string().max(128),
     otherTitleInformation: z.string().max(255).optional().nullable(),
     description: z.string().max(10000).optional().nullable(),
@@ -57,7 +57,7 @@ export const CreateWorkFromExternalSchema = z.object({
         .optional(),
 
     // Campi che il bibliotecario seleziona manualmente nel form
-    publicationCountry: z.string().length(2).nullable().optional(),
+    publicationCountry: z.string().length(2).toLowerCase().nullable().optional(),
     deweyCode:          z.string().nullable().optional(),
 
     // Generi — array di ID (selezionati manualmente nel form)

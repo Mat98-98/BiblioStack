@@ -19,6 +19,7 @@ export function useAddWork() {
         it: "ita", en: "eng", fr: "fra",
         de: "deu", es: "spa", pt: "por",
     }
+
     // Chiamata alle api esterne per recuperare i dati dell'opera
     const fetchByIsbn = async (isbn) => {
         if (!isbn.trim()) return
