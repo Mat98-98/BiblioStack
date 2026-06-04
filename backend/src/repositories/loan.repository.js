@@ -5,9 +5,9 @@ import { userSelect } from "./presets/user.preset.js";
 
 export const loanRepository = {
 
-    findAll: ({ page, limit }) => {
+    findAll: async ({ page, limit }) => {
         const offset = (page - 1) * limit;
-        return db.query.loans.findMany({
+        return await db.query.loans.findMany({
             limit,
             offset,
             with: {
@@ -19,8 +19,8 @@ export const loanRepository = {
         });
     },
 
-    findById: (id) =>
-        db.query.loans.findFirst({
+    findById: async (id) =>
+        await db.query.loans.findFirst({
             where: { id },
             with: {
                 item: true,
@@ -30,8 +30,8 @@ export const loanRepository = {
             }
         }),
 
-    findActiveByItemId: (itemId) =>
-        db.query.loans.findFirst({
+    findActiveByItemId: async (itemId) =>
+        await db.query.loans.findFirst({
             where: {
                 itemId,
                 returnDate: { isNull: true }
@@ -49,11 +49,11 @@ export const loanRepository = {
         return loan?.item?.workId === workId ? loan : null;
     },
 
-    create: (data) =>
-        db.insert(loans).values(data).returning(),
+    create: async (data) =>
+        await db.insert(loans).values(data).returning(),
 
-    update: (id, data) =>
-        db.update(loans).set(data).where(eq(loans.id, id)).returning(),
+    update: async (id, data) =>
+        await db.update(loans).set(data).where(eq(loans.id, id)).returning(),
 
     delete: (id) =>
         db.delete(loans).where(eq(loans.id, id)).returning(),

@@ -8,14 +8,14 @@ export const authorRepository = {
         // Calcolo offset per la paginazione
         const offset = (page - 1) * limit;
 
-        return db.query.authors.findMany({
+        return await db.query.authors.findMany({
             limit : limit,
             offset: offset
         });
     },
 
     findById: async (id) =>
-        db.query.authors.findFirst({
+        await db.query.authors.findFirst({
             where: {id: id}
         }),
 
@@ -57,7 +57,7 @@ export const authorRepository = {
     },
 
     findByLastName: async (lastName) =>
-        db.query.authors.findMany({
+        await db.query.authors.findMany({
             where: {
                 lastName: lastName
             },
@@ -70,18 +70,18 @@ export const authorRepository = {
         }),
 
     create: async (data) =>
-         db.insert(authors).values(data).returning(),
+         await db.insert(authors).values(data).returning(),
 
     update: async (id, data) =>
-        db
-            .update(authors)
-            .set(data)
-            .where(eq(authors.id, id))
-            .returning(),
+        await db
+                .update(authors)
+                .set(data)
+                .where(eq(authors.id, id))
+                .returning(),
 
     delete: async (id) =>
-        db
-            .delete(authors)
-            .where(eq(authors.id, id))
-            .returning()
-};
+        await db
+                .delete(authors)
+                .where(eq(authors.id, id))
+                .returning()
+    };

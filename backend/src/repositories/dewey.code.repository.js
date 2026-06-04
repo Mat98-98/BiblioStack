@@ -3,28 +3,28 @@ import { deweyCodes } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 export const deweyCodeRepository = {
-    findAll: ({page, limit}) => {
+    findAll: async ({page, limit}) => {
         // Calcolo offset per la paginazione SQL
         const offset = (page - 1) * limit;
 
-        return db.query.deweyCodes.findMany({
+        return await db.query.deweyCodes.findMany({
             limit: limit,
             offset: offset,
             orderBy: { code: "asc" }
         });
     },
 
-    findByCode: (code) =>
-        db.query.deweyCodes.findFirst({
+    findByCode: async (code) =>
+        await db.query.deweyCodes.findFirst({
             where: { code: code }
         }),
 
-    create: (data) =>
-        db.insert(deweyCodes).values(data).returning(),
+    create: async (data) =>
+        await db.insert(deweyCodes).values(data).returning(),
 
-    update: (code, data) =>
-        db.update(deweyCodes).set(data).where(eq(deweyCodes.code, code)).returning(),
+    update: async (code, data) =>
+        await db.update(deweyCodes).set(data).where(eq(deweyCodes.code, code)).returning(),
 
-    delete: (code) =>
-        db.delete(deweyCodes).where(eq(deweyCodes.code, code)).returning()
+    delete: async (code) =>
+        await db.delete(deweyCodes).where(eq(deweyCodes.code, code)).returning()
 }

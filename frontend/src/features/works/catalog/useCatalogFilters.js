@@ -1,22 +1,41 @@
-import { useState, useEffect } from "react"
-import api from "@/api/axios.js"
+import api from "@/api/axios.js";
+import {useEffect, useState } from "react";
 
+// Hook per i filtri del catalogo
 export function useCatalogFilters() {
-    const [genres, setGenres]         = useState([])
-    const [languages, setLanguages]   = useState([])
-    const [publishers, setPublishers] = useState([])
+    const [filters, setFilters] = useState({
+        genres: [],
+        languages: [],
+        publishers: []
+    })
+
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        Promise.all([
-            api.get("/genres?limit=100"),
-            api.get("/languages"),
-            api.get("/publishers?limit=100"),
-        ]).then(([g, l, p]) => {
-            setGenres(g.data)
-            setLanguages(l.data)
-            setPublishers(p.data)
-        }).catch(() => {})
+        const loadFilters = async () => {
+            try {
+                // Fetch parallelo
+                const [g, l, p] = await Promise.all([
+                    api.get("/genres?limit=100"),
+                    api.get("/languages"),
+                    api.get("/publishers?limit=100"),
+                ])
+
+                setFilters({
+                    genres: g.data,
+                    languages: l.data,
+                    publishers: p.data
+                })
+
+            } catch (err) {
+                console.error("Failed to load filters", err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadFilters()
     }, [])
 
-    return { genres, languages, publishers }
+    return { ...filters, loading }
 }

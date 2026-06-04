@@ -15,7 +15,7 @@ FROM users u
 WHERE u.id = NEW.handled_by;
 
 -- Se l'utente non esiste o il suo ruolo non è tra quelli autorizzati, blocchiamo tutto
-IF user_role NOT IN ('Admin', 'Librarian', 'System') THEN
+IF user_role NOT IN ('admin', 'librarian', 'system') THEN
         RAISE EXCEPTION 'Operation denied. User % (Role: %) does not have staff permissions.', NEW.handled_by, COALESCE(user_role, 'None');
 END IF;
 

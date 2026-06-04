@@ -59,7 +59,8 @@ export const WorkDetailDTO = z.object({
     publisher: PublisherSchema.nullable().optional(),
     language: LanguageSchema.nullable().optional(),
     dewey: DeweySchema.nullable().optional(),
-    coverUrl: z.string().nullable().optional()
+    coverUrl: z.string().nullable().optional(),
+    description: z.string().nullable().optional()
 });
 
 

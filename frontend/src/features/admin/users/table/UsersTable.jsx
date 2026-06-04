@@ -6,7 +6,7 @@ import { getUserColumns } from "@/features/admin/users/table/UserTableColumns.js
 function TableSkeleton() {
     return (
         <div className="space-y-2">
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: 5 }).map((_, i) => (
                 <Skeleton key={i} className="h-12 w-full rounded-lg" />
             ))}
         </div>
@@ -22,6 +22,7 @@ export default function UsersTable({ users, loading, onUpdateRole, onDelete, onS
         getCoreRowModel: getCoreRowModel(),
     });
 
+    //if (loading && users.length === 0) return <TableSkeleton />
     if (loading) return <TableSkeleton />
 
     return (

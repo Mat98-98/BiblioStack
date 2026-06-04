@@ -3,10 +3,10 @@ import { suspensions } from "../db/schema.js";
 import {eq} from "drizzle-orm";
 
 export const suspensionRepository = {
-    findAll: ({ page, limit }) => {
+    findAll: async ({ page, limit }) => {
         const offset = limit * (page - 1);
 
-        return db.query.suspensions.findMany({
+        return await db.query.suspensions.findMany({
             limit: limit,
             offset: offset,
             with: {
@@ -16,8 +16,8 @@ export const suspensionRepository = {
         })
     },
 
-    findById: (id) =>
-        db.query.suspensions.findFirst({
+    findById: async (id) =>
+        await db.query.suspensions.findFirst({
             where: {
                 id: id
             },
@@ -27,21 +27,21 @@ export const suspensionRepository = {
             }
         }),
 
-    create: (data) =>
-        db
+    create: async (data) =>
+        await db
             .insert(suspensions)
             .values(data)
             .returning(),
 
-    update: (id, data) =>
-        db
+    update: async (id, data) =>
+        await db
             .update(suspensions)
             .set(data)
             .where(eq(suspensions.id, id))
             .returning(),
 
-    delete: (id) =>
-        db
+    delete: async (id) =>
+        await db
             .delete(suspensions)
             .where(eq(suspensions.id, id))
             .returning
