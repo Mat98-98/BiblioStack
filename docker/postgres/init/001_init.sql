@@ -99,15 +99,16 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TYPE token_type AS ENUM (
     'reset',
     'setup'
-);
+    );
 
 -- Tabella token per cambio e setup password iniziale
 CREATE TABLE IF NOT EXISTS password_tokens (
-    id text PRIMARY KEY,
-    user_id int NOT NULL REFERENCES users(id) ON DELETE NO ACTION,
-    type token_type NOT NULL,
-    expiresAt timestamptz NOT NULL,
-    usedAt timestamptz
+                                               token text PRIMARY KEY,
+                                               user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                               type token_type NOT NULL,
+                                               created_at timestamptz DEFAULT now(),
+                                               expires_at timestamptz NOT NULL,
+                                               used_at timestamptz
 );
 
 

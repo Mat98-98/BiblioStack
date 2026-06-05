@@ -1,7 +1,8 @@
 /*
  * Definizione dello schema drizzle. Lo schema rispecchia esattamente il database.
- */
+*/
 
+// @todo: rimuovere tutti i bigint e mettere integer
 import {
     pgTable,
     pgEnum,
@@ -27,6 +28,11 @@ export const reservationStatusEnum = pgEnum("reservation_status", [
     "cancelled",
     "expired"
 ]);
+
+export const tokenTypeEnum = pgEnum("token_type", [
+    'reset',
+    'setup'
+])
 
 // --- TABELLE DI SUPPORTO E ANAGRAFICHE ---
 
@@ -87,18 +93,27 @@ export const roles = pgTable('roles', {
     name: text('name').notNull().unique(),
 });
 
+export const passwordTokens = pgTable('password_tokens', {
+    token: text('token').primaryKey(),
+    userId: bigint('user_id', {mode: "number"}).notNull().references(() => users.id, {onDelete: "cascade"}),
+    type: tokenTypeEnum('type').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true, mode: 'date' })
+})
+
 export const currencies = pgTable('currencies', {
     code: char('code', { length: 3 }).primaryKey(),
 });
 
 export const genres = pgTable('genres', {
     id: smallint('id').primaryKey().generatedAlwaysAsIdentity(),
-    name: text('name').notNull().unique(),
+    name: text('name').notNull().unique()
 });
 
 export const noticeTypes = pgTable('notice_types', {
     id: smallint('id').primaryKey().generatedAlwaysAsIdentity(),
-    name: text('name').notNull().unique(),
+    name: text('name').notNull().unique()
 });
 
 
@@ -113,7 +128,7 @@ export const users = pgTable('users', {
     email: text('email').notNull().unique(),
     phone: text('phone'),
     passwordHash: text('password_hash'),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow()
 });
 
 export const works = pgTable('works', {
@@ -136,7 +151,7 @@ export const items = pgTable('items', {
     locationId: integer('location_id').references(() => locations.id, { onDelete: 'set null' }),
     currencyCode: char('currency_code', { length: 3 }).references(() => currencies.code, { onUpdate: 'cascade' }),
     acquisitionDate: date('acquisition_date', {mode: 'date'}),
-    price: numeric('price', { precision: 12, scale: 2 }),
+    price: numeric('price', { precision: 12, scale: 2 })
 });
 
 

@@ -17,4 +17,14 @@ router.post("/logout", authController.logout);
 // GET /auth/me
 router.get("/me", verifyUser, authController.me);
 
+
+//POST /auth/forgot-password
+router.post("/forgot-password", authController.forgotPassword);
+
+//POST /auth/reset-password
+router.post("/reset-password", authController.resetPassword);
+
+//POST /auth/setup-account
+router.post("/setup-account", verifyUser, authController.setupAccount);
+
 export default router;

@@ -124,7 +124,7 @@ export const userRepository = {
 
         const sq = inner.as("ranked");
 
-        // Step 2: prendi gli ID ordinati e ricarica con relazioni
+        // Prendo gli ID ordinati
         const rankedIds = await db
             .select({id: sq.id, relevance: sq.relevance})
             .from(sq)
@@ -136,6 +136,7 @@ export const userRepository = {
 
         const ids = rankedIds.map(r => r.id);
 
+        // Ricarico con le relazioni
         const fullUsers = await db.query.users.findMany({
             where: {id: {in: ids}},
             with: {role: true}

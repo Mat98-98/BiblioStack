@@ -23,3 +23,9 @@ export const EXPIRY_MS = 4 * 24 * 60 * 60 * 1000;
 
 // Costante globale che definisce il threshold per il fuzzy matching degli autori durante l'inserimento di una nuova opera
 export const SIMILARITY_THRESHOLD = 3;
+
+// Costante globale che definisce i tipi dei token per il reset e il setup iniziale della password dopo la creazione dell'account da parte dell'admin
+export const TOKEN_TYPES = {
+    RESET: "reset",
+    SETUP: "setup",
+}

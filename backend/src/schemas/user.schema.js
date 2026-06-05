@@ -7,7 +7,7 @@ export const CreateUserSchema = z.object({
     phone:     z.string().trim().optional().nullable(),
     email:     z.email().trim().toLowerCase(),
     password:  z.string()
-        .min(8).max(16)
+        .min(8).max(64)
         .regex(/[a-z]/)
         .regex(/[A-Z]/)
         .regex(/[0-9]/)
@@ -21,7 +21,7 @@ export const UpdateUserSchema = z.object({
     phone:     z.string().trim().optional().nullable(),
     email:     z.email().toLowerCase().trim().optional(),
     password:  z.string()
-        .min(8).max(16)
+        .min(8).max(64)
         .regex(/[a-z]/)
         .regex(/[A-Z]/)
         .regex(/[0-9]/)

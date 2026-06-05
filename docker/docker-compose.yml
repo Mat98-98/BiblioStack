@@ -3,6 +3,7 @@ services:
   db:
     image: postgres:${POSTGRES_VERSION}
     container_name: app_postgres
+    command: ["postgres", "-c", "timezone=Europe/Rome"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

@@ -22,8 +22,6 @@ export const itemService = {
 
     update: async (id, data) => {
         await findUniqueOrThrow(id);
-        // Bug fix: era itemRepository.update((id), data) — le parentesi extra intorno a id non causano errori
-        // ma erano probabilmente un refuso; rimosso anche il Number() ridondante nel delete
         const [updatedItem] = await itemRepository.update(id, data);
         return updatedItem;
     },
