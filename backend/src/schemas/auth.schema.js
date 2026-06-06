@@ -12,7 +12,7 @@ export const RegisterSchema = z.object({
         .regex(/[a-z]/,                    "Password must contain a lowercase letter")
         .regex(/[A-Z]/,                    "Password must contain an uppercase letter")
         .regex(/[0-9]/,                    "Password must contain a number")
-        .regex(/[!@#$%^&*(),.?":{}|<>]/,  "Password must contain a special character")
+        .regex(/[^a-zA-Z0-9]/,  "Password must contain a special character")
 });
 
 // Schema di validazione dei dati inviati dal form di login

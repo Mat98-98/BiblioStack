@@ -1,9 +1,10 @@
+import { Link } from "react-router-dom";
+
 import { ArrowRight, ShieldAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button.jsx";
 import { useSetPassword } from "@/features/auth/set-password/useSetPassword.js";
 import PasswordField from "@/features/auth/components/PasswordField.jsx";
-import ConfirmPasswordField from "@/features/auth/components/ConfirmPasswordField.jsx";
 
 const COPY = {
     reset: {
@@ -60,12 +61,12 @@ export default function SetPasswordPanel({ mode = "reset" }) {
                 </div>
 
                 {copy.invalidHref && (
-                    <a
-                        href={copy.invalidHref}
+                    <Link
+                        to={copy.invalidHref}
                         className="inline-block text-sm font-medium underline underline-offset-4 hover:text-primary transition-colors"
                     >
                         {copy.invalidCta}
-                    </a>
+                    </Link>
                 )}
             </div>
         );
@@ -82,16 +83,18 @@ export default function SetPasswordPanel({ mode = "reset" }) {
             <form onSubmit={handleSubmit} className="space-y-4">
 
                 <PasswordField
+                    label="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
-                <ConfirmPasswordField
+                <PasswordField
+                    label="Conferma password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
 
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full" disabled={ loading || !password || !confirmPassword }>
                     {loading ? copy.submitting : (
                         <>
                             {copy.submit}

@@ -9,7 +9,7 @@ export const setPasswordSchema = z
             .regex(/[a-z]/, "La password deve contenere una lettera minuscola")
             .regex(/[A-Z]/, "La password deve contenere una lettera maiuscola")
             .regex(/[0-9]/, "La password deve contenere un numero")
-            .regex(/[!@#$%^&*(),.?":{}|<>]/, "La password deve contenere un carattere speciale"),
+            .regex(/[^a-zA-Z0-9]/, "La password deve contenere un carattere speciale"),
         confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {

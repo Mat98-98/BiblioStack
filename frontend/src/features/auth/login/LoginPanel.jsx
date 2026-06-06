@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 
 import { ArrowRight } from "lucide-react";
@@ -74,11 +75,21 @@ export default function LoginPanel({ onGoogleLogin }) {
                 />
 
                 {/* PASSWORD */}
-                <
-                    PasswordField
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="space-y-2">
+                    <PasswordField
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+
+                    <div className="flex justify-end">
+                        <Link
+                            to="/forgot-password"
+                            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+                        >
+                            Password dimenticata?
+                        </Link>
+                    </div>
+                </div>
 
                 {/* BOTTONE SUBMIT LOGIN */}
                 <Button
