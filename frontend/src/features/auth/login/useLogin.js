@@ -7,10 +7,10 @@ import { handleApiError } from "@/lib/handleApiError.js";
 
 import { useAuth } from "@/context/AuthContext.jsx";
 
-// Creo lo schema che definisce il tipo e i dati che posso ricevere
+// Creo lo schema che definisce il tipo e i dati che posso ricevere dal form
 const loginSchema = z.object({
     email: z.email("Email non valida"),
-    password: z.string().min(6, "Password troppo corta"),
+    password: z.string().min(8, "Password troppo corta"),
 })
 
 export function useLogin() {

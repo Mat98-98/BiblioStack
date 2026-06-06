@@ -43,6 +43,9 @@ import AdminLayout          from "./features/admin/AdminLayout.jsx"
 import AdminDashboardPage   from "./features/admin/AdminDashboardPage.jsx"
 import AdminUsersPage       from "./pages/admin/AdminUsersPage.jsx"
 import AdminWorksPage from "@/pages/admin/AdminWorksPage.jsx";
+import ForgotPasswordPage from "@/pages/public/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "@/pages/public/ResetPasswordPage.jsx";
+import SetupAccountPage from "@/pages/public/SetupAccountPage.jsx";
 
 function App() {
     return (
@@ -54,6 +57,9 @@ function App() {
                     <Route path="/login"     element={<LoginPage />} />
                     <Route path="/catalog"   element={<CatalogPage />} />
                     <Route path="/works/:id" element={<WorkDetailPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/setup-account" element={<SetupAccountPage />} />
 
                     {/* Utente */}
                     <Route path="/profile"   element={<ProfilePage />} />

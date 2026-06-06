@@ -43,6 +43,7 @@ export const authController = {
         try {
             const { email } = ForgotPasswordSchema.parse(req.body)
             await authService.forgotPassword({ email })
+
             res.json({ message: "Password reset instructions sent"})
         } catch (err) {
             next(err)

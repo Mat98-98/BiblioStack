@@ -5,13 +5,7 @@ export const CreateUserSchema = z.object({
     firstName: z.string().trim().min(1).max(50).optional(),
     lastName:  z.string().trim().min(1).max(50).optional(),
     phone:     z.string().trim().optional().nullable(),
-    email:     z.email().trim().toLowerCase(),
-    password:  z.string()
-        .min(8).max(64)
-        .regex(/[a-z]/)
-        .regex(/[A-Z]/)
-        .regex(/[0-9]/)
-        .regex(/[!@#$%^&*(),.?":{}|<>]/)
+    email:     z.email().trim().toLowerCase()
 });
 
 // Schema di validazione dei dati per la modifica di un utente
@@ -19,13 +13,7 @@ export const UpdateUserSchema = z.object({
     firstName: z.string().trim().min(1).max(50).optional(),
     lastName:  z.string().trim().min(1).max(50).optional(),
     phone:     z.string().trim().optional().nullable(),
-    email:     z.email().toLowerCase().trim().optional(),
-    password:  z.string()
-        .min(8).max(64)
-        .regex(/[a-z]/)
-        .regex(/[A-Z]/)
-        .regex(/[0-9]/)
-        .regex(/[!@#$%^&*(),.?":{}|<>]/).optional()
+    email:     z.email().toLowerCase().trim().optional()
 });
 
 // Schema di validazione dei dati per la ricerca degli utenti tramite searchbar

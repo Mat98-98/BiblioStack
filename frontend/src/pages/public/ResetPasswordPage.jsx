@@ -1,14 +1,13 @@
-import React from "react";
 import LoginHero from "@/features/auth/login/LoginHero.jsx";
-import LoginPanel from "@/features/auth/login/LoginPanel.jsx";
+import SetPasswordPanel from "@/features/auth/set-password/SetPasswordPanel.jsx";
 
-export default function LoginPage() {
+
+export default function ResetPasswordPage() {
     return (
         <div className="min-h-screen grid grid-cols-1 lg:grid-cols-[2fr_3fr]">
-
-                <LoginHero />
+            <LoginHero />
             <div className="flex items-center justify-center p-8">
-                <LoginPanel />
+                <SetPasswordPanel mode="reset" />
             </div>
         </div>
     );

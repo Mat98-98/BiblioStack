@@ -131,6 +131,7 @@ export const authService = {
     },
 
     // Funzione per inviare l'email con il link contenente il token per l'attivazione dell'account
+    /*
     setupPassword: async (userId) => {
 
         // Verifico l'esistenza dell'utente associato alla email
@@ -152,7 +153,36 @@ export const authService = {
         })
     },
 
-    setupAccount: async (token, password) => {
+     */
+
+    setupPassword: async (userId) => {
+        console.log("setupPassword chiamata con userId:", userId);
+
+        const user = await userRepository.findById(userId);
+        console.log("utente trovato:", user);
+
+        if (!user) throw new AppError("User not found", "NOT_FOUND", 404);
+
+        const token = generateToken();
+        console.log("token generato:", token);
+
+        const created = await passwordTokenRepository.create({
+            token,
+            userId: user.id,
+            type:   TOKEN_TYPES.SETUP,
+            expiresAt: new Date(Date.now() + SETUP_PASSWORD_TOKEN_EXPIRY_MS),
+        });
+        console.log("token salvato a db:", created);
+
+        await emailService.sendAccountSetup({
+            to:        user.email,
+            firstName: user.firstName,
+            token,
+        });
+        console.log("email inviata a:", user.email);
+    },
+
+    setupAccount: async ({ token, password }) => {
 
         // Mi assicuro che il token sia valido
         const record = await validateToken(token, TOKEN_TYPES.SETUP)

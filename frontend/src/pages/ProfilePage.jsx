@@ -4,7 +4,7 @@ import LoanHistory from "@/features/profile/LoanHistory";
 
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 
-import { useUserDashboard } from "@/features/profile/useDashboard.js";
+import { useUserDashboard } from "@/features/profile/hooks/useDashboard.js";
 import Navbar from "@/components/layout/navbar/Navbar.jsx";
 import Reservations from "@/features/profile/Reservations.jsx";
 

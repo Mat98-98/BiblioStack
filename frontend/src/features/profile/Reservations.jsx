@@ -1,17 +1,17 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState } from "react";
 import {
     BookMarked,
     Clock,
     CheckCircle,
     Trash2,
     AlertTriangle
-} from "lucide-react"
+} from "lucide-react";
 
-import { Badge } from "@/components/ui/badge.jsx"
-import { Button } from "@/components/ui/button.jsx"
+import { Badge } from "@/components/ui/badge.jsx";
+import { Button } from "@/components/ui/button.jsx";
 
-import api from "@/api/axios.js"
-import { notify } from "@/lib/notify.js"
+import api from "@/api/axios.js";
+import { notify } from "@/lib/notify.js";
 
 function daysUntil(date) {
     if (!date) return null

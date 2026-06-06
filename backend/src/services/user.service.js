@@ -3,6 +3,7 @@ import { roleRepository } from "../repositories/role.repository.js";
 import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID } from "../constants.js";
 import bcrypt from "bcrypt";
+import {authService} from "./auth.service.js";
 
 
 // Funzione per verificare l'esistenza di un utente, usata in getById, update e delete
@@ -66,18 +67,21 @@ export const userService = {
         const existing = await userRepository.findByEmail(email);
         if (existing) throw new AppError("Email already exists", "EMAIL_ALREADY_EXISTS", 409);
 
-        const passwordHash = await bcrypt.hash(password, 12);
-
         const [user] = await userRepository.create({
             email,
             firstName,
             lastName,
             phone,
-            passwordHash,
+            passwordHash: null, //
             roleId: roleId ?? DEFAULT_USER_ROLE_ID
         });
 
-        return userRepository.findById(user.id);
+        const createdUser = await userRepository.findById(user.id);
+
+        // Invio l'email di setup password all'utente
+        await authService.setupPassword(createdUser.id);
+
+        return createdUser;
     },
 
     setUserRole: async (userId, roleName) => {

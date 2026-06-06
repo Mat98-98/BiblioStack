@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -23,7 +22,6 @@ function FieldError({ message }) {
 export default function CreateUserDialog({ open, onClose, onConfirm }) {
     const { form, loading, setLoading } = useCreateUser();
     const { register, handleSubmit, control, reset, formState: { errors } } = form
-    const [showPassword, setShowPassword] = useState(false);
 
     const onSubmit = handleSubmit(async (data) => {
         setLoading(true)
@@ -54,7 +52,7 @@ export default function CreateUserDialog({ open, onClose, onConfirm }) {
                     </DialogTitle>
 
                     <DialogDescription className="text-sm text-muted-foreground">
-                        Inserisci le informazioni del nuovo utente della biblioteca.
+                        Inserisci le informazioni del nuovo utente della biblioteca. L'utente riceverà un'email per impostare la propria password.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -92,30 +90,6 @@ export default function CreateUserDialog({ open, onClose, onConfirm }) {
                         <FieldError message={errors.phone?.message} />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label>Password *</Label>
-
-                        <div className="relative">
-                            <Input
-                                type={showPassword ? "text" : "password"}
-                                {...register("password")}
-                                className="pr-10"
-                            />
-
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(p => !p)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                {showPassword
-                                    ? <EyeOff className="h-4 w-4" />
-                                    : <Eye className="h-4 w-4" />
-                                }
-                            </button>
-                        </div>
-
-                        <FieldError message={errors.password?.message} />
-                    </div>
 
                     <DialogFooter className="pt-4 gap-2 sm:gap-0">
                         <Button

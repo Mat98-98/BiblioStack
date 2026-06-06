@@ -1,15 +1,15 @@
 import { useState } from "react";
 
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 
 import { Button } from "@/components/ui/button.jsx";
-import { Input } from "@/components/ui/input.jsx";
-import { Label } from "@/components/ui/label.jsx";
 import { Separator } from "@/components/ui/separator.jsx";
 
 import { notify } from "@/lib/notify.js";
-import { useLogin } from "@/features/auth/useLogin.js";
+import { useLogin } from "@/features/auth/login/useLogin.js";
+import EmailField from "@/features/auth/components/EmailField.jsx";
+import PasswordField from "@/features/auth/components/PasswordField.jsx";
 
 
 
@@ -68,43 +68,17 @@ export default function LoginPanel({ onGoogleLogin }) {
             <form onSubmit={handleSubmit} className="space-y-4">
 
                 {/* EMAIL */}
-                <div className="space-y-2">
-                    <Label>Email</Label>
-                    <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            className="pl-10"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                    </div>
-                </div>
+                <EmailField
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
 
                 {/* PASSWORD */}
-                <div className="space-y-2">
-                    <Label>Password</Label>
-
-                    <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-
-                        <Input
-                            className="pl-10 pr-10"
-                            type={showPassword ? "text" : "password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-
-                        {/* TOGGLE VISIBILITÀ PASSWORD */}
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2"
-                        >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                    </div>
-                </div>
+                <
+                    PasswordField
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
 
                 {/* BOTTONE SUBMIT LOGIN */}
                 <Button

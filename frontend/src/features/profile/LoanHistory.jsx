@@ -1,13 +1,13 @@
-import { BookCheck, BookX } from "lucide-react"
-import { Badge } from "@/components/ui/badge.jsx"
+import { BookCheck, BookX } from "lucide-react";
+import { Badge } from "@/components/ui/badge.jsx";
 
 function formatDate(date) {
-    if (!date) return "—"
+    if (!date) return "—";
     return new Date(date).toLocaleDateString("it-IT", {
         day: "numeric",
         month: "short",
-        year: "numeric",
-    })
+        year: "numeric"
+    });
 }
 
 function HistoryCard({ loan }) {

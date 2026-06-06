@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import api from "@/api/axios.js"
-import { handleApiError } from "@/lib/handleApiError.js"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "@/api/axios.js";
+import { handleApiError } from "@/lib/handleApiError.js";
 
 export function useUserDashboard() {
     const [user, setUser] = useState(null);

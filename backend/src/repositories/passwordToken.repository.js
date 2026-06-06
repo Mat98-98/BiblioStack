@@ -21,7 +21,7 @@ export const passwordTokenRepository = {
         await db.query.passwordTokens.findFirst({
             where: {
                 userId: userId,
-                type: type,},
+                type: type},
             orderBy: { createdAt: "desc" }
         })
 }

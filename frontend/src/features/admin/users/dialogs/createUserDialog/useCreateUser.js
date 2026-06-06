@@ -13,8 +13,7 @@ export function useCreateUser() {
             firstName: "",
             lastName:  "",
             email:     "",
-            phone:     "",
-            password:  ""
+            phone:     ""
         }
     });
 

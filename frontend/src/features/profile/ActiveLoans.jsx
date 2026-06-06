@@ -1,10 +1,10 @@
-import { BookOpen, Clock, AlertTriangle } from "lucide-react"
-import { Badge } from "@/components/ui/badge.jsx"
+import { BookOpen, Clock, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge.jsx";
 
 function daysUntil(date) {
-    if (!date) return null
+    if (!date) return null;
     const diff = Math.ceil((new Date(date) - new Date()) / (1000 * 60 * 60 * 24))
-    return diff
+    return diff;
 }
 
 function DueBadge({ dueDate }) {

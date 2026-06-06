@@ -25,6 +25,6 @@ router.post("/forgot-password", authController.forgotPassword);
 router.post("/reset-password", authController.resetPassword);
 
 //POST /auth/setup-account
-router.post("/setup-account", verifyUser, authController.setupAccount);
+router.post("/setup-account", authController.setupAccount);
 
 export default router;
