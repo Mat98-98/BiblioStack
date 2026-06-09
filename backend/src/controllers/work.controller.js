@@ -37,6 +37,19 @@ export const workController = {
         }
     },
 
+    getMostLoaned: async (req, res, next) => {
+        try {
+            // Prendo il parametro passato nell'url e impongo che sia un numero, altrimenti assegno 10
+            const limit = Number(req.query.limit) || 10;
+
+            const works = await workService.getMostLoaned(limit)
+            const data = WorkBaseListDTO.parse(works);
+            res.json(data);
+        } catch (error) {
+            next(error);
+        }
+    },
+
     search: async (req, res, next) => {
         try {
             const params = WorkSearchSchema.parse(req.query);

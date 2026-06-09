@@ -49,21 +49,37 @@ export const workRepository = {
         }),
 
 
-    findMostLoaned: async (limit) =>
-        await db
+    findMostLoaned: async (limit) => {
+        // Recupera gli ID delle opere più prestate con il relativo conteggio
+        const ranked = await db
             .select({
                 id: works.id,
-                title: works.title,
-                coverUrl: works.coverUrl,
-
-                loanCount: count(loans.id).as("loan_count"),
+                loanCount: count(loans.id),
             })
             .from(works)
             .leftJoin(items, eq(items.workId, works.id))
             .leftJoin(loans, eq(loans.itemId, items.id))
             .groupBy(works.id)
             .orderBy(desc(count(loans.id)))
-            .limit(10),
+            .limit(limit);
+
+        if (ranked.length === 0) return [];
+
+        const ids = ranked.map(r => r.id);
+
+        // Recupera i dati completi con le relazioni
+        const fullWorks = await db.query.works.findMany({
+            where: { id: { in: ids } },
+            with: {
+                authors: true,
+                dewey: true,
+            }
+        });
+
+        // Riordina secondo il ranking originale
+        const workMap = new Map(fullWorks.map(w => [w.id, w]));
+        return ranked.map(r => workMap.get(r.id)).filter(Boolean);
+    },
 
 
     // Query per searchbar principale (navbar)

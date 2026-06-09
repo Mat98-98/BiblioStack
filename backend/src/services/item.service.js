@@ -9,11 +9,11 @@ const findUniqueOrThrow = async (id) => {
 
 export const itemService = {
 
-    getAll: ({ page, limit }) =>
-        itemRepository.findAll({ page, limit }),
+    getAll: async ({ page, limit }) =>
+        await itemRepository.findAll({ page, limit }),
 
-    getById: (id) =>
-        findUniqueOrThrow(id),
+    getById: async (id) =>
+        await findUniqueOrThrow(id),
 
     create: async (data) => {
         const [item] = await itemRepository.create(data);

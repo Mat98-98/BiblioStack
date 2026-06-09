@@ -20,21 +20,24 @@ const findUniqueOrThrow = async (id) => {
 
 export const workService = {
 
-    getAll: ({ page, limit }) =>
-        workRepository.findAll({ page, limit }),
+    getAll: async ({ page, limit }) =>
+        await workRepository.findAll({ page, limit }),
 
-    getById: (id) =>
-        findUniqueOrThrow(id),
+    getById: async (id) =>
+        await findUniqueOrThrow(id),
 
-    getNewest: (limit) =>
-        workRepository.findMostLoaned(limit),
+    getNewest: async (limit) =>
+        await workRepository.findNewest(limit),
 
-    search: (params) =>
-        workRepository.search(params),
+    getMostLoaned: async (limit) =>
+        await workRepository.findMostLoaned(limit),
+
+    search: async (params) =>
+        await workRepository.search(params),
 
     create: async (data) => {
         const [newWork] = await workRepository.create(data);
-        return workRepository.findById(newWork.id);
+        return await workRepository.findById(newWork.id);
     },
 
     createFromExternal: async (data) => {
@@ -106,7 +109,7 @@ export const workService = {
     update: async (id, data) => {
         await findUniqueOrThrow(id);
         await workRepository.update(id, data);
-        return workRepository.findById(id);
+        return await workRepository.findById(id);
     },
 
     delete: async (id) => {

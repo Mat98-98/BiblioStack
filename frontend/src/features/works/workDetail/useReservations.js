@@ -15,15 +15,6 @@ export function useReservation() {
             notify.success("Prenotazione effettuata con successo!");
             return true;
         } catch (err) {
-            if (err.response?.status === 400) {
-                const code = err.response.data?.code;
-                if (code === "BAD_REQUEST" && err.response.data?.message?.includes("loan")) {
-                    notify.error("Hai già questo libro in prestito.");
-                } else {
-                    notify.error("Hai già una prenotazione attiva per quest'opera.");
-                }
-                return false;
-            }
             handleApiError(err, navigate);
             return false;
         } finally {

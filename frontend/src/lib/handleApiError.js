@@ -24,6 +24,14 @@ export function handleApiError(error, navigate) {
             navigate?.("/login")
             break
 
+        case "ALREADY_LOANED":
+            notify.error("Hai già questo libro in prestito")
+            break
+
+        case "ALREADY_RESERVED":
+            notify.error("Hai già una prenotazione attiva per quest'opera")
+            break
+
         default:
             notify.error(data.message || "Errore server")
     }

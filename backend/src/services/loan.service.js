@@ -13,11 +13,11 @@ const findUniqueOrThrow = async (id) => {
 
 export const loanService = {
 
-    getAll: ({ page, limit }) =>
-        loanRepository.findAll({ page, limit }),
+    getAll: async ({ page, limit }) =>
+        await loanRepository.findAll({ page, limit }),
 
-    getById: (id) =>
-        findUniqueOrThrow(id),
+    getById: async (id) =>
+        await findUniqueOrThrow(id),
 
     checkOut: async (data) => {
         // Controllo se la copia è in prestito
@@ -67,7 +67,6 @@ export const loanService = {
         return updatedLoan;
     },
 
-    // Bug fix: findUniqueOrThrow() era chiamato senza argomento — avrebbe sempre lanciato "Loan not found"
     delete: async (id) => {
         await findUniqueOrThrow(id);
         await loanRepository.delete(id);

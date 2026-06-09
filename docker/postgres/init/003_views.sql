@@ -1,5 +1,5 @@
 
--- View per berificare se ci sono copie libere da prestiti o prenotazioni con flag ready
+-- View per verificare se ci sono copie libere da prestiti o prenotazioni con flag ready
 CREATE VIEW item_availability AS
 SELECT
     i.id          AS item_id,

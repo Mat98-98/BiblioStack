@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button.jsx";
 import { useNewestWorks } from "@/features/works/components/carusel/useNewestWorks.js";
 import WorkCarousel from "@/features/works/components/carusel/WorkCarusel.jsx";
 import { Link } from "react-router-dom";
+import {usePopularWorks} from "@/features/works/components/carusel/usePopularWorks.js";
 
 
 
 export default function HomePage() {
 
     const newest = useNewestWorks();
+    const mostLoaned = usePopularWorks()
 
     return (
         <main className="min-h-screen bg-background text-foreground transition-colors">
@@ -39,6 +41,13 @@ export default function HomePage() {
                 works={newest.works}
                 loading={newest.loading}
                 error={newest.error}
+            />
+
+            <WorkCarousel
+                title="I più popolari"
+                works={mostLoaned.works}
+                loading={mostLoaned.loading}
+                error={mostLoaned.error}
             />
 
         </main>

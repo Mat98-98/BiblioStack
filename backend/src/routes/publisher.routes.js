@@ -1,6 +1,8 @@
 import express from "express";
 import { paginationMiddleware } from "../middleware/pagination.middleware.js";
 import { publisherController } from "../controllers/publisher.controller.js";
+import {verifyUser} from "../middleware/auth.middleware.js";
+import {permit} from "../middleware/role.middleware.js";
 
 
 const router = express.Router();
@@ -14,14 +16,14 @@ router.get("/:id", publisherController.getById);
 
 
 // POST /publishers
-router.post("/", publisherController.create);
+router.post("/", verifyUser, permit("admin"), publisherController.create);
 
 
 // PATCH /publishers/:id
-router.patch("/:id", publisherController.update);
+router.patch("/:id", verifyUser, permit("admin"), publisherController.update);
 
 
 // DELETE /publishers/:id
-router.delete("/:id", publisherController.delete);
+router.delete("/:id", verifyUser, permit("admin"), publisherController.delete);
 
 export default router;

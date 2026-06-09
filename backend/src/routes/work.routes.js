@@ -12,6 +12,9 @@ router.get('/search', workController.search);
 // GET /works/newest?limit=8
 router.get('/newest', workController.getNewest);
 
+// GET /works/mostLoaned?limit=8
+router.get('/mostLoaned', workController.getMostLoaned);
+
 // GET /works?page=1&limit=20
 router.get('/', paginationMiddleware, workController.getAll);
 

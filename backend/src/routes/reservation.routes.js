@@ -2,6 +2,7 @@ import express from "express"
 import { reservationController } from "../controllers/reservation.controller.js";
 import { paginationMiddleware } from "../middleware/pagination.middleware.js";
 import {verifyUser} from "../middleware/auth.middleware.js";
+import {permit} from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -22,6 +23,6 @@ router.patch("/:id", verifyUser, reservationController.update);
 
 
 // DELETE /reservations/:id
-router.delete("/:id", reservationController.delete);
+router.delete("/:id", verifyUser, permit("admin"), reservationController.delete);
 
 export default router;

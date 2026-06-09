@@ -28,7 +28,7 @@ export const reservationService = {
         if (activeLoan) {
             throw new AppError(
                 "User already has an active loan for this work",
-                "BAD_REQUEST", 400
+                "ALREADY_LOANED", 400
             );
         }
 
@@ -38,7 +38,7 @@ export const reservationService = {
             data.workId
         );
         if (existingReservation) {
-            throw new AppError("Double booking is not allowed", "BAD_REQUEST", 400);
+            throw new AppError("Double booking is not allowed", "ALREADY_RESERVED", 400);
         }
 
         // Controllo se c'è una copia disponibile. Se sì → ready, altrimenti → pending

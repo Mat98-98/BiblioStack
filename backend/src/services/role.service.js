@@ -1,6 +1,6 @@
 import { roleRepository } from "../repositories/role.repository.js";
 
 export const roleService = {
-    getRoles: () =>
-        roleRepository.findAll()
+    getRoles: async () =>
+        await roleRepository.findAll()
 }
