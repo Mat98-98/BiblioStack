@@ -3,7 +3,6 @@ import { ReservationStatusEnum } from "../dto/shared.dto.js";
 
 // Schema di validazione dei dati per la creazione di una prenotazione (ID non serve dato che è generato automaticamente dal database)
 export const CreateReservationSchema = z.object({
-    userId: z.coerce.number().int().positive(),
     workId: z.string()
 });
 

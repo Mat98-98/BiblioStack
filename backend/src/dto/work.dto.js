@@ -55,10 +55,10 @@ export const WorkDetailDTO = z.object({
     authors: z.array(AuthorDTO).default([]),
     genres: z.array(GenreSchema).default([]),
     items: z.array(ItemSchema).default([]),
-
     publisher: PublisherSchema.nullable().optional(),
     language: LanguageSchema.nullable().optional(),
     dewey: DeweySchema.nullable().optional(),
+    availableCount: z.number().default(0),
     coverUrl: z.string().nullable().optional(),
     description: z.string().nullable().optional()
 });

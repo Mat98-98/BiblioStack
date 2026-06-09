@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
-import { items, loans, reservations } from "../db/schema.js";
-import { eq, isNull, and, notExists, sql } from "drizzle-orm";
+import { items, itemAvailability } from "../db/schema.js";
+import { eq, sql } from "drizzle-orm";
 
 export const itemRepository = {
 
@@ -29,6 +29,25 @@ export const itemRepository = {
             }
         }),
 
+
+    // Trova il primo item disponibile per un'opera, se esiste lo ritorna completo di work
+    findAvailableByWorkId: async (workId) => {
+        // Cerca nella vista un item disponibile per l'opera
+        const [available] = await db
+            .select()
+            .from(itemAvailability)
+            .where(eq(itemAvailability.workId, workId))
+            .limit(1);
+
+        if (!available) return null;
+
+        // Recupera l'item completo con i dati dell'opera
+        return db.query.items.findFirst({
+            where: { id: available.itemId },
+            with: { work: true }
+        });
+    },
+/*
     findAvailableByWorkId: async (workId) =>
         await db.query.items.findFirst({
                 where: {
@@ -48,7 +67,7 @@ export const itemRepository = {
                 },
                 with: { work: true }
         }),
-
+ */
 
 
     create: async (data) =>

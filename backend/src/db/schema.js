@@ -5,6 +5,7 @@
 // @todo: rimuovere tutti i bigint e mettere integer
 import {
     pgTable,
+    pgView,
     pgEnum,
     integer,
     smallint,
@@ -205,6 +206,7 @@ export const loans = pgTable('loans', {
     returnDate: timestamp('return_date', { withTimezone: true, mode: 'date' }),
 });
 
+
 export const notices = pgTable('notices', {
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
     userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
@@ -214,3 +216,11 @@ export const notices = pgTable('notices', {
     description: text('description'),
     issuedAt: timestamp('issued_at', { withTimezone: true, mode: 'date' }).defaultNow(),
 });
+
+
+// --- VIEWS ---
+export const itemAvailability = pgView("item_availability", {
+    itemId:     text("item_id").notNull(),
+    workId:     text("work_id").notNull(),
+    locationId: integer("location_id"),
+}).existing();

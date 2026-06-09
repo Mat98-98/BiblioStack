@@ -24,8 +24,11 @@ export const reservationController = {
 
     create: async (req, res, next) => {
         try {
-            const validatedData = CreateReservationSchema.parse(req.body);
-            const newReservation = await reservationService.create(validatedData);
+            const { workId } = CreateReservationSchema.parse(req.body);
+            const newReservation = await reservationService.create({
+                userId: req.user.id,
+                workId
+            });
             res.status(201).json(newReservation);
         } catch (error) {
             next(error);

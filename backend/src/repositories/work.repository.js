@@ -1,5 +1,5 @@
 import { db } from "../db/connection.js";
-import {works, authors, authorWorks, workGenres, items, loans} from "../db/schema.js";
+import {works, authors, authorWorks, workGenres, items, loans, itemAvailability} from "../db/schema.js";
 import {eq, ilike, or, and, sql, asc, desc, count} from "drizzle-orm";
 import { normalizeSearch } from "../utils/search.util.js";
 
@@ -18,18 +18,25 @@ export const workRepository = {
         });
     },
 
-    findById: async (id) =>
-        await db.query.works.findFirst({
-        where: { id: id },
-            with: {
-                authors: true,
-                genres: true,
-                publisher: true,
-                language: true,
-                dewey: true,
-                items: true
-            }
-    }),
+    findById: async (id) => {
+        const [work, availableCount] = await Promise.all([
+            db.query.works.findFirst({
+                where: { id },
+                with: {
+                    authors: true,
+                    genres: true,
+                    publisher: true,
+                    language: true,
+                    dewey: true,
+                    items: true
+                }
+            }),
+            db.$count(itemAvailability, eq(itemAvailability.workId, id))
+        ]);
+
+        if (!work) return null;
+        return { ...work, availableCount };
+    },
 
     findNewest: async (limit) =>
         await db.query.works.findMany({
@@ -40,6 +47,7 @@ export const workRepository = {
                 dewey: true
             }
         }),
+
 
     findMostLoaned: async (limit) =>
         await db
@@ -56,6 +64,7 @@ export const workRepository = {
             .groupBy(works.id)
             .orderBy(desc(count(loans.id)))
             .limit(10),
+
 
     // Query per searchbar principale (navbar)
     search: async ({ search, page, limit, genreId, languageCode, publisherId, deweyCode }) => {

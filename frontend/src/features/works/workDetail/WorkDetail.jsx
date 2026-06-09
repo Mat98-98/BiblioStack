@@ -1,7 +1,11 @@
 import { BookOpen, Calendar, Globe, BookMarked, Tag, Building2, Hash } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
+import { Button } from "@/components/ui/button.jsx";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext.jsx";
+import {useReservation} from "@/features/works/workDetail/useReservations.js";
+import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
 
 function formatDate(date) {
     if (!date) return "—";
@@ -10,12 +14,7 @@ function formatDate(date) {
         month: "long",
         year: "numeric",
     });
-};
-
-/*
-    @ todo 1. fix numero copie disponibili -> creare query/view che restituisca il numero di copie che non sono in prestito o prenotate;
-    @ todo 2. aggiungere la lista delle copie relative all'opera con il relativo stato (reserved, loaned, available) + posizione nella biblioteca
-*/
+}
 
 function InfoRow({ icon: Icon, label, value }) {
     if (!value) return null;
@@ -54,7 +53,10 @@ function WorkDetailSkeleton() {
 }
 
 export default function WorkDetail({ work, loading, error }) {
-    const [expanded, setExpanded] = useState(false)
+    const [expanded, setExpanded] = useState(false);
+    const { isAuthenticated } = useAuth();
+    const { reserve, loading: reserving } = useReservation();
+    const [confirmOpen, setConfirmOpen] = useState(false);
 
     if (loading) return <WorkDetailSkeleton />;
 
@@ -68,12 +70,12 @@ export default function WorkDetail({ work, loading, error }) {
     }
 
     const authors =
-        work.authors?.map(a => `${a.firstName} ${a.lastName}`).join(", ") || "—"
+        work.authors?.map(a => `${a.firstName} ${a.lastName}`).join(", ") || "—";
 
-    const available = work.items?.length ?? 0
+    const available = work.availableCount ?? 0;
 
-    const MAX_LENGTH = 300
-    const isLong = work.description?.length > MAX_LENGTH
+    const MAX_LENGTH = 300;
+    const isLong = work.description?.length > MAX_LENGTH;
 
     const displayedText =
         expanded || !isLong
@@ -124,26 +126,42 @@ export default function WorkDetail({ work, loading, error }) {
                         </div>
                     )}
 
-                    {/* Disponibilità */}
-                    <div
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium w-fit ${
-                            available > 0
-                                ? "bg-green-500/10 text-green-600"
-                                : "bg-destructive/10 text-destructive"
-                        }`}
-                    >
+                    {/* Disponibilità + Prenota */}
+                    <div className="flex items-center gap-8 flex-wrap">
                         <div
-                            className={`h-2 w-2 rounded-full ${
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium w-fit ${
                                 available > 0
-                                    ? "bg-green-500"
-                                    : "bg-destructive"
+                                    ? "bg-success/20 text-success"
+                                    : "bg-destructive/10 text-destructive"
                             }`}
-                        />
-                        {available > 0
-                            ? `${available} cop${
-                                available === 1 ? "ia" : "ie"
-                            } disponibili`
-                            : "Non disponibile"}
+                        >
+                            <div
+                                className={`h-2 w-2 rounded-full ${
+                                    available > 0 ? "bg-success" : "bg-destructive"
+                                }`}
+                            />
+                            {available > 0
+                                ? `${available} cop${available === 1 ? "ia disponibile" : "ie disponibili"}`
+                                : "Non disponibile"}
+                        </div>
+
+                        {isAuthenticated && available > 0 && (
+                            <>
+                                <Button size="sm" onClick={() => setConfirmOpen(true)}>
+                                    <BookMarked className="h-4 w-4" />
+                                    Prenota
+                                </Button>
+
+                                <ConfirmDialog
+                                    open={confirmOpen}
+                                    onClose={() => setConfirmOpen(false)}
+                                    onConfirm={() => reserve(work.id)}
+                                    title="Conferma prenotazione"
+                                    description={`Vuoi prenotare "${work.title}"? Riceverai una notifica quando la copia sarà pronta al ritiro.`}
+                                    confirmLabel="Prenota"
+                                />
+                            </>
+                        )}
                     </div>
 
                     {/* Dettagli */}
@@ -190,7 +208,7 @@ export default function WorkDetail({ work, loading, error }) {
                 </div>
             </div>
 
-            {/* DESCRIPTION (FULL WIDTH) */}
+            {/* Descrizione */}
             {work.description && (
                 <div className="w-full border-t pt-12">
                     <h2 className="text-xl font-semibold text-muted-foreground mb-2">
@@ -212,5 +230,5 @@ export default function WorkDetail({ work, loading, error }) {
                 </div>
             )}
         </div>
-    )
+    );
 }

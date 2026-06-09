@@ -14,7 +14,7 @@ router.get("/:id", reservationController.getById);
 
 
 // POST /reservations
-router.post("/", reservationController.create);
+router.post("/", verifyUser, reservationController.create);
 
 
 // PATCH /reservations/:id  (body: status: "...")
