@@ -145,7 +145,7 @@ export default function WorkDetail({ work, loading, error }) {
                                 : "Non disponibile"}
                         </div>
 
-                        {isAuthenticated && available > 0 && (
+                        {isAuthenticated && (
                             <>
                                 <Button size="sm" onClick={() => setConfirmOpen(true)}>
                                     <BookMarked className="h-4 w-4" />
