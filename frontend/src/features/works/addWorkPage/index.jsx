@@ -1,6 +1,8 @@
-import WorkFormStep from "./steps/WorkFormStep"
-import AuthorConflictStep from "./steps/AuthorConflictStep"
-import { useAddWork } from "./useAddWork"
+import WorkFormStep from "./steps/WorkFormStep";
+import AuthorConflictStep from "./steps/AuthorConflictStep";
+import { useAddWork } from "./useAddWork";
+import AddItemDialog from "@/features/items/AddItemDialog.jsx";
+
 
 const steps = {
     form:      WorkFormStep,
@@ -13,6 +15,9 @@ export default function AddWorkPage() {
         form,
         conflicts,
         isbnLoading,
+        addItemOpen,
+        addItemWorkId,
+        setAddItemOpen,
         submitLoading,
         fetchByIsbn,
         submit,
@@ -48,6 +53,15 @@ export default function AddWorkPage() {
                 />
 
             </div>
+
+            {/*Aggiunta copie*/}
+            <AddItemDialog
+                open={addItemOpen}
+                onClose={() => setAddItemOpen(false)}
+                onSuccess={() => setAddItemOpen(false)}
+                workId={addItemWorkId}
+            />
+
         </main>
     )
 }

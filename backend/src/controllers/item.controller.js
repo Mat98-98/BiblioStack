@@ -1,5 +1,6 @@
 import { itemService } from "../services/item.service.js";
 import { ItemBaseListDTO } from "../dto/item.dto.js";
+import { CreateItemSchema, UpdateItemSchema } from "../schemas/item.schema.js";
 
 export const itemController = {
 
@@ -24,7 +25,8 @@ export const itemController = {
 
     create: async (req, res, next) => {
         try {
-            const newItem = await itemService.create(req.body);
+            const validatedData = CreateItemSchema.parse(req.body);
+            const newItem = await itemService.create(validatedData);
             res.status(201).json(newItem);
         } catch (err) {
             next(err);
@@ -33,10 +35,8 @@ export const itemController = {
 
     update: async (req, res, next) => {
         try {
-            const updatedItem = await itemService.update(
-                req.params.id,
-                req.body
-            );
+            const validatedData = UpdateItemSchema.parse(req.body);
+            const updatedItem = await itemService.update(req.params.id, validatedData);
             res.json(updatedItem);
         } catch (err) {
             next(err);

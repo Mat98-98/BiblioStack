@@ -2,6 +2,9 @@ import { db } from "../db/connection.js";
 import { works } from "../db/schema.js";
 import { workRepository } from "../repositories/work.repository.js";
 import { AppError } from "../utils/appError.js";
+import { toWorkExternalDTO } from "../features/worksExternal/worksExternal.mapper.js";
+import { worksExternalService } from "../features/worksExternal/worksExternal.service.js";
+
 import {
     upsertPublisher,
     resolveLanguage,
@@ -34,6 +37,19 @@ export const workService = {
 
     search: async (params) =>
         await workRepository.search(params),
+
+    // Wrapper per flaggare se l'opera è stata trovata internamente o esternamente (per aggiungere nuova opera o solamente copie se esiste già)
+    lookup: async (isbn) => {
+        // Cerca prima nel db
+        const existing = await workRepository.findById(isbn);
+        if (existing) {
+            return { source: "internal", work: existing };
+        }
+
+        // Se non trovato nel db cerca nelle API esterne
+        const external = await worksExternalService.getByISBN(isbn);
+        return { source: "external", work: toWorkExternalDTO(external, isbn) };
+    },
 
     create: async (data) => {
         const [newWork] = await workRepository.create(data);

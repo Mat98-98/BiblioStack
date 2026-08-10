@@ -5,7 +5,7 @@ import {permit} from "../../middleware/role.middleware.js";
 
 const router = express.Router();
 
-// recupero dati esterni di una work tramite ISBN
+// Recupero dati esterni di un'opera tramite ISBN
 router.get("/isbn/:isbn", verifyUser, permit( "admin"), worksExternalController.getByISBN);
 
 export default router;

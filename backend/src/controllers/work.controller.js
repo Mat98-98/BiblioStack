@@ -1,5 +1,5 @@
 import { workService } from "../services/work.service.js";
-import { WorkBaseListDTO, WorkDetailDTO, WorkSearchResultListDTO } from "../dto/work.dto.js";
+import {WorkBaseListDTO, WorkDetailDTO, WorkLookupDTO, WorkSearchResultListDTO} from "../dto/work.dto.js";
 import { CreateWorkSchema, UpdateWorkSchema, WorkSearchSchema } from "../schemas/work.schema.js";
 import { CreateWorkFromExternalSchema } from "../schemas/work.schema.js";
 
@@ -55,6 +55,17 @@ export const workController = {
             const params = WorkSearchSchema.parse(req.query);
             const results = await workService.search(params);
             res.json(WorkSearchResultListDTO.parse(results));
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    // Wrapper per determinare la provenienza dell'opera (db interno o api esterne)
+    lookup: async (req, res, next) => {
+        try {
+            const { isbn } = req.params;
+            const result = await workService.lookup(isbn);
+            res.json(WorkLookupDTO.parse(result));
         } catch (error) {
             next(error);
         }

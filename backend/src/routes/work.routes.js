@@ -18,6 +18,9 @@ router.get('/mostLoaned', workController.getMostLoaned);
 // GET /works?page=1&limit=20
 router.get('/', paginationMiddleware, workController.getAll);
 
+// GET /works/:isbn
+router.get("/lookup/:isbn", verifyUser, permit("admin"), workController.lookup);
+
 // GET /works/:id
 router.get('/:id', workController.getById);
 

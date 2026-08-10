@@ -5,7 +5,6 @@ import { z } from "zod";
 const formatDate = (dateValue) => {
     if (!dateValue) return null;
 
-    // già formato corretto
     if (typeof dateValue === "string") {
         return dateValue.trim();
     }
@@ -19,10 +18,10 @@ const formatDate = (dateValue) => {
 };
 
 const extractLanguage = (languages, language) => {
-    // se esiste già language normalizzato
+    // Se esiste già language normalizzato
     if (language) return language;
 
-    // formato OpenLibrary
+    // Formato OpenLibrary
     if (!languages?.length) return null;
 
     const code = languages[0]?.key?.split("/").pop();
@@ -52,7 +51,7 @@ const WorkExternalRawSchema = z.object({
         .optional()
         .nullable(),
 
-    // supporta sia publish_date raw che publicationDate già normalizzato
+    // Supporta sia publish_date raw che publicationDate già normalizzato
     publish_date: z.union([
         z.string(),
         z.date()
@@ -63,12 +62,12 @@ const WorkExternalRawSchema = z.object({
         z.date()
     ]).optional().nullable(),
 
-    // supporta sia pages che number_of_pages
+    // Supporta sia pages che number_of_pages
     pages: z.number().optional().nullable(),
 
     number_of_pages: z.number().optional().nullable(),
 
-    // supporta entrambi i formati
+    // Supporta entrambi i formati
     authors: z.array(
         z.union([
             z.string(),
@@ -89,21 +88,21 @@ const WorkExternalRawSchema = z.object({
         ])
     ).optional(),
 
-    // cover già normalizzato
+    // Cover già normalizzata
     coverUrl: z.string().optional().nullable(),
 
     coverLargeUrl: z.string().optional().nullable(),
 
-    // cover raw OpenLibrary
+    // Cover raw OpenLibrary
     cover: z.object({
         medium: z.string().optional(),
         large: z.string().optional()
     }).optional(),
 
-    // language già normalizzato
+    // Language già normalizzato
     language: z.string().optional().nullable(),
 
-    // raw OpenLibrary
+    // Raw OpenLibrary
     languages: z.array(
         z.object({
             key: z.string()

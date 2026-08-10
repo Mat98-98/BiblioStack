@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import {AuthorDTO} from "./shared.dto.js";
+import { AuthorDTO } from "./shared.dto.js";
+import { WorkExternalDTO } from "../features/worksExternal/worksExternal.mapper.js";
 
 /* ---------------- COMMON ---------------- */
 
@@ -77,3 +78,15 @@ export const WorkSearchResultDTO = z.object({
 });
 
 export const WorkSearchResultListDTO = z.array(WorkSearchResultDTO);
+
+// DTO per determinare se l'opera è stata trovata internamente o tramite api esterne
+export const WorkLookupDTO = z.discriminatedUnion("source", [
+    z.object({
+        source: z.literal("internal"),
+        work: WorkDetailDTO
+    }),
+    z.object({
+        source: z.literal("external"),
+        work: WorkExternalDTO
+    })
+]);
