@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label.jsx";
 import { useAddItem } from "@/features/admin/items/useAddItem.js";
 import LocationSelect from "@/features/admin/items/components/LocationSelect.jsx";
 import ConfirmAddItemDialog from "@/features/admin/items/components/ConfirmAddItemDialog.jsx";
+import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+
 
 function FieldError({ message }) {
     if (!message) return null;
@@ -23,7 +25,10 @@ function FieldError({ message }) {
 
 export default function AddItemDialog({ open, onClose, onSuccess, workId, workTitle }) {
     const { form, loading, locations, submit } = useAddItem(workId, open);
-    const [confirmOpen, setConfirmOpen] = useState(false);
+
+    // Srari per gestire i passaggi dei dialog
+    const [confirmOpen, setConfirmOpen] = useState(false); // Dialog riepilogo dati
+    const [addAnotherOpen, setAddAnotherOpen] = useState(false); // Dialog che chiede se si vogliono aggiungere altre copie dell'opera
 
     const { register, setValue, watch, formState: { errors } } = form;
 
@@ -35,23 +40,29 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
         setConfirmOpen(true);
     };
 
-    // Chiamato dopo la conferma nel riepilogo (esegue il salvataggio)
+    // Esegue il salvataggio dopo la conferma del riepilogo
     const handleConfirm = async () => {
         const ok = await submit(onSuccess);
         if (ok) {
             setConfirmOpen(false);
-            onClose();
+            setAddAnotherOpen(true);
         }
     };
 
-    // Reset completo dello stato e chiusura totale del flusso
+    // Reset completo dello stato e chiusura totale
     const handleClose = () => {
         form.reset();
         setConfirmOpen(false);
+        setAddAnotherOpen(false);
         onClose();
     };
 
-    // Costruisce i dati di riepilogo da mostrare nel dialog di conferma
+    // Aggiunta di altre copie
+    const handleAddAnother = () => {
+        setAddAnotherOpen(false);
+    };
+
+    // Build deei dati per il dialog di riepilogo
     const locationId = watch("locationId");
     const summaryData = {
         id:              watch("id"),
@@ -63,7 +74,7 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
 
     return (
         <>
-            <Dialog open={open && !confirmOpen} onOpenChange={handleClose}>
+            <Dialog open={open && !confirmOpen && !addAnotherOpen} onOpenChange={handleClose}>
                 <DialogContent className="max-w-md">
 
                     <DialogHeader>
@@ -116,7 +127,7 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
                         </div>
 
                         <DialogFooter>
-                            <Button variant="outline" onClick={handleClose} disabled={loading}>
+                            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
                                 Annulla
                             </Button>
                             <Button type="submit" disabled={loading}>
@@ -135,6 +146,7 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
                 </DialogContent>
             </Dialog>
 
+            {/* Conferma con riepilogo dati nuova copia */}
             <ConfirmAddItemDialog
                 open={confirmOpen}
                 onClose={handleClose}
@@ -143,6 +155,18 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
                 loading={loading}
                 data={summaryData}
                 workTitle={workTitle}
+            />
+
+            {/* Richiede se si vuole aggiungere un'altra copia dell'opera */}
+            <ConfirmDialog
+                open={addAnotherOpen}
+                onClose={handleClose}
+                onConfirm={handleAddAnother}
+                closeOnConfirm={false}
+                title="Copia aggiunta"
+                description="Vuoi aggiungere un'altra copia di questa opera?"
+                confirmLabel="Sì, aggiungi"
+                cancelLabel="Ho finito"
             />
         </>
     );

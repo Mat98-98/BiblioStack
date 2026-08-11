@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog.jsx";
 import { Button } from "@/components/ui/button.jsx";
 
-
 export default function ConfirmDialog({
                                           open,
                                           onClose,
@@ -20,6 +19,7 @@ export default function ConfirmDialog({
                                           confirmLabel = "Conferma",
                                           cancelLabel = "Annulla",
                                           variant = "default",
+                                          closeOnConfirm = true, // Se false, evita la chiusura automatica al click su conferma. Di default chiude al click su conferma
                                       }) {
     const [loading, setLoading] = useState(false);
 
@@ -27,7 +27,10 @@ export default function ConfirmDialog({
         setLoading(true);
         try {
             await onConfirm();
-            onClose();
+            // Chiude il dialog solo se esplicitamente richiesto
+            if (closeOnConfirm) {
+                onClose();
+            }
         } finally {
             setLoading(false);
         }
