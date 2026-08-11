@@ -35,7 +35,7 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
         setConfirmOpen(true);
     };
 
-    // Chiamato dopo la conferma nel riepilogo
+    // Chiamato dopo la conferma nel riepilogo (esegue il salvataggio)
     const handleConfirm = async () => {
         const ok = await submit(onSuccess);
         if (ok) {
@@ -44,8 +44,10 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
         }
     };
 
+    // Reset completo dello stato e chiusura totale del flusso
     const handleClose = () => {
         form.reset();
+        setConfirmOpen(false);
         onClose();
     };
 
@@ -113,23 +115,6 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
                             </div>
                         </div>
 
-                        {/* Currency — predisposto, da implementare */}
-                        {/*
-                        <div className="space-y-1.5">
-                            <Label>Valuta</Label>
-                            <Select onValueChange={(val) => setValue("currencyCode", val)}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Seleziona valuta" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {currencies.map(c => (
-                                        <SelectItem key={c.code} value={c.code}>{c.code}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        */}
-
                         <DialogFooter>
                             <Button variant="outline" onClick={handleClose} disabled={loading}>
                                 Annulla
@@ -152,7 +137,8 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
 
             <ConfirmAddItemDialog
                 open={confirmOpen}
-                onClose={() => setConfirmOpen(false)}
+                onClose={handleClose}
+                onBack={() => setConfirmOpen(false)}
                 onConfirm={handleConfirm}
                 loading={loading}
                 data={summaryData}

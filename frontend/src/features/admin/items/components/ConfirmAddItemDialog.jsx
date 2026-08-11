@@ -1,5 +1,3 @@
-//@todo: Fixare la crocetta che non chiude il dialog e i riespettivi nomi delle funzioni. close deve chiudere, mentre undo o back torna indietro
-
 import { Loader2, BookOpen, MapPin, Calendar, Tag } from "lucide-react";
 import {
     Dialog,
@@ -11,6 +9,7 @@ import {
 } from "@/components/ui/dialog.jsx";
 import { Button } from "@/components/ui/button.jsx";
 
+// Componente di presentazione per le righe di riepilogo
 function SummaryRow({ icon: Icon, label, value }) {
     if (!value) return null;
     return (
@@ -26,10 +25,11 @@ function SummaryRow({ icon: Icon, label, value }) {
     );
 }
 
-export default function ConfirmAddItemDialog({ open, onClose, onConfirm, loading, data, workTitle }) {
+export default function ConfirmAddItemDialog({ open, onClose, onBack, onConfirm, loading, data, workTitle }) {
     if (!data) return null;
 
     return (
+        // onOpenChange gestisce sia il click sulla crocetta di chiusura che la pressione del tasto ESC
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-md">
 
@@ -69,7 +69,7 @@ export default function ConfirmAddItemDialog({ open, onClose, onConfirm, loading
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} disabled={loading}>
+                    <Button variant="outline" onClick={onBack} disabled={loading}>
                         Indietro
                     </Button>
                     <Button onClick={onConfirm} disabled={loading}>

@@ -15,6 +15,7 @@ export function useAddItem(workId, open) {
 
     const navigate = useNavigate();
 
+    // Inizializzazione del form con react hook e validazione zod
     const form = useForm({
         resolver: zodResolver(addItemSchema),
         defaultValues: {
@@ -26,7 +27,7 @@ export function useAddItem(workId, open) {
         }
     });
 
-    // Carica le location solo quando il dialog si apre
+    // Lazy loading elle posizioni (solo all'apertura del dialog)
     useEffect(() => {
         if (!open) return;
 
@@ -42,6 +43,7 @@ export function useAddItem(workId, open) {
         fetchLocations();
     }, [open]);
 
+    // Gestione della chiamata API di creazione con sanitizzazione dei campi opzionali
     const submit = async (onSuccess) => {
         const valid = await form.trigger();
         if (!valid) return false;
