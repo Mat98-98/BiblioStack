@@ -5,7 +5,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.jsx";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, BookPlus } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { useState } from "react";
 import {
@@ -16,10 +16,12 @@ import {
     AlertDialogTitle
 } from "@/components/ui/alert-dialog.jsx";
 import EditWorkDialog from "@/features/admin/works/dialogs/EditWorkDialog.jsx";
+import AddItemDialog from "@/features/admin/items/AddItemDialog.jsx";
 
 export function WorkActions({ work, onDelete, onEdit }) {
-    const [deleteOpen, setDeleteOpen]   = useState(false)
-    const [editOpen, setEditOpen]   = useState(false)
+    const [deleteOpen, setDeleteOpen]   = useState(false);
+    const [editOpen, setEditOpen]   = useState(false);
+    const [addItemOpen, setAddItemOpen]   = useState(false);
 
     return (
         <>
@@ -33,6 +35,11 @@ export function WorkActions({ work, onDelete, onEdit }) {
                     <DropdownMenuItem onClick={() => setEditOpen(true)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Modifica
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setAddItemOpen(true)}>
+                        <BookPlus className="mr-2 h-4 w-4" />
+                        Aggiungi copia
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -70,6 +77,13 @@ export function WorkActions({ work, onDelete, onEdit }) {
                 open={editOpen}
                 onClose= {() => setEditOpen(false)}
                 onConfirm={onEdit}
+            />
+
+            <AddItemDialog
+                open={addItemOpen}
+                onClose={() => setAddItemOpen(false)}
+                workId={work.id}
+                workTitle={work.title}
             />
         </>
     )

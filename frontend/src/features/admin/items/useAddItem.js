@@ -6,10 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "@/lib/notify.js";
 import { handleApiError } from "@/lib/handleApiError.js";
 import api from "@/api/axios.js";
-import { addItemSchema } from "@/features/items/addItem.schema.js";
+import { addItemSchema } from "@/features/admin/items/addItem.schema.js";
 
 
-export function useAddItem(workId) {
+export function useAddItem(workId, open) {
     const [loading, setLoading]     = useState(false);
     const [locations, setLocations] = useState([]);
 
@@ -21,13 +21,15 @@ export function useAddItem(workId) {
             id:              "",
             locationId:      null,
             currencyCode:    null,
-            acquisitionDate: null,
+            acquisitionDate: new Date().toISOString().split("T")[0],
             price:           null,
         }
     });
 
-    // Carica le location al mount
+    // Carica le location solo quando il dialog si apre
     useEffect(() => {
+        if (!open) return;
+
         const fetchLocations = async () => {
             try {
                 const { data } = await api.get("/locations");
@@ -36,8 +38,9 @@ export function useAddItem(workId) {
                 handleApiError(err, navigate);
             }
         };
+
         fetchLocations();
-    }, []);
+    }, [open]);
 
     const submit = async (onSuccess) => {
         const valid = await form.trigger();
@@ -56,7 +59,13 @@ export function useAddItem(workId) {
                 price:           values.price           || null,
             });
             notify.success("Copia aggiunta con successo!");
-            form.reset();
+            form.reset({
+                id:              "",
+                locationId:      null,
+                currencyCode:    null,
+                acquisitionDate: new Date().toISOString().split("T")[0],
+                price:           null,
+            });
             onSuccess?.();
             return true;
         } catch (err) {

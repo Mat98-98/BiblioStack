@@ -113,18 +113,18 @@ import { useNavigate } from "react-router-dom"
 import api from "@/api/axios.js"
 import { notify } from "@/lib/notify.js"
 import { handleApiError } from "@/lib/handleApiError.js"
-import { emptyWorkForm } from "./workForm.schema"
+import { emptyWorkForm } from "./workForm.schema.js"
 
 export function useAddWork() {
-    const [step, setStep]               = useState("form")      // "form" | "conflicts"
-    const [form, setForm]               = useState(emptyWorkForm)
-    const [conflicts, setConflicts]     = useState([])
-    const [isbnLoading, setIsbnLoading] = useState(false)
-    const [submitLoading, setSubmitLoading] = useState(false)
-    const [addItemOpen, setAddItemOpen]     = useState(false)   // controlla visibilità dialog
-    const [addItemWorkId, setAddItemWorkId] = useState(null)    // id opera da passare al dialog
+    const [step, setStep]               = useState("form");      // "form" | "conflicts"
+    const [form, setForm]               = useState(emptyWorkForm);
+    const [conflicts, setConflicts]     = useState([]);
+    const [isbnLoading, setIsbnLoading] = useState(false);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [addItemOpen, setAddItemOpen]     = useState(false);   // controlla visibilità dialog
+    const [addItemWork, setAddItemWork] = useState(null);  // id opera da passare al dialog
 
-    const navigate = useNavigate()
+    const navigate = useNavigate();
 
     // mapping lingua da ISO 639-1 a ISO 639-2
     const langMap = {
@@ -141,7 +141,7 @@ export function useAddWork() {
             if (data.source === "internal") {
                 // Opera già nel db → apre il dialog per aggiungere copie
                 notify.info("Opera già presente nel catalogo.");
-                setAddItemWorkId(data.work.id);
+                setAddItemWork(data.work);
                 setAddItemOpen(true);
                 return;
             }
@@ -177,8 +177,8 @@ export function useAddWork() {
             resolvedAuthors,
         }
 
-        setForm(payload)
-        setSubmitLoading(true)
+        setForm(payload);
+        setSubmitLoading(true);
         try {
             await api.post("/works/from-external", payload)
             notify.success("Opera aggiunta con successo")
@@ -199,8 +199,8 @@ export function useAddWork() {
     const resolveConflicts = (resolutions) => submit(null, resolutions)
 
     const backToForm = () => {
-        setStep("form")
-        setConflicts([])
+        setStep("form");
+        setConflicts([]);
     }
 
     return {
@@ -210,7 +210,7 @@ export function useAddWork() {
         isbnLoading,
         submitLoading,
         addItemOpen,
-        addItemWorkId,
+        addItemWork,
         setAddItemOpen,
         fetchByIsbn,
         submit,

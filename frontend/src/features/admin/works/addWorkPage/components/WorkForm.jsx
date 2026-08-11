@@ -5,13 +5,13 @@ import { Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input.jsx"
 import { Button } from "@/components/ui/button.jsx"
 import { Textarea } from "@/components/ui/textarea.jsx"
-import DeweyCombobox from "../../../../components/common/combobox/DeweyCombobox.jsx"
+import DeweyCombobox from "../../../../../components/common/combobox/DeweyCombobox.jsx"
 import FormField from "./FormField.jsx"
-import AuthorsField from "./AuthorsField"
+import AuthorsField from "./AuthorsField.jsx"
 import GenresField from "./GenresField.jsx"
-import { useGenres } from "../hooks/useGenres"
+import { useGenres } from "../hooks/useGenres.js"
 import { useDeweyCodes } from "@/hooks/useDeweyCodes.js"
-import { workFormSchema } from "../workForm.schema"
+import { workFormSchema } from "../workForm.schema.js"
 import LanguageCombobox from "@/components/common/combobox/LanguageCombobox.jsx";
 
 export default function WorkForm({ form: externalForm, onSubmit, loading }) {

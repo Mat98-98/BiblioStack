@@ -1,5 +1,5 @@
-import WorkIsbnSearch from "../components/WorkIsbnSearch"
-import WorkForm from "../components/WorkForm"
+import WorkIsbnSearch from "../components/WorkIsbnSearch.jsx"
+import WorkForm from "../components/WorkForm.jsx"
 
 export default function WorkFormStep({ form, isbnLoading, submitLoading, onIsbnSearch, onSubmit }) {
     return (
