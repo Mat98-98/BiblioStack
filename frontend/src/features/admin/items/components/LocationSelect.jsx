@@ -15,11 +15,14 @@ const groupBySchool = (locations) =>
         return acc;
     }, {});
 
-export default function LocationSelect({ locations, onValueChange }) {
+export default function LocationSelect({ locations, value, onValueChange }) {
     const grouped = groupBySchool(locations);
 
     return (
-        <Select onValueChange={(val) => onValueChange(val ? Number(val) : null)}>
+        <Select
+            value={value !== null && value !== undefined ? String(value) : ""}
+            onValueChange={(val) => onValueChange(val ? Number(val) : null)}
+        >
             <SelectTrigger>
                 <SelectValue placeholder="Seleziona una posizione" />
             </SelectTrigger>

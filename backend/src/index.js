@@ -22,6 +22,7 @@ import contributionRoutes from "./routes/contribution.routes.js";
 import genreRoutes from "./routes/genre.routes.js";
 import languageRoutes from "./routes/language.routes.js";
 import publisherRoutes from "./routes/publisher.routes.js";
+import currencyRoutes from "./routes/currency.routes.js";
 
 const app = express()
 
@@ -80,6 +81,8 @@ app.use("/api/genres", genreRoutes)
 app.use("/api/languages", languageRoutes)
 
 app.use("/api/publishers", publisherRoutes)
+
+app.use("/api/currencies", currencyRoutes)
 
 app.use(errorMiddleware);
 

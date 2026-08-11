@@ -5,5 +5,5 @@ export const addItemSchema = z.object({
     locationId:      z.coerce.number().int().positive().optional().nullable(),
     currencyCode:    z.string().length(3).optional().nullable(),
     acquisitionDate: z.string().optional().nullable(),
-    price:           z.coerce.number().positive("Il prezzo deve essere positivo").optional().nullable(),
+    price:           z.coerce.number().nonnegative("Il prezzo deve essere positivo").optional().nullable(),
 });

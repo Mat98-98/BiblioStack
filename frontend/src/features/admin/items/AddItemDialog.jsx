@@ -17,7 +17,6 @@ import LocationSelect from "@/features/admin/items/components/LocationSelect.jsx
 import ConfirmAddItemDialog from "@/features/admin/items/components/ConfirmAddItemDialog.jsx";
 import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
 
-
 function FieldError({ message }) {
     if (!message) return null;
     return <p className="text-xs text-destructive mt-1">{message}</p>;
@@ -26,7 +25,7 @@ function FieldError({ message }) {
 export default function AddItemDialog({ open, onClose, onSuccess, workId, workTitle }) {
     const { form, loading, locations, submit } = useAddItem(workId, open);
 
-    // Srari per gestire i passaggi dei dialog
+    // Stati per gestire i passaggi dei dialog
     const [confirmOpen, setConfirmOpen] = useState(false); // Dialog riepilogo dati
     const [addAnotherOpen, setAddAnotherOpen] = useState(false); // Dialog che chiede se si vogliono aggiungere altre copie dell'opera
 
@@ -62,7 +61,7 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
         setAddAnotherOpen(false);
     };
 
-    // Build deei dati per il dialog di riepilogo
+    // Build dei dati per il dialog di riepilogo
     const locationId = watch("locationId");
     const summaryData = {
         id:              watch("id"),
@@ -101,7 +100,8 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
                             <Label>Posizione</Label>
                             <LocationSelect
                                 locations={locations}
-                                onValueChange={(val) => setValue("locationId", val)}
+                                value={watch("locationId")}
+                                onValueChange={(val) => setValue("locationId", val, { shouldValidate: true })}
                             />
                             <FieldError message={errors.locationId?.message} />
                         </div>

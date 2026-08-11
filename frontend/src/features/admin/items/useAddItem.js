@@ -10,6 +10,7 @@ import { addItemSchema } from "@/features/admin/items/addItem.schema.js";
 export function useAddItem(workId, open) {
     const [loading, setLoading] = useState(false);
     const [locations, setLocations] = useState([]);
+
     const navigate = useNavigate();
 
     const form = useForm({
