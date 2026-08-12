@@ -22,6 +22,6 @@ export const startReservationExpiryJob = () => {
         }
     });
 
-    const mode = process.env.NODE_ENV === "development" ? "ogni 15 minuti" : "ogni ora";
+    const mode = process.env.NODE_ENV === "development" ? "ogni minuto" : "ogni ora";
     console.log(`⏰ Job scadenza prenotazioni avviato (${mode})`);
 };
