@@ -68,8 +68,8 @@ function ConflictCard({ conflict, resolution, onResolve }) {
                     variant="outline"
                     className={
                         hasCandidates
-                            ? "text-orange-500 border-orange-500"
-                            : "text-blue-500 border-blue-500"
+                            ? "text-warning border-warning"
+                            : "text-primary border-primary"
                     }
                 >
                     {hasCandidates ? "Conflitto" : "Nuovo autore"}
@@ -165,7 +165,7 @@ export default function AuthorConflictStep({
                 ))}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2">
                 <Button
                     variant="outline"
                     onClick={onBack}

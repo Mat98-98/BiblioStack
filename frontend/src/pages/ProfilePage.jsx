@@ -1,4 +1,4 @@
-import ProfileHero from "@/features/profile/ProfileHero";
+import ProfileHero from "@/features/profile/components/ProfileHero.jsx";
 import ActiveLoans from "@/features/profile/ActiveLoans";
 import LoanHistory from "@/features/profile/LoanHistory";
 

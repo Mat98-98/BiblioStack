@@ -40,14 +40,14 @@ export default function ConfirmDialog({
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md">
 
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
+                <DialogHeader className="space-y-0.5">
+                    <DialogTitle className="text-xl">{title}</DialogTitle>
                     {description && (
                         <DialogDescription>{description}</DialogDescription>
                     )}
                 </DialogHeader>
 
-                <DialogFooter className="gap-2 sm:gap-0">
+                <DialogFooter className="gap-2">
                     <Button
                         type="button"
                         variant="outline"
