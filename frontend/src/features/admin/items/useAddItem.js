@@ -26,9 +26,17 @@ export function useAddItem(workId, open) {
 
     useEffect(() => {
         if (!open) return;
-        api.get("/locations")
-            .then(({ data }) => setLocations(data))
-            .catch(err => handleApiError(err, navigate));
+
+        const fetchLocations = async () => {
+            try {
+                const { data } = await api.get("/locations");
+                setLocations(data);
+            } catch (err) {
+                handleApiError(err, navigate);
+            }
+        };
+
+        fetchLocations();
     }, [open]);
 
     const submit = async (onSuccess) => {
