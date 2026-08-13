@@ -128,9 +128,12 @@ export const users = pgTable('users', {
     lastName: text('last_name'),
     email: text('email').notNull().unique(),
     phone: text('phone'),
+    qrVersion: smallint('qr_version').notNull().default(1),
     passwordHash: text('password_hash'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow()
-});
+}, (table) => [
+    check('users_qr_version_check', sql`${table.qrVersion} > 0`)
+]);
 
 export const works = pgTable('works', {
     id: text('id').primaryKey(),
