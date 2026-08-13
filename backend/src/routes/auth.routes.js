@@ -13,6 +13,9 @@ router.post("/login", authController.login);
 //POST /auth/logout
 router.post("/logout", authController.logout);
 
+// POST /auth/refresh
+router.post("/refresh", authController.refresh);
+
 
 // GET /auth/me
 router.get("/me", verifyUser, authController.me);

@@ -30,6 +30,16 @@ export const authController = {
         }
     },
 
+    refresh: async (req, res, next) => {
+        try {
+            const { accessToken, refreshToken, user } = await authService.refresh(req.cookies.refreshToken);
+            setAuthCookies(res, accessToken, refreshToken);
+            res.json({ user: UserSafeDTO.parse(user) });
+        } catch (err) {
+            next(err);
+        }
+    },
+
     logout: (req, res) => {
         clearAuthCookies(res);
         res.json({ message: "Logged out" });

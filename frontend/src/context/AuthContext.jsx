@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import api from "@/api/axios"
+import { registerAuthFailureHandler } from "@/api/authInterceptor.js";
 
 const AuthContext = createContext();
 
@@ -17,11 +18,12 @@ export function AuthProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
-        fetchMe()
-    }, [])
+        registerAuthFailureHandler(() => setUser(null));
+        fetchMe();
+    }, []);
 
     const login = async (email, password) => {
         try {
@@ -29,7 +31,7 @@ export function AuthProvider({ children }) {
             await fetchMe();
         } catch (err) {
             setUser(null);
-            throw err; // rilancia per gestirlo nel componente
+            throw err;
         }
     };
 
@@ -39,7 +41,7 @@ export function AuthProvider({ children }) {
         } finally {
             setUser(null);
         }
-    }
+    };
 
     return (
         <AuthContext.Provider value={{

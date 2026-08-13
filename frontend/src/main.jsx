@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 
 import App from "./App.jsx";
 import "./App.css";
+import "@/api/authInterceptor.js";
 
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { Toaster } from "@/components/ui/sonner";

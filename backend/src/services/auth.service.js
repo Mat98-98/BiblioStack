@@ -74,10 +74,43 @@ export const authService = {
 
         return {
             accessToken:  jwt.sign(payload, process.env.JWT_SECRET,  { expiresIn: "1h" }),
-            refreshToken: jwt.sign(payload, process.env.JWT_REFRESH, { expiresIn: "7d" }),
+            refreshToken: jwt.sign(payload, process.env.JWT_REFRESH, { expiresIn: "14d" }),
             user
         };
     },
+
+    refresh: async (refreshToken) => {
+        if (!refreshToken) {
+            throw new AppError("Refresh token is missing", "NO_TOKEN", 401);
+        }
+
+        let decoded;
+
+        try {
+            decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH);
+        } catch {
+            throw new AppError("Expired or invalid refresh token", "INVALID_TOKEN", 401);
+        }
+
+        // Ricarico l'utente per avere dati aggiornati (magari nel frattempo è stato assegnato un altro ruolo)
+        const user = await userRepository.findById(decoded.userId);
+        if (!user) {
+            throw new AppError("User not found", "NOT_FOUND", 404);
+        }
+
+        const payload = {
+            userId: user.id,
+            roleId: user.roleId,
+            roleName: user.role?.name?.toLowerCase()
+        };
+
+        return {
+            accessToken:  jwt.sign(payload, process.env.JWT_SECRET,  { expiresIn: "1h" }),
+            refreshToken: jwt.sign(payload, process.env.JWT_REFRESH, { expiresIn: "14d" }),
+            user
+        };
+    },
+
 
     // Funzione che invia il token e invia la email per il reset della password
     forgotPassword: async ({ email }) => {
