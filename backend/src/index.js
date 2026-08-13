@@ -4,6 +4,8 @@ import cors from 'cors';
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { startReservationExpiryJob } from "./features/reservationExpiry/reservationExpiry.job.js";
+import { httpLogger } from "./middleware/httpLogger.middleware.js";
+import { logger } from "./config/logger.config.js";
 import authorRoutes from "./routes/author.routes.js";
 import itemRoutes from './routes/item.routes.js';
 import reservationRoutes from "./routes/reservation.routes.js";
@@ -24,6 +26,7 @@ import languageRoutes from "./routes/language.routes.js";
 import publisherRoutes from "./routes/publisher.routes.js";
 import currencyRoutes from "./routes/currency.routes.js";
 
+
 const app = express()
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
@@ -39,7 +42,9 @@ app.use(cors({
     credentials: true, // necessario per i cookie
 }));
 
-app.use(express.json())
+app.use(httpLogger);
+
+app.use(express.json());
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
@@ -93,6 +98,6 @@ startReservationExpiryJob();
 // Avvio del server
 const PORT = process.env.PORT || 5001
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+    logger.info(`Server is running on port ${PORT}`);
 })
 
