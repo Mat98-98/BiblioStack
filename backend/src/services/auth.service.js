@@ -7,6 +7,7 @@ import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID, TOKEN_TYPES } from "../constants.js";
 import { passwordTokenRepository } from "../repositories/passwordToken.repository.js";
 import { emailService } from "../features/email/email.service.js";
+import { logger } from "../config/logger.config.js";
 
 // Tempo scadenza token
 const TOKEN_EXPIRY_MS = 10 * 60 * 1000; //10 minuti
@@ -36,6 +37,7 @@ export const authService = {
         // Controlla email duplicata
         const existing = await userRepository.findByEmail(email);
         if (existing) {
+            logger.warn({ email }, "Registration attempt with already existing email");
             throw new AppError("Email already exists", "EMAIL_ALREADY_EXISTS", 409);
         }
 
@@ -50,6 +52,8 @@ export const authService = {
             roleId: DEFAULT_USER_ROLE_ID  // sempre student per registrazione pubblica
         });
 
+        logger.info({ userId: user.id }, "New user registered");
+
         return userRepository.findById(user.id);
     },
 
@@ -58,11 +62,13 @@ export const authService = {
 
         // Messaggio generico — non rivela se l'email esiste
         if (!user) {
+            logger.warn({ email }, "Login attempt with non-existent email");
             throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
         }
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) {
+            logger.warn({ userId: user.id }, "Login attempt with wrong password")
             throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
         }
 
@@ -165,15 +171,13 @@ export const authService = {
 
     // Funzione per inviare l'email con il link contenente il token per l'attivazione dell'account
     setupPassword: async (userId) => {
-        console.log("setupPassword chiamata con userId:", userId);
+        logger.debug({ userId }, "setupPassword called");
 
         const user = await userRepository.findById(userId);
-        console.log("utente trovato:", user);
 
         if (!user) throw new AppError("User not found", "NOT_FOUND", 404);
 
         const token = generateToken();
-        console.log("token generato:", token);
 
         const created = await passwordTokenRepository.create({
             token,
@@ -181,14 +185,13 @@ export const authService = {
             type:   TOKEN_TYPES.SETUP,
             expiresAt: new Date(Date.now() + SETUP_PASSWORD_TOKEN_EXPIRY_MS),
         });
-        console.log("token salvato a db:", created);
 
         await emailService.sendAccountSetup({
             to:        user.email,
             firstName: user.firstName,
             token,
         });
-        console.log("email inviata a:", user.email);
+        logger.info({ userId: user.id }, "Account setup email sent");
     },
 
     setupAccount: async ({ token, password }) => {
