@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { startReservationExpiryJob } from "./features/reservationExpiry/reservationExpiry.job.js";
-import { httpLogger } from "./middleware/httpLogger.middleware.js";
+import { pinoHttp } from "pino-http";
 import { logger } from "./config/logger.config.js";
 import authorRoutes from "./routes/author.routes.js";
 import itemRoutes from './routes/item.routes.js';
@@ -25,6 +25,7 @@ import genreRoutes from "./routes/genre.routes.js";
 import languageRoutes from "./routes/language.routes.js";
 import publisherRoutes from "./routes/publisher.routes.js";
 import currencyRoutes from "./routes/currency.routes.js";
+import cardRoutes from "./routes/card.routes.js";
 
 
 const app = express()
@@ -42,7 +43,7 @@ app.use(cors({
     credentials: true, // necessario per i cookie
 }));
 
-app.use(httpLogger);
+app.use(pinoHttp({ logger }));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -88,6 +89,8 @@ app.use("/api/languages", languageRoutes)
 app.use("/api/publishers", publisherRoutes)
 
 app.use("/api/currencies", currencyRoutes)
+
+app.use("/api/cards", cardRoutes)
 
 app.use(errorMiddleware);
 

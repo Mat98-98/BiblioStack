@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS users (
                                      last_name text,
                                      email text NOT NULL UNIQUE,
                                      phone text,
-                                     qr_version smallint NOT NULL DEFAULT 1 CHECK (qr_version > 0),
+                                     card_version smallint NOT NULL DEFAULT 1 CHECK (card_version > 0),
                                      password_hash text,
                                      created_at timestamptz DEFAULT now()
 );
