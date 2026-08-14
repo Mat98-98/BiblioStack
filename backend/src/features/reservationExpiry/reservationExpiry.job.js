@@ -1,5 +1,7 @@
 import cron from "node-cron";
 import { reservationService } from "../../services/reservation.service.js";
+import { logger } from "../../config/logger.config.js";
+
 
 // Esegue ogni ora (puoi cambiare la frequenza)
 // Sintassi cron: "minuto ora giorno mese giornoSettimana"
@@ -12,16 +14,15 @@ export const startReservationExpiryJob = () => {
         : "0 * * * *";
 
     cron.schedule(schedule, async () => {
-        const timestamp = new Date().toISOString();
-        console.log(`[${timestamp}] 🕐 Job scadenza prenotazioni...`);
+        logger.debug("Reservation expiry job started");
         try {
             const result = await reservationService.processExpiredReservations();
-            console.log(`[${timestamp}] ✅ ${result.processed} prenotazioni elaborate`);
+            logger.info({ processed: result.processed }, "Expired reservations processed");
         } catch (err) {
-            console.error(`[${timestamp}] ❌ Job fallito:`, err);
+            logger.error({ err }, "Reservation expiry job failed");
         }
     });
 
-    const mode = process.env.NODE_ENV === "development" ? "ogni minuto" : "ogni ora";
-    console.log(`⏰ Job scadenza prenotazioni avviato (${mode})`);
+    const mode = process.env.NODE_ENV === "development" ? "every minute" : "every hour";
+    logger.info(`Reservation expiry job started (${mode})`);
 };

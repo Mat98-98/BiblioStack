@@ -2,7 +2,9 @@ import { AppError } from "../utils/appError.js";
 import { ZodError } from "zod";
 
 export const errorMiddleware = (err, req, res, next) => {
-    req.logger.error({ err }), "Request error occurred";
+
+    const log = req?.log || logger;
+    log.error({ err }), "Request error occurred";
 
     if (res.headersSent) {
         return next(err);
