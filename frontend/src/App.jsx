@@ -46,6 +46,7 @@ import AdminWorksPage from "@/pages/admin/AdminWorksPage.jsx";
 import ForgotPasswordPage from "@/pages/public/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "@/pages/public/ResetPasswordPage.jsx";
 import SetupAccountPage from "@/pages/public/SetupAccountPage.jsx";
+import CardPage from "@/pages/CardPage.jsx";
 
 function App() {
     return (
@@ -63,6 +64,7 @@ function App() {
 
                     {/* Utente */}
                     <Route path="/profile"   element={<ProfilePage />} />
+                    <Route path="/card"    element={<CardPage />} />
 
                     {/* Admin */}
                     <Route element={<AdminGuard />}>
