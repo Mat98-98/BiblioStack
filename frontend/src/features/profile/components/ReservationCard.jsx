@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { BookMarked, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
-import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 import StatusBadge from "@/features/profile/components/StatusBadge.jsx";
 
 export default function ReservationCard({ reservation, onCancel, loading }) {

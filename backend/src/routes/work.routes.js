@@ -1,7 +1,7 @@
 import express from 'express';
 import { workController } from "../controllers/work.controller.js";
 import { paginationMiddleware } from "../middleware/pagination.middleware.js";
-import { verifyUser } from "../middleware/auth.middleware.js";
+import {tryAuthenticate, verifyUser} from "../middleware/auth.middleware.js";
 import { permit } from "../middleware/role.middleware.js";
 
 const router = express.Router();
@@ -22,7 +22,7 @@ router.get('/', paginationMiddleware, workController.getAll);
 router.get("/lookup/:isbn", verifyUser, permit("admin"), workController.lookup);
 
 // GET /works/:id
-router.get('/:id', workController.getById);
+router.get('/:id', tryAuthenticate, workController.getById);
 
 
 // POST /works/from-external/:isbn

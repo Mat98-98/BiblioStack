@@ -2,7 +2,7 @@ import WorkFormStep from "./steps/WorkFormStep.jsx";
 import AuthorConflictStep from "./steps/AuthorConflictStep.jsx";
 import { useAddWork } from "./useAddWork.js";
 import AddItemDialog from "@/features/admin/items/AddItemDialog.jsx";
-import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 
 
 const steps = {

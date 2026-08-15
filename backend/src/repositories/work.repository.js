@@ -3,6 +3,27 @@ import {works, authors, authorWorks, workGenres, items, loans, itemAvailability}
 import {eq, ilike, or, and, sql, asc, desc, count} from "drizzle-orm";
 import { normalizeSearch } from "../utils/search.util.js";
 
+// Query base condivisa per findById e findByIdForStaff
+const fetchWorkWithRelations = (id, { withLocation = false } = {}) =>
+    db.query.works.findFirst({
+        where: { id },
+        with: {
+            authors: true,
+            genres: true,
+            publisher: true,
+            language: true,
+            dewey: true,
+            items: withLocation
+                ? { with: { location: {
+                    with : {
+                        school: true
+                    }
+                        } } }
+                : true
+        }
+    });
+
+
 export const workRepository = {
     findAll: async ({ page, limit }) => {
         // Calcolo offset per la paginazione SQL
@@ -20,23 +41,42 @@ export const workRepository = {
 
     findById: async (id) => {
         const [work, availableCount] = await Promise.all([
-            db.query.works.findFirst({
-                where: { id },
-                with: {
-                    authors: true,
-                    genres: true,
-                    publisher: true,
-                    language: true,
-                    dewey: true,
-                    items: true
-                }
-            }),
+            // Richiamo la query base senza passare with locations (quindi resta false e non lo ricevo)
+            fetchWorkWithRelations(id),
+            // Conto il numero di copie disponibili
             db.$count(itemAvailability, eq(itemAvailability.workId, id))
         ]);
 
         if (!work) return null;
         return { ...work, availableCount };
     },
+
+    findByIdForStaff: async (id) => {
+        const [work, availableCount, availableIds] = await Promise.all([
+            // Chiamo la query base richiedendo anche la locazione
+            fetchWorkWithRelations(id, { withLocation: true }),
+            // Conto le copie disponibili
+            db.$count(itemAvailability, eq(itemAvailability.workId, id)),
+            db
+                .select({ itemId: itemAvailability.itemId })
+                .from(itemAvailability)
+                .where(eq(itemAvailability.workId, id))
+        ]);
+
+        if (!work) return null;
+
+        const availableSet = new Set(availableIds.map(r => r.itemId));
+
+        return {
+            ...work,
+            availableCount,
+            items: work.items.map(item => ({
+                ...item,
+                available: availableSet.has(item.id)
+            }))
+        };
+    },
+
 
     findNewest: async (limit) =>
         await db.query.works.findMany({

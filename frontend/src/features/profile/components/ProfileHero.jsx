@@ -3,7 +3,7 @@ import { Mail, Phone, Shield, LucideWrench } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
 import { Badge } from "@/components/ui/badge.jsx";
 import { Button } from "@/components/ui/button.jsx";
-import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 import { useChangePassword } from "@/features/profile/hooks/useChangePassword.js";
 
 export default function ProfileHero({ user }) {

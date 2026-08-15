@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label.jsx";
 import { useAddItem } from "@/features/admin/items/useAddItem.js";
 import LocationSelect from "@/features/admin/items/components/LocationSelect.jsx";
 import ConfirmAddItemDialog from "@/features/admin/items/components/ConfirmAddItemDialog.jsx";
-import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 
 function FieldError({ message }) {
     if (!message) return null;

@@ -8,7 +8,7 @@ import {
 import SuspendUserDialog from "@/features/admin/users/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
 import EditUserDialog from "@/features/admin/users/dialogs/editUserDialog/EditUserDialog.jsx";
 import ChangeRoleDialog from "@/features/admin/users/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
-import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 
 export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, onEdit }) {
     const [deleteOpen, setDeleteOpen]   = useState(false);

@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { AuthorDTO } from "./shared.dto.js";
+import {AuthorDTO, ItemMiniDTO} from "./shared.dto.js";
 import { WorkExternalDTO } from "../features/worksExternal/worksExternal.mapper.js";
+import {LocationBaseDTO} from "./location.dto.js";
 
 /* ---------------- COMMON ---------------- */
 
@@ -9,10 +10,12 @@ const GenreSchema = z.object({
     name: z.string()
 });
 
-const ItemSchema = z.object({
+const ItemStaffSchema = z.object({
     id: z.string(),
     price: z.coerce.number().nullable(),
-    acquisitionDate: z.date().nullable()
+    acquisitionDate: z.date().nullable(),
+    location: LocationBaseDTO.nullable(),
+    available: z.boolean()
 });
 
 const PublisherSchema = z.object({
@@ -38,6 +41,19 @@ const WorkCore = {
     publicationDate: z.date().nullable().optional()
 };
 
+const WorkDetailCommon = {
+    ...WorkCore,
+    authors: z.array(AuthorDTO).default([]),
+    genres: z.array(GenreSchema).default([]),
+    publisher: PublisherSchema.nullable().optional(),
+    language: LanguageSchema.nullable().optional(),
+    dewey: DeweySchema.nullable().optional(),
+    availableCount: z.number().default(0),
+    coverUrl: z.string().nullable().optional(),
+    description: z.string().nullable().optional()
+};
+
+
 /* ---------------- BASE ---------------- */
 
 export const WorkBaseDTO = z.object({
@@ -50,19 +66,18 @@ export const WorkBaseListDTO = z.array(WorkBaseDTO);
 
 /* ---------------- DETAIL ---------------- */
 
+// Utente base: niente prezzo, niente locazione, niente data acquisto
 export const WorkDetailDTO = z.object({
-    ...WorkCore,
-
-    authors: z.array(AuthorDTO).default([]),
-    genres: z.array(GenreSchema).default([]),
-    items: z.array(ItemSchema).default([]),
-    publisher: PublisherSchema.nullable().optional(),
-    language: LanguageSchema.nullable().optional(),
-    dewey: DeweySchema.nullable().optional(),
-    availableCount: z.number().default(0),
-    coverUrl: z.string().nullable().optional(),
-    description: z.string().nullable().optional()
+    ...WorkDetailCommon,
+    items: z.array(ItemMiniDTO).default([])
 });
+
+// Staff: stesso oggetto + dettagli sulle copie
+export const WorkDetailStaffDTO = z.object({
+    ...WorkDetailCommon,
+    items: z.array(ItemStaffSchema).default([])
+});
+
 
 
 // DTO ottimizzato per la lista risultati search

@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/alert-dialog.jsx";
 import EditWorkDialog from "@/features/admin/works/dialogs/EditWorkDialog.jsx";
 import AddItemDialog from "@/features/admin/items/AddItemDialog.jsx";
+import {ActionsMenu} from "@/components/common/dialogs/ActionsMenu.jsx";
+import {DeleteConfirmDialog} from "@/components/common/dialogs/DeleteConfirmDialog.jsx";
 
 export function WorkActions({ work, onDelete, onEdit }) {
     const [deleteOpen, setDeleteOpen]   = useState(false);
@@ -25,52 +27,30 @@ export function WorkActions({ work, onDelete, onEdit }) {
 
     return (
         <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
-                    <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Modifica
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setAddItemOpen(true)}>
-                        <BookPlus className="mr-2 h-4 w-4" />
-                        Aggiungi copia
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        onClick={() => setDeleteOpen(true)}
-                        className="text-destructive focus:text-destructive"
-                    >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Elimina
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <ActionsMenu>
+                <DropdownMenuItem onClick={() => setEditOpen(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Modifica
+                </DropdownMenuItem>
+                <DropdownMenuSeparator/>
+                <DropdownMenuItem onClick={() => setAddItemOpen(true)}>
+                    <BookPlus className="mr-2 h-4 w-4" />
+                    Aggiungi copia
+                </DropdownMenuItem>
+                <DropdownMenuSeparator/>
+                <DropdownMenuItem onClick={() => setDeleteOpen(true)} className="text-destructive focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Elimina
+                </DropdownMenuItem>
+            </ActionsMenu>
 
-            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Elimina opera</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Sei sicuro di voler eliminare {work.title}? L'operazione è irreversibile.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Annulla</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={() => onDelete(work.id)}
-                            className="bg-destructive hover:bg-destructive/90"
-                        >
-                            Elimina
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <DeleteConfirmDialog
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                title={"Elimina opera"}
+                description={`Sei sicuro di voler eliminare ${work.title}? L'opzione è irreversibile.`}
+                onConfirm={() => onDelete(work.id)}/>
+
 
             <EditWorkDialog
                 work={work}

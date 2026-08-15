@@ -18,7 +18,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar.jsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
 import { useAuth } from "@/context/AuthContext.jsx";
 

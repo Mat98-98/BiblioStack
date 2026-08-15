@@ -38,8 +38,8 @@ import AddWorkPage     from "./pages/admin/AddWorkPage.jsx"
 import WorkDetailPage  from "./pages/public/WorkDetailPage.jsx"
 import CatalogPage     from "./pages/public/CatalogPage.jsx"
 
-import AdminGuard           from "./features/admin/AdminGuard.jsx"
-import AdminLayout          from "./features/admin/AdminLayout.jsx"
+import AdminGuard           from "./features/admin/components/AdminGuard.jsx"
+import AdminLayout          from "./features/admin/components/AdminLayout.jsx"
 import AdminDashboardPage   from "./features/admin/AdminDashboardPage.jsx"
 import AdminUsersPage       from "./pages/admin/AdminUsersPage.jsx"
 import AdminWorksPage from "@/pages/admin/AdminWorksPage.jsx";

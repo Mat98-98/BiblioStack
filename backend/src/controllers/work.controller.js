@@ -1,5 +1,11 @@
 import { workService } from "../services/work.service.js";
-import {WorkBaseListDTO, WorkDetailDTO, WorkLookupDTO, WorkSearchResultListDTO} from "../dto/work.dto.js";
+import {
+    WorkBaseListDTO,
+    WorkDetailDTO,
+    WorkDetailStaffDTO,
+    WorkLookupDTO,
+    WorkSearchResultListDTO
+} from "../dto/work.dto.js";
 import { CreateWorkSchema, UpdateWorkSchema, WorkSearchSchema } from "../schemas/work.schema.js";
 import { CreateWorkFromExternalSchema } from "../schemas/work.schema.js";
 
@@ -17,8 +23,14 @@ export const workController = {
 
     getById: async (req, res, next) => {
         try {
-            const work = await workService.getById(req.params.id);
-            res.json(WorkDetailDTO.parse(work));
+            // Controllo (se l'utente è loggato) se fa parte dello staff
+            const isStaff = req.user?.role === "librarian" || req.user?.role === "admin";
+
+            const work = await workService.getById(req.params.id, { forStaff: isStaff}); // Se isStaff = true il service fa la chiamata riservata allo staff, altrimenti passerà false e quindi chiamata normale
+
+            // Costruisco la response con il dto in base al ruolo dell'utente
+            const data = isStaff ? WorkDetailStaffDTO : WorkDetailDTO;
+            res.json(data.parse(work));
         } catch (error) {
             next(error);
         }

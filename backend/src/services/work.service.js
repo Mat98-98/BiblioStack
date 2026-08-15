@@ -26,8 +26,14 @@ export const workService = {
     getAll: async ({ page, limit }) =>
         await workRepository.findAll({ page, limit }),
 
-    getById: async (id) =>
-        await findUniqueOrThrow(id),
+    getById: async (id, forStaff = false) => {
+        // Se viene passato forStaff = true faccio la query riservata allo staff, altrimenti quella per gli utenti base
+        const work = forStaff ? await workRepository.findByIdForStaff(id) : await workRepository.findById(id);
+
+        if (!work) throw new AppError("Work not found", "NOT_FOUND", 404);
+
+        return work;
+    },
 
     getNewest: async (limit) =>
         await workRepository.findNewest(limit),

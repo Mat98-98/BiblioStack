@@ -4,8 +4,12 @@ import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { Button } from "@/components/ui/button.jsx";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext.jsx";
-import {useReservation} from "@/features/works/workDetail/useReservations.js";
-import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+import { useReservation } from "@/features/works/workDetail/hooks/useReservations.js";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
+import StaffItemsTable from "@/features/works/workDetail/StaffItemsTable.jsx";
+import { handleApiError } from "@/lib/handleApiError.js";
+import { notify } from "@/lib/notify.js";
+import api from "@/api/axios.js";
 
 function formatDate(date) {
     if (!date) return "—";
@@ -52,9 +56,9 @@ function WorkDetailSkeleton() {
     );
 }
 
-export default function WorkDetail({ work, loading, error }) {
+export default function WorkDetail({ work, loading, error, refetch }) {
     const [expanded, setExpanded] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const { reserve, loading: reserving } = useReservation();
     const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -68,6 +72,29 @@ export default function WorkDetail({ work, loading, error }) {
             </div>
         );
     }
+
+    const isStaff = user?.role === "librarian" || user?.role === "admin";
+    const isAdmin = user?.role === "admin";
+
+    const handleEditItem = async (itemId, data) => {
+        try {
+            await api.patch(`/items/${itemId}`, data);
+            notify.success("Copia aggiornata");
+            refetch();
+        } catch (err) {
+            handleApiError(err);
+        }
+    };
+
+    const handleDeleteItem = async (itemId) => {
+        try {
+            await api.delete(`/items/${itemId}`);
+            notify.success("Copia eliminata");
+            refetch();
+        } catch (err) {
+            handleApiError(err);
+        }
+    };
 
     const authors =
         work.authors?.map(a => `${a.firstName} ${a.lastName}`).join(", ") || "—";
@@ -229,6 +256,17 @@ export default function WorkDetail({ work, loading, error }) {
                     )}
                 </div>
             )}
+
+            {/* Pannello staff, solo se autenticato con ruolo idoneo e items disponibili */}
+            {isStaff && work.items?.length > 0 && (
+                <StaffItemsTable
+                    items={work.items}
+                    isAdmin={isAdmin}
+                    onEdit={refetch}          // il dialog fa già la PATCH, qui basta ricaricare
+                    onDelete={handleDeleteItem}  // questo resta per l'eliminazione, non ha un dialog dedicato con logica propria
+                />
+            )}
+
         </div>
     );
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
-import ConfirmDialog from "@/components/common/ConfirmDialog.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 import { useMyCard } from "@/features/qrCode/hooks/useMyCard.js";
 
 export default function CardView() {
