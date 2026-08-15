@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { User, BookMarked, Settings, LogOut, Menu, LayoutDashboard } from "lucide-react"
+import {User, BookMarked, Settings, LogOut, Menu, LayoutDashboard, QrCode} from "lucide-react"
 import { useAuth } from "@/context/AuthContext.jsx"
 
 import { Button } from "@/components/ui/button.jsx"
@@ -18,6 +18,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet.jsx"
+import CardDialog from "@/features/qrCode/CardDialog.jsx";
 
 // ─── shared ──────────────────────────────────────────────────────────────────
 
@@ -67,6 +68,15 @@ export function DesktopMenu() {
                             </Link>
                         </DropdownMenuItem>
                     ))}
+
+                    <CardDialog>
+                        <DropdownMenuItem asChild onSelect={(e) => e.preventDefault()}>
+                            <div className="cursor-pointer flex items-center w-full">
+                                <QrCode className="mr-2 h-4 w-4" />
+                                <span>La mia tessera</span>
+                            </div>
+                        </DropdownMenuItem>
+                    </CardDialog>
 
                     <DropdownMenuSeparator />
 
@@ -124,6 +134,14 @@ export function MobileMenu() {
                                 <span className="font-medium">{label}</span>
                             </Link>
                         ))}
+
+                        <CardDialog>
+                            <button className="flex items-center gap-3 px-4 py-3.5 text-foreground hover:bg-secondary rounded-xl transition-colors w-full text-left">
+                                <QrCode className="h-5 w-5 text-muted-foreground" />
+                                <span className="font-medium">La mia tessera</span>
+                            </button>
+                        </CardDialog>
+
 
                         <div className="my-2 border-t border-border" />
 
