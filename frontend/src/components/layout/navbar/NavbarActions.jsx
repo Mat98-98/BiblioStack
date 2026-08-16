@@ -6,6 +6,7 @@ import { DesktopMenu, MobileMenu } from "./NavbarMenu"
 import { useMobileSearch, MobileSearchBar } from "./NavbarSearch"
 import { useAuth } from "@/context/AuthContext.jsx"
 import NavbarLogin from "@/components/layout/navbar/NavbarLogin.jsx"
+import {notify} from "@/lib/notify.js";
 
 export default function NavbarActions() {
     const { open, toggle } = useMobileSearch()
@@ -31,7 +32,7 @@ export default function NavbarActions() {
 
                 {isAuthenticated ? (
                     <>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={() => notify.info("Notifiche al momento non implementate!")}>
                             <Bell />
                         </Button>
                         <DesktopMenu />

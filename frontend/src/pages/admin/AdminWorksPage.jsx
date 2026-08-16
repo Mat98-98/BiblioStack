@@ -1,9 +1,9 @@
 import SearchBar from "@/components/common/SearchBar.jsx";
-import { useAdminWorks } from "@/features/admin/works/hooks/useAdminWorks.js";
-
-import WorksTable from "@/features/admin/works/table/WorksTable.jsx";
 import TablePagination from "@/components/common/TablePagination.jsx";
-import WorksHeader from "@/features/admin/works/components/WorksHeader.jsx";
+import WorksHeader from "@/features/works/management/components/WorksHeader.jsx";
+import WorksTable from "@/features/works/management/table/WorksTable.jsx";
+import { useAdminWorks } from "@/features/works/management/hooks/useAdminWorks.js";
+
 
 export default function AdminWorksPage() {
     const {

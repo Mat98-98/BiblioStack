@@ -1,9 +1,10 @@
 import Navbar from "@/components/layout/navbar/Navbar.jsx"
 import { Button } from "@/components/ui/button.jsx";
-import { useNewestWorks } from "@/features/works/components/carusel/useNewestWorks.js";
-import WorkCarousel from "@/features/works/components/carusel/WorkCarusel.jsx";
 import { Link } from "react-router-dom";
-import {usePopularWorks} from "@/features/works/components/carusel/usePopularWorks.js";
+import { usePopularWorks } from "@/features/works/hooks/usePopularWorks.js";
+import { useNewestWorks } from "@/features/works/hooks/useNewestWorks.js";
+import WorkCarousel from "@/features/works/components/WorkCarousel.jsx";
+
 
 
 

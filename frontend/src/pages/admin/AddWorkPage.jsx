@@ -1,4 +1,4 @@
-import AddWorkFeature from "@/features/admin/works/addWorkPage/AddWorkFeature.jsx";
+import AddWorkFeature from "@/features/works/management/addWorkPage/AddWorkFeature.jsx";
 
 
 export default function AddWorkPage() {
