@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notify } from "@/lib/notify.js";
 import { handleApiError } from "@/lib/handleApiError.js";
-import { forgotPasswordSchema } from "@/features/auth/forgot-password/forgotPassword.scema.js";
+import { forgotPasswordSchema } from "@/features/auth/forgot-password/forgotPassword.schema.js";
 import api from "@/api/axios.js";
 
 const RATE_LIMIT_MS = 10 * 60 * 1000; // 10 minuti — allineato al backend

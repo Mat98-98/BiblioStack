@@ -33,7 +33,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 
 import HomePage        from "./pages/public/HomePage.jsx"
 import LoginPage       from "./pages/public/LoginPage.jsx"
-import ProfilePage     from "./pages/ProfilePage.jsx"
+import ProfilePage     from "./pages/public/ProfilePage.jsx"
 import AddWorkPage     from "./pages/admin/AddWorkPage.jsx"
 import WorkDetailPage  from "./pages/public/WorkDetailPage.jsx"
 import CatalogPage     from "./pages/public/CatalogPage.jsx"
@@ -46,7 +46,7 @@ import AdminWorksPage from "@/pages/admin/AdminWorksPage.jsx";
 import ForgotPasswordPage from "@/pages/public/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "@/pages/public/ResetPasswordPage.jsx";
 import SetupAccountPage from "@/pages/public/SetupAccountPage.jsx";
-import CardPage from "@/pages/CardPage.jsx";
+import CardPage from "@/pages/public/CardPage.jsx";
 
 function App() {
     return (

@@ -1,5 +1,5 @@
 import Navbar from "@/components/layout/navbar/Navbar.jsx";
-import Catalog from "@/features/works/catalog/index.jsx";
+import Catalog from "@/features/works/catalog/CatalogFeature.jsx";
 
 export default function CatalogPage() {
     return (
