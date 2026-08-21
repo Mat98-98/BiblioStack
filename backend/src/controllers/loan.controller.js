@@ -1,6 +1,6 @@
 import { loanService } from "../services/loan.service.js";
 import { LoanBaseDTO, LoanBaseListDTO, LoanDetailDTO } from "../dto/loan.dto.js";
-import { CreateLoanSchema, UpdateLoanSchema } from "../schemas/loan.schema.js";
+import {CreateLoanSchema, LoanSearchSchema, UpdateLoanSchema} from "../schemas/loan.schema.js";
 
 export const loanController = {
 
@@ -21,6 +21,16 @@ export const loanController = {
         } catch (error) {
             next(error);
         }
+    },
+
+    search: async (req, res, next) => {
+      try {
+          const filters = await LoanSearchSchema.parse(req.query);
+          const loans = await loanService.search({ ...req.pagination, ...filters });
+          res.json(LoanBaseListDTO.parse(loans));
+      } catch (error) {
+          next(error);
+      }
     },
 
     checkOut: async (req, res, next) => {

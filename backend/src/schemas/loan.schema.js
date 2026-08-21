@@ -18,3 +18,13 @@ export const UpdateLoanSchema = z.object({
     dueDate: z.coerce.date(),
     returnDate: z.coerce.date().nullable().optional(),
 })
+
+// Schema di validazione filtri di ricerca pagina admin
+export const LoanSearchSchema = z.object({
+    search: z.string().optional(),
+    status: z.enum(["all", "active", "overdue", "returned"]).default("all"),
+    sortBy: z.enum(["loanDate", "dueDate"]).default("loanDate"),
+    sortOrder: z.enum(["asc", "desc"]).default("desc"),
+    workId: z.string().optional(),
+    userId: z.coerce.number().int().positive().optional()
+})

@@ -30,10 +30,5 @@ export const itemService = {
         await findUniqueOrThrow(id);
         await itemRepository.delete(id);
         return { message: "Item has been successfully deleted" };
-    },
-
-    // @todo da cancellare, solo per debug
-    getAvailable: async (workId) => {
-        return await itemRepository.findAvailableByWorkId(workId);
-    },
+    }
 };

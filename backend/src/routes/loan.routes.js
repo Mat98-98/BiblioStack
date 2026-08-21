@@ -4,6 +4,9 @@ import {paginationMiddleware} from "../middleware/pagination.middleware.js";
 
 const router = express.Router()
 
+// GET /loans/search?search=...&status=all|active|overdue|returned&sortBy=loanDate|dueDate&sortOrder=asc|desc&workId=...&userId=...&page=1&limit=20
+router.get("/search", paginationMiddleware, loanController.search);
+
 // GET /loans?page=1&limit=20
 router.get("/", paginationMiddleware, loanController.getAll);
 

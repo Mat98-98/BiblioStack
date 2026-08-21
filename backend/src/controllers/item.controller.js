@@ -50,15 +50,5 @@ export const itemController = {
         } catch (err) {
             next(err);
         }
-    },
-
-    //@Todo da cancellare
-    getAvailable: async (req, res, next) => {
-        try {
-            const item = await itemService.getAvailable(req.params.workId);
-            res.json(item);
-        } catch (err) {
-            next(err);
-        }
     }
 };

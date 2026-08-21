@@ -3,7 +3,7 @@ import { itemRepository } from "../repositories/item.repository.js";
 import { reservationRepository } from "../repositories/reservation.repository.js";
 import { AppError } from "../utils/appError.js";
 import { reservationService } from "./reservation.service.js";
-import { RESERVATION_STATUS } from "../constants.js";
+import { userRepository } from "../repositories/user.repository.js";
 
 const findUniqueOrThrow = async (id) => {
     const loan = await loanRepository.findById(id);
@@ -19,7 +19,18 @@ export const loanService = {
     getById: async (id) =>
         await findUniqueOrThrow(id),
 
+    search: async (params) =>
+      await loanRepository.search(params),
+
     checkOut: async (data) => {
+        // Verifico che la copia e l'utente esistano
+        const [item, patron] = await Promise.all([
+            itemRepository.findById(data.itemId),
+            userRepository.findById(data.userId)
+        ]);
+        if (!item) throw new AppError("Item not found", "NOT_FOUND", 404);
+        if (!patron) throw new AppError("User not found", "NOT_FOUND", 404);
+
         // Controllo se la copia è in prestito
         const itemOnLoan = await loanRepository.findActiveByItemId(data.itemId);
         if (itemOnLoan) {
@@ -40,7 +51,7 @@ export const loanService = {
             await reservationRepository.fulfill(reservation.id);
         }
 
-        return loanRepository.findById(newLoan.id);
+        return await loanRepository.findById(newLoan.id);
     },
 
     // Registra la riconsegna del libro, chiude il prestito e gestisce la coda prenotazioni
@@ -51,20 +62,18 @@ export const loanService = {
             throw new AppError("Loan already closed", "BAD_REQUEST", 400);
         }
 
-        const [updatedLoan] = await loanRepository.update(id, {
-            returnDate: new Date()
-        });
+        await  loanRepository.update(id, {returnDate: new Date()});
 
         // Dopo il check-in, assega la copia alla prossima prenotazione in coda (se esiste)
-        await reservationService.handleItemCheckIn(updatedLoan.itemId);
+        await reservationService.handleItemCheckIn(existingLoan.itemId);
 
-        return updatedLoan;
+        return await loanRepository.findById(id);
     },
 
     update: async (id, data) => {
         await findUniqueOrThrow(id);
-        const [updatedLoan] = await loanRepository.update(id, data);
-        return updatedLoan;
+        await loanRepository.update(id, data);
+        return loanRepository.findById(id);
     },
 
     delete: async (id) => {

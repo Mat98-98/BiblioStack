@@ -4,7 +4,7 @@ import { ZodError } from "zod";
 export const errorMiddleware = (err, req, res, next) => {
 
     const log = req?.log || logger;
-    log.error({ err }), "Request error occurred";
+    log.error({ err }, "Request error occurred");
 
     if (res.headersSent) {
         return next(err);

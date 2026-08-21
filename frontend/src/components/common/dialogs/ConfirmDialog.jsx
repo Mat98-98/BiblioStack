@@ -20,6 +20,7 @@ export default function ConfirmDialog({
                                           cancelLabel = "Annulla",
                                           variant = "default",
                                           closeOnConfirm = true, // Se false, evita la chiusura automatica al click su conferma. Di default chiude al click su conferma
+                                          children
                                       }) {
     const [loading, setLoading] = useState(false);
 
@@ -46,6 +47,8 @@ export default function ConfirmDialog({
                         <DialogDescription>{description}</DialogDescription>
                     )}
                 </DialogHeader>
+
+                {children}
 
                 <DialogFooter className="gap-2">
                     <Button
