@@ -17,6 +17,6 @@ export const RegisterSchema = z.object({
 
 // Schema di validazione dei dati inviati dal form di login
 export const LoginSchema = z.object({
-    email:    z.string().trim().email("Invalid email format").toLowerCase(),
+    email:    z.email("Invalid email format").toLowerCase(),
     password: z.string().min(1, "Password is required")
 });

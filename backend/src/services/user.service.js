@@ -1,11 +1,13 @@
 import { userRepository } from "../repositories/user.repository.js";
 import { roleRepository } from "../repositories/role.repository.js";
+import { reservationService } from "./reservation.service.js";
+import { passwordTokenRepository } from "../repositories/passwordToken.repository.js";
+import { suspensionRepository } from "../repositories/suspension.repository.js";
 import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID } from "../constants.js";
 import { authService } from "./auth.service.js";
-import { suspensionRepository } from "../repositories/suspension.repository.js";
 import { db } from "../db/connection.js";
-import { reservationService } from "./reservation.service.js";
+
 
 
 // Funzione per verificare l'esistenza di un utente, usata in getById, update e delete
@@ -122,6 +124,10 @@ export const userService = {
 
             // Se l'utente ha prenotazioni attive le annullo
             await reservationService.cancelAllActiveByUserId(id, tx);
+
+            // Se l'utente ha token attivi per il setup password o per il reset password li invalido
+            await passwordTokenRepository.invalidateAllByUserId(id, tx);
+
             // Eseguo la anonimizzazione dell'account
             await userRepository.softDelete(id, tx);
         })

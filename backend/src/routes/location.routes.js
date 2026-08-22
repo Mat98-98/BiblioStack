@@ -1,6 +1,8 @@
 import express from "express";
 import {paginationMiddleware} from "../middleware/pagination.middleware.js";
 import {locationController} from "../controllers/location.controller.js";
+import {verifyUser} from "../middleware/auth.middleware.js";
+import {permit} from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -12,14 +14,14 @@ router.get("/:id", locationController.getById);
 
 
 // POST /locations
-router.post("/", locationController.create);
+router.post("/", verifyUser, permit("admin"), locationController.create);
 
 
 // PATCH /locations/:id
-router.patch("/:id", locationController.update);
+router.patch("/:id", verifyUser, permit("admin"), locationController.update);
 
 
 // DELETE /locations/:id
-router.delete("/:id", locationController.delete);
+router.delete("/:id", verifyUser, permit("admin"), locationController.delete);
 
 export default router;

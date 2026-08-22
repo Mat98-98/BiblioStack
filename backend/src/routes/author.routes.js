@@ -17,14 +17,14 @@ router.get("/:id", authorController.getById);
 
 
 // POST /authors
-router.post("/", authorController.create);
+router.post("/", verifyUser, permit("admin"), authorController.create);
 
 
 // PATCH /authors/:id
-router.patch("/:id", authorController.update);
+router.patch("/:id", verifyUser, permit("admin"), authorController.update);
 
 
 // DELETE /authors/:id
-router.delete("/:id", authorController.delete);
+router.delete("/:id", verifyUser, permit("admin"), authorController.delete);
 
 export default router;

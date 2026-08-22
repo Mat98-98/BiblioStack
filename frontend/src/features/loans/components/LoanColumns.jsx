@@ -1,6 +1,14 @@
 import { Badge } from "@/components/ui/badge.jsx";
 import { LoanTableActions } from "@/features/loans/management/components/LoanTableActions.jsx";
 
+function isDeletedUser(user) {
+    return user?.firstName.toLowerCase() === "deleted" && user?.lastName.toLowerCase() === "user";
+}
+
+function deletedUserLabel(user) {
+    return `Utente eliminato #${user.id}`;
+}
+
 function formatDate(date) {
     if (!date) return "—";
     return new Date(date).toLocaleDateString("it-IT", {
@@ -43,6 +51,9 @@ export const getLoansColumns = ({ onEdit, onDelete }) => [
         header: "Utente",
         cell: ({ getValue }) => {
             const patron = getValue();
+            if (isDeletedUser(patron)) {
+                return <span className="text-sm text-muted-foreground italic">{deletedUserLabel(patron)}</span>
+            }
             return <span className="text-sm">{patron.firstName} {patron.lastName}</span>;
         },
     },

@@ -1,6 +1,8 @@
 import express from 'express';
 import {deweyCodeController} from "../controllers/dewey.code.controller.js";
 import {paginationMiddleware} from "../middleware/pagination.middleware.js";
+import {verifyUser} from "../middleware/auth.middleware.js";
+import {permit} from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -12,14 +14,14 @@ router.get('/:code', deweyCodeController.getByCode);
 
 
 // POST /deweyCodes
-router.post('/', deweyCodeController.create);
+router.post('/', verifyUser, permit("admin"), deweyCodeController.create);
 
 
 // PATCH /deweyCodes/:id
-router.patch('/:code', deweyCodeController.update);
+router.patch('/:code', verifyUser, permit("admin"), deweyCodeController.update);
 
 
 // DELETE /deweyCodes/:code
-router.delete('/:code', deweyCodeController.delete);
+router.delete('/:code', verifyUser, permit("admin"), deweyCodeController.delete);
 
 export default router;

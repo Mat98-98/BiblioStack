@@ -1,6 +1,8 @@
 import express from "express"
 import { loanController } from "../controllers/loan.controller.js";
 import {paginationMiddleware} from "../middleware/pagination.middleware.js";
+import {verifyUser} from "../middleware/auth.middleware.js";
+import {permit} from "../middleware/role.middleware.js";
 
 const router = express.Router()
 
@@ -15,17 +17,17 @@ router.get("/:id", loanController.getById);
 
 
 // POST /loans
-router.post("/", loanController.checkOut);
+router.post("/", verifyUser, permit("librarian", "admin"), loanController.checkOut);
 
 // POST /loans/:id/checkIn
-router.patch("/:id/checkIn", loanController.checkIn);
+router.patch("/:id/checkIn", verifyUser, permit("librarian", "admin"), loanController.checkIn);
 
 
 // PATCH /loans/:id
-router.patch("/:id", loanController.update);
+router.patch("/:id", verifyUser, permit("librarian", "admin") , loanController.update);
 
 
 // DELETE /loans/:id
-router.delete("/:id", loanController.delete);
+router.delete("/:id", verifyUser, permit("admin"), loanController.delete);
 
 export default router

@@ -81,7 +81,7 @@ export function useAdminUsers() {
     const deleteUser = async (userId) => {
         try {
             await api.patch(`/users/${userId}/soft-delete`);
-            setUsers(prev => prev.filter(u => u.id !== userId));
+            await fetchUsers();
             notify.success("Utente eliminato");
         } catch {
             notify.error("Errore nell'eliminazione");

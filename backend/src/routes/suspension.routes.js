@@ -11,7 +11,7 @@ const router = express.Router();
 router.get("/", paginationMiddleware, verifyUser, permit("librarian", "admin"), suspensionController.getAll);
 
 // GET /suspensions/:id
-router.get("/:id", paginationMiddleware, suspensionController.getById);
+router.get("/:id", paginationMiddleware, verifyUser, suspensionController.getById);
 
 
 // POST /suspensions

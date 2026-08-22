@@ -109,7 +109,7 @@ export const userRepository = {
             firstName: "Deleted",
             lastName: "User",
             email: `deleted_id${id}@anonymized.local`,
-            phoneNumber: null,
+            phone: null,
             passwordHash: null,
             deletedAt: new Date(),
         };

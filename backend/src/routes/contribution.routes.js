@@ -1,6 +1,8 @@
 import express from 'express';
 import {paginationMiddleware} from "../middleware/pagination.middleware.js";
 import {contributionController} from "../controllers/contribution.controller.js";
+import {verifyUser} from "../middleware/auth.middleware.js";
+import {permit} from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -12,14 +14,14 @@ router.get("/:id", contributionController.getById);
 
 
 // POST /contributions
-router.post("/", contributionController.create);
+router.post("/", verifyUser, permit("admin"), contributionController.create);
 
 
 // PATCH /contributions/:id
-router.patch("/:id", contributionController.update);
+router.patch("/:id", verifyUser, permit("admin"), contributionController.update);
 
 
 // DELETE /contributions/:id
-router.delete("/:id", contributionController.delete);
+router.delete("/:id", verifyUser, permit("admin"), contributionController.delete);
 
 export default router;

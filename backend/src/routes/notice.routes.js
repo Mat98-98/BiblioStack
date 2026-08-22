@@ -1,6 +1,8 @@
 import express from 'express';
 import {paginationMiddleware} from "../middleware/pagination.middleware.js";
 import {noticeController} from "../controllers/notice.controller.js";
+import {verifyUser} from "../middleware/auth.middleware.js";
+import {permit} from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -13,14 +15,14 @@ router.get('/:id', noticeController.getById);
 
 
 // POST /notices
-router.post('/', noticeController.create);
+router.post('/', verifyUser, permit("librarian", "admin"), noticeController.create);
 
 
 // PATCH /notices/:id
-router.patch('/:id', noticeController.update);
+router.patch('/:id', verifyUser, permit("librarian", "admin"), noticeController.update);
 
 
 // DELETE /notices/:id
-router.delete('/:id', noticeController.delete);
+router.delete('/:id', verifyUser, permit("admin"), noticeController.delete);
 
 export default router;
