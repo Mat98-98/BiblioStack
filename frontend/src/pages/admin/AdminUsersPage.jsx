@@ -10,7 +10,7 @@ export default function AdminUsersPage() {
     const {
         users, loading, hasMore, page, search,
         setSearch, setPage,
-        createUser, updateRole, updateUser, deleteUser, suspendUser,
+        createUser, updateRole, updateUser, deleteUser, suspendUser, unsuspendUser
     } = useAdminUsers()
 
     const [createOpen, setCreateOpen] = useState(false)
@@ -29,6 +29,7 @@ export default function AdminUsersPage() {
                 onUpdateRole={updateRole}
                 onDelete={deleteUser}
                 onSuspend={suspendUser}
+                onUnsuspend={unsuspendUser}
                 onEdit={updateUser}
             />
             <TablePagination

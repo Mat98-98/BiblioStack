@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge.jsx";
 import UserActions from "@/features/users/table/UserTableActions.jsx";
 import { roleColors, roleLabels } from "@/features/users/table/usersTable.constants.js";
 
-export function getUserColumns({ onUpdateRole, onDelete, onSuspend, onEdit }) {
+export function getUserColumns({ onUpdateRole, onDelete, onSuspend, onUnsuspend, onEdit }) {
     return [
         {
             id: "user",
@@ -47,6 +47,37 @@ export function getUserColumns({ onUpdateRole, onDelete, onSuspend, onEdit }) {
             }
         },
         {
+            id: "status",
+            header: "Stato",
+            cell: ({ row }) => {
+                const suspension = row.original.suspension
+
+                // Se ha una sospensione attiva
+                if (!suspension) {
+                    return (
+                        <Badge variant="outline" className="border-success/20 bg-success/10 text-success">
+                            Attivo
+                        </Badge>
+                    )
+                }
+
+
+                const untilLabel = suspension.endDate
+                    ? `fino al ${new Date(suspension.endDate).toLocaleDateString("it-IT")}`
+                    : "a tempo indeterminato"
+
+                return (
+                    <Badge
+                        variant="outline"
+                        className="border-destructive/20 bg-destructive/10 text-destructive"
+                        title={`${suspension.reason ?? "Nessun motivo specificato"} (${untilLabel})`}
+                    >
+                        Sospeso
+                    </Badge>
+                )
+            },
+        },
+        {
             id: "actions",
             header: "",
             cell: ({ row }) => (
@@ -56,6 +87,7 @@ export function getUserColumns({ onUpdateRole, onDelete, onSuspend, onEdit }) {
                         onUpdateRole={onUpdateRole}
                         onDelete={onDelete}
                         onSuspend={onSuspend}
+                        onUnsuspend={onUnsuspend}
                         onEdit={onEdit}
                     />
                 </div>

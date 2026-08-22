@@ -3,24 +3,39 @@ import { users } from "../db/schema.js";
 import { normalizeSearch } from "../utils/search.util.js";
 import { eq, ilike, or, sql, desc } from "drizzle-orm";
 
+// Helper per mappare gli utenti con sospensioni attive
+function mapUserWithSuspension(user) {
+    const { activeSuspension, ...rest } = user;
+    return {
+        ...rest,
+        suspension: activeSuspension
+            ? { reason: activeSuspension.reason, endDate: activeSuspension.endDate }
+            : null
+    };
+}
+
 export const userRepository = {
     findAll: async ({ page, limit }) => {
         const offset = (page - 1) * limit;
 
-        return await db.query.users.findMany({
+        const results = await db.query.users.findMany({
             offset: offset,
             limit: limit,
             with: {
-                role: true
+                role: true,
+                activeSuspension: true
             }
         });
+        return results.map(mapUserWithSuspension);
     },
 
-    findById: async (id) =>
-        await db.query.users.findFirst({
-            where: { id: id },
+    findById: async (id) => {
+
+        const user = await db.query.users.findFirst({
+            where: {id: id},
             with: {
                 role: true,
+                activeSuspension: true,
                 loansAsPatron: {
                     with: {
                         item: true
@@ -32,7 +47,9 @@ export const userRepository = {
                     }
                 }
             }
-        }),
+        });
+        return user ? mapUserWithSuspension(user) : null;
+    },
 
     findByEmail: async (email) =>
         await db.query.users.findFirst({
@@ -41,24 +58,32 @@ export const userRepository = {
         }),
 
     // Query di estrazione dati per la dashboard utente (sia visione studente che admin)
-    findUserProfileDataById: async (id) =>
-        await db.query.users.findFirst({
-            where: { id: id },
+    findUserProfileDataById: async (id) => {
+        const user = await db.query.users.findFirst({
+            where: {id: id},
             with: {
                 role: true,
+                activeSuspension: true,
                 loansAsPatron: {
-                    with: { item: true }
+                    with: {item: true}
                 },
                 reservations: {
-                    with: { work: true }
+                    with: {work: true}
                 },
                 noticesReceived: {
-                    with: { type: true }
+                    with: {type: true}
                 },
                 noticesHandled: {
-                    with: { type: true }
+                    with: {type: true}
                 }
             }
+        });
+        return user ? mapUserWithSuspension(user) : null;
+    },
+
+    findActiveSuspension: async (userId) =>
+        await db.query.activeSuspensions.findFirst({
+            where: { userId: userId }
         }),
 
     create: (data) =>
@@ -139,10 +164,13 @@ export const userRepository = {
         // Ricarico con le relazioni
         const fullUsers = await db.query.users.findMany({
             where: {id: {in: ids}},
-            with: {role: true}
+            with: {
+                role: true,
+                activeSuspension: true
+            }
         });
 
-        const userMap = new Map(fullUsers.map(u => [u.id, u]));
+        const userMap = new Map(fullUsers.map(u => [u.id, mapUserWithSuspension(u)]));
         return rankedIds.map(r => userMap.get(r.id)).filter(Boolean);
     }
 };

@@ -91,15 +91,26 @@ export function useAdminUsers() {
     const suspendUser = async ({ userId, handledBy, reason, endDate }) => {
         try {
             await api.post("/suspensions", { userId, handledBy, reason, endDate });
+            await fetchUsers();
             notify.success("Utente sospeso");
         } catch {
             notify.error("Errore nella sospensione");
         }
     };
 
+    const unsuspendUser = async (userId) => {
+        try {
+            await api.patch(`/suspensions/user/${userId}/end`);
+            await fetchUsers();
+            notify.success("Sospensione revocata");
+        } catch {
+            notify.error("Errore nella revoca della sospensione");
+        }
+    }
+
     return {
         users, loading, hasMore, page, search,
         setSearch, setPage,
-        createUser, updateRole, updateUser, deleteUser, suspendUser,
+        createUser, updateRole, updateUser, deleteUser, suspendUser, unsuspendUser
     };
 }

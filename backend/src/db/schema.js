@@ -227,3 +227,11 @@ export const itemAvailability = pgView("item_availability", {
     workId:     text("work_id").notNull(),
     locationId: integer("location_id"),
 }).existing();
+
+export const activeSuspensions = pgView("active_suspensions", {
+    id: integer("id").notNull(),
+    userId: bigint("user_id", { mode: "number" }).notNull(),
+    reason: text("reason"),
+    startDate: timestamp("start_date", { withTimezone: true, mode: "date" }),
+    endDate: timestamp("end_date", { withTimezone: true, mode: "date" }),
+}).existing();

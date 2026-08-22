@@ -99,6 +99,10 @@ export const relations = defineRelations(schema, (r) => ({
             from: r.users.id,
             to: r.notices.handledBy,
             alias: "notices_handled"
+        }),
+        activeSuspension: r.one.activeSuspensions({
+            from: r.users.id,
+            to: r.activeSuspensions.userId
         })
     },
 
@@ -248,6 +252,17 @@ export const relations = defineRelations(schema, (r) => ({
         works: r.many.works({
             from: r.authors.id.through(r.authorWorks.authorId),
             to: r.works.id.through(r.authorWorks.workId)
+        })
+    },
+
+    /*
+    ======== Relazioni tabella ActiveSuspensions (vista sospensioni attive) ========
+    */
+
+    activeSuspensions: {
+        user: r.one.users({
+            from: r.activeSuspensions.userId,
+            to: r.users.id
         })
     }
 }));

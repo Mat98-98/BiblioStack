@@ -31,6 +31,11 @@ export const loanService = {
         if (!item) throw new AppError("Item not found", "NOT_FOUND", 404);
         if (!patron) throw new AppError("User not found", "NOT_FOUND", 404);
 
+        // Controllo se l'utente è sospeso
+        if (patron.suspension) {
+            throw new AppError("User is suspended and cannot perform this action", "USER_SUSPENDED", 403);
+        }
+
         // Controllo se la copia è in prestito
         const itemOnLoan = await loanRepository.findActiveByItemId(data.itemId);
         if (itemOnLoan) {

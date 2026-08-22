@@ -27,6 +27,18 @@ export const suspensionService = {
         return await findUniqueOrThrow(id);
     },
 
+    endActiveByUserId: async (userId) => {
+        // Cerco e ricavo la sospensione attiva dell'utente
+        const active = await suspensionRepository.findActiveByUserId(userId);
+        if (!active) {
+            throw new AppError("No active suspension found for this user", "NOT_FOUND", 404);
+        }
+
+        // Se ne trovo una attiva procedo con il soft delete
+        await suspensionRepository.endById(active.id);
+        return await suspensionRepository.findById(active.id);
+    },
+
     create: async (data) => {
         const [suspension] = await suspensionRepository.create(data);
         return suspension;

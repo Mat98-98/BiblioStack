@@ -13,8 +13,8 @@ function TableSkeleton() {
     )
 }
 
-export default function UsersTable({ users, loading, onUpdateRole, onDelete, onSuspend, onEdit }) {
-    const columns = getUserColumns({ onUpdateRole, onDelete, onSuspend, onEdit })
+export default function UsersTable({ users, loading, onUpdateRole, onDelete, onSuspend, onUnsuspend, onEdit }) {
+    const columns = getUserColumns({ onUpdateRole, onDelete, onSuspend, onUnsuspend, onEdit })
 
     const table = useReactTable({
         data: users,

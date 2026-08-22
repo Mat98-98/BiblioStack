@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreHorizontal, Shield, Ban, Trash2, Pencil } from "lucide-react";
+import {MoreHorizontal, Shield, Ban, Trash2, Pencil, ShieldCheck} from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -10,18 +10,24 @@ import EditUserDialog from "@/features/users/dialogs/editUserDialog/EditUserDial
 import ChangeRoleDialog from "@/features/users/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 
-export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, onEdit }) {
+export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, onUnsuspend, onEdit }) {
     const [deleteOpen, setDeleteOpen]   = useState(false);
     const [suspendOpen, setSuspendOpen] = useState(false);
+    const [unsuspendOpen, setUnsuspendOpen] = useState(false);
     const [editOpen, setEditOpen]       = useState(false);
     const [roleOpen, setRoleOpen]       = useState(false);
 
-
+    const isSuspended = !!user.suspension;
 
     // Gestione della cancellazione
     const handleDelete = async () => {
         await onDelete(user.id);
     };
+
+    // Gestione della rimozione della sospensione
+    const handleUnsuspend = async () => {
+        await onUnsuspend(user.id);
+    }
 
     return (
         <>
@@ -42,13 +48,23 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                         Cambia ruolo
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                        onClick={() => setSuspendOpen(true)}
-                        className="text-warning focus:text-warning"
-                    >
-                        <Ban className="mr-2 h-4 w-4" />
-                        Sospendi
-                    </DropdownMenuItem>
+                    {isSuspended ? (
+                        <DropdownMenuItem
+                            onClick={() => setUnsuspendOpen(true)}
+                            className="text-success focus:text-success"
+                        >
+                            <ShieldCheck className="mr-2 h-4 w-4" />
+                            Riabilita
+                        </DropdownMenuItem>
+                        ) : (
+                            <DropdownMenuItem
+                                onClick={() => setSuspendOpen(true)}
+                                className="text-warning focus:text-warning"
+                            >
+                                <Ban className="mr-2 h-4 w-4" />
+                                Sospendi
+                            </DropdownMenuItem>
+                        )}
                     <DropdownMenuItem
                         onClick={() => setDeleteOpen(true)}
                         className="text-destructive focus:text-destructive"
@@ -92,6 +108,16 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                     await onUpdateRole(userId, role)
                     setRoleOpen(false)
                 }}
+            />
+
+            <ConfirmDialog
+                open={unsuspendOpen}
+                onClose={() => setUnsuspendOpen(false)}
+                onConfirm={handleUnsuspend}
+                title="Rimuovi sospensione"
+                description={`Vuoi riattivare l'account di ${user.firstName} ${user.lastName}? Potrà tornare a prenotare ed effettuare prestiti.`}
+                confirmLabel="Rimuovi sospensione"
+                cancelLabel="Annulla"
             />
         </>
     )

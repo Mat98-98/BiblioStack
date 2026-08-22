@@ -3,6 +3,7 @@ import { itemRepository } from "../repositories/item.repository.js";
 import { loanRepository } from "../repositories/loan.repository.js";
 import { AppError } from "../utils/appError.js";
 import { RESERVATION_STATUS, EXPIRY_MS } from "../constants.js";
+import {assertNotSuspended} from "../utils/suspension.util.js";
 
 const findUniqueOrThrow = async (id) => {
     const reservation = await reservationRepository.findById(id);
@@ -38,6 +39,9 @@ export const reservationService = {
         findUniqueOrThrow(id),
 
     create: async (data) => {
+        // Controllo che l'utente non sia sospeso
+        await assertNotSuspended(data.userId);
+
         const activeLoan = await loanRepository.findActiveByUserAndWork(data.userId, data.workId);
         if (activeLoan) {
             throw new AppError(

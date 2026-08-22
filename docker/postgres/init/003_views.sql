@@ -18,3 +18,15 @@ WHERE
         WHERE r.assigned_item_id = i.id
           AND r.status = 'ready'
     );
+
+-- View che contiene le sospensioni attive
+CREATE VIEW active_suspensions AS
+SELECT DISTINCT ON (user_id)
+    id,
+    user_id,
+    reason,
+    start_date,
+    end_date
+FROM suspensions
+WHERE end_date IS NULL OR end_date > now()
+ORDER BY user_id, start_date DESC;

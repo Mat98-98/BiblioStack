@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
 import { suspensions } from "../db/schema.js";
-import {eq} from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export const suspensionRepository = {
     findAll: async ({ page, limit }) => {
@@ -27,6 +27,18 @@ export const suspensionRepository = {
             }
         }),
 
+    findActiveByUserId: async (userId) =>
+        await db.query.activeSuspensions.findFirst({
+            where: { userId: userId }
+        }),
+
+    endById: async (id) =>
+        await db
+            .update(suspensions)
+            .set({ endDate: new Date() })
+            .where(eq(suspensions.id, id))
+            .returning(),
+
     create: async (data) =>
         await db
             .insert(suspensions)
@@ -44,6 +56,6 @@ export const suspensionRepository = {
         await db
             .delete(suspensions)
             .where(eq(suspensions.id, id))
-            .returning
+            .returning()
 
 }

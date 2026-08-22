@@ -3,11 +3,10 @@ import { ItemMiniDTO, WorkMiniDTO } from "./shared.dto.js";
 import { ReservationStatusEnum } from "./shared.dto.js";
 
 // ======== DTO di supporto ========
-const SuspensionMiniSchema = z.object({
-    id: z.number(),
-    startDate: z.date(),
+const ActiveSuspensionSchema = z.object({
+    reason: z.string().nullable(),
     endDate: z.date().optional().nullable(),
-});
+}).nullable();
 
 const NoticeMiniSchema = z.object({
     id: z.number(),
@@ -49,7 +48,8 @@ const UserCore = z.object({
 // ======== DTO base ========
 export const UserBaseDTO = UserCore.extend({
     role: RoleSchema,
-    email: z.email()
+    email: z.email(),
+    suspension: ActiveSuspensionSchema.default(null)
 });
 
 export const UserBaseListDTO = z.array(UserBaseDTO);
@@ -60,6 +60,7 @@ export const UserDashboardDTO = UserCore.extend({
     email: z.email(),
     phone: z.string().optional().nullable(),
     role: RoleSchema,
+    suspension: ActiveSuspensionSchema.default(null),
     loansAsPatron: z.array(LoanSchema).default([]),
     reservations: z.array(ReservationSchema).default([])
 })
@@ -69,6 +70,7 @@ export const AdminDashboardDTO = UserCore.extend({
     email: z.email(),
     phone: z.string().optional().nullable(),
     role: RoleSchema,
+    suspension: ActiveSuspensionSchema.default(null),
     loansAsPatron: z.array(LoanSchema).default([]),
     reservations: z.array(ReservationSchema).default([]),
     noticesReceived: z.array(NoticeMiniSchema).default([]),

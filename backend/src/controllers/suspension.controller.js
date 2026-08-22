@@ -22,6 +22,15 @@ export const suspensionController = {
         }
     },
 
+    endActiveByUserId: async (req, res, next) => {
+        try {
+            const result = await suspensionService.endActiveByUserId(Number(req.params.userId));
+            res.json(SuspensionDetailDTO.parse(result));
+        } catch (error) {
+            next(error);
+        }
+    },
+
     create: async (req, res, next) => {
         try {
             const validatedData = CreateSuspensionSchema.parse(req.body);
