@@ -92,7 +92,8 @@ CREATE TABLE IF NOT EXISTS users (
                                      phone text,
                                      card_version smallint NOT NULL DEFAULT 1 CHECK (card_version > 0),
                                      password_hash text,
-                                     created_at timestamptz DEFAULT now()
+                                     created_at timestamptz DEFAULT now(),
+                                     deleted_at timestamptz DEFAULT null
 );
 
 

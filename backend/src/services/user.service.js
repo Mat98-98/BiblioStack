@@ -2,8 +2,10 @@ import { userRepository } from "../repositories/user.repository.js";
 import { roleRepository } from "../repositories/role.repository.js";
 import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID } from "../constants.js";
-import bcrypt from "bcrypt";
-import {authService} from "./auth.service.js";
+import { authService } from "./auth.service.js";
+import { suspensionRepository } from "../repositories/suspension.repository.js";
+import { db } from "../db/connection.js";
+import { reservationService } from "./reservation.service.js";
 
 
 // Funzione per verificare l'esistenza di un utente, usata in getById, update e delete
@@ -106,6 +108,25 @@ export const userService = {
         const updatedUser = await userRepository.update(id, data);
         return updatedUser;
         },
+
+    softDelete: async (id) => {
+        // Controllo che l'utente sia esistente nel database
+        await findUniqueOrThrow(id);
+
+        await db.transaction(async (tx) => {
+            // Se l'utente ha una sospensione attiva la chiudo
+            const activeSuspension = await suspensionRepository.findActiveByUserId(id, tx);
+            if (activeSuspension) {
+                await suspensionRepository.endById(activeSuspension.id, tx);
+            }
+
+            // Se l'utente ha prenotazioni attive le annullo
+            await reservationService.cancelAllActiveByUserId(id, tx);
+            // Eseguo la anonimizzazione dell'account
+            await userRepository.softDelete(id, tx);
+        })
+        return { message: "User anonymized successfully" };
+    },
 
     delete: async (id) => {
         await findUniqueOrThrow(id);

@@ -105,6 +105,15 @@ export const userController = {
         }
     },
 
+    softDelete: async (req, res, next) => {
+      try {
+          const result = await userService.softDelete(req.params.id);
+          res.json(result);
+      }  catch (error) {
+          next(error);
+      }
+    },
+
     delete: async (req, res, next) => {
         try {
             const result = await userService.delete(req.params.id);

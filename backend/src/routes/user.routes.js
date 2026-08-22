@@ -33,6 +33,9 @@ router.patch("/:id", verifyUser, permit("admin"), userController.update);
 // PATCH /users/:id/role
 router.patch("/:id/role", verifyUser, permit( "admin"), userController.setUserRole);
 
+// PATCH /users/:id/soft-delete
+router.patch("/:id/soft-delete", verifyUser, permit("admin"), userController.softDelete);
+
 // DELETE /users/:id
 router.delete("/:id", verifyUser, permit("admin"), userController.delete);
 

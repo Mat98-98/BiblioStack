@@ -1,7 +1,7 @@
 import { db } from "../db/connection.js";
 import { users } from "../db/schema.js";
 import { normalizeSearch } from "../utils/search.util.js";
-import { eq, ilike, or, sql, desc } from "drizzle-orm";
+import {eq, ilike, or, sql, desc, isNull} from "drizzle-orm";
 
 // Helper per mappare gli utenti con sospensioni attive
 function mapUserWithSuspension(user) {
@@ -15,12 +15,15 @@ function mapUserWithSuspension(user) {
 }
 
 export const userRepository = {
+
+    // Prende tutti gli utenti tranne quelli eliminati
     findAll: async ({ page, limit }) => {
         const offset = (page - 1) * limit;
 
         const results = await db.query.users.findMany({
             offset: offset,
             limit: limit,
+            where: { deletedAt: { isNull: true } },
             with: {
                 role: true,
                 activeSuspension: true
@@ -98,6 +101,20 @@ export const userRepository = {
             where: { id },
             with: { role: true }
         })
+    },
+
+    softDelete: async (id, tx = db) => {
+        // Definisco i dati da immettere per anonimizzare l'utente
+        const anonymizedData = {
+            firstName: "Deleted",
+            lastName: "User",
+            email: `deleted_id${id}@anonymized.local`,
+            phoneNumber: null,
+            passwordHash: null,
+            deletedAt: new Date(),
+        };
+        // Aggiorno il database con i dati anominizzati
+        await tx.update(users).set(anonymizedData).where(eq(users.id, id));
     },
 
     delete: async (id) =>

@@ -130,7 +130,8 @@ export const users = pgTable('users', {
     phone: text('phone'),
     cardVersion: smallint('card_version').notNull().default(1),
     passwordHash: text('password_hash'),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow()
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'date' }).default(null)
 }, (table) => [
     check('users_card_version_check', sql`${table.cardVersion} > 0`)
 ]);

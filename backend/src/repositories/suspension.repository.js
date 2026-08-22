@@ -27,13 +27,14 @@ export const suspensionRepository = {
             }
         }),
 
-    findActiveByUserId: async (userId) =>
-        await db.query.activeSuspensions.findFirst({
+    // Il parametro tx permette di eseguire la query all'interno di una transazione (come quella per il soft delete in user service), se non viene passato usa la connessione normale db come fallback.
+    findActiveByUserId: async (userId, tx = db) =>
+        await tx.query.activeSuspensions.findFirst({
             where: { userId: userId }
         }),
 
-    endById: async (id) =>
-        await db
+    endById: async (id, tx = db) =>
+        await tx
             .update(suspensions)
             .set({ endDate: new Date() })
             .where(eq(suspensions.id, id))
