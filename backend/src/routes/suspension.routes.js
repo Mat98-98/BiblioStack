@@ -8,21 +8,21 @@ const router = express.Router();
 
 
 // GET /suspensions?page=1&limit=20
-router.get("/", paginationMiddleware, suspensionController.getAll);
+router.get("/", paginationMiddleware, verifyUser, permit("librarian", "admin"), suspensionController.getAll);
 
 // GET /suspensions/:id
 router.get("/:id", paginationMiddleware, suspensionController.getById);
 
 
 // POST /suspensions
-router.post("/", suspensionController.create);
+router.post("/", verifyUser, permit("librarian", "admin"), suspensionController.create);
 
 
 // PATCH /suspensions/user/:userId/end
 router.patch("/user/:userId/end", verifyUser, permit("admin"), suspensionController.endActiveByUserId)
 
 // PATCH /suspensions/:id
-router.patch("/:id", suspensionController.update);
+router.patch("/:id", verifyUser, permit("admin"), suspensionController.update);
 
 
 // DELETE /suspensions/:id
