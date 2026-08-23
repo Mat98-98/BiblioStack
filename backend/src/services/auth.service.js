@@ -1,3 +1,4 @@
+// @TODO Verificare una volta buildato il frontend il log con access token a 1m e refresh token a 2/3 m. Provare ad abbassare anche il maxAge dei cookie per test
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
