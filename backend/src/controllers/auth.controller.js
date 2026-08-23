@@ -40,9 +40,14 @@ export const authController = {
         }
     },
 
-    logout: (req, res) => {
-        clearAuthCookies(res);
-        res.json({ message: "Logged out" });
+    logout: async (req, res, next) => {
+        try {
+            await authService.logout(req.cookies.refreshToken);
+            clearAuthCookies(res);
+            res.json({ message: "Logged out" });
+        } catch (err) {
+            next(err);
+        }
     },
 
     me: (req, res) => {

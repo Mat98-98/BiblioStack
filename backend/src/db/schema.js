@@ -101,7 +101,26 @@ export const passwordTokens = pgTable('password_tokens', {
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
     expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
     usedAt: timestamp('used_at', { withTimezone: true, mode: 'date' })
-})
+});
+
+export const refreshTokens = pgTable("refresh_tokens", {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    replacedByTokenHash: text("replaced_by_token_hash"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [
+    check(
+        "chk_refresh_tokens_expires_after_created",
+        sql`${table.expiresAt} > ${table.createdAt}`
+    ),
+    check(
+        "chk_refresh_tokens_replaced_implies_revoked",
+        sql`${table.replacedByTokenHash} IS NULL OR ${table.revokedAt} IS NOT NULL`
+    ),
+]);
 
 export const currencies = pgTable('currencies', {
     code: char('code', { length: 3 }).primaryKey(),

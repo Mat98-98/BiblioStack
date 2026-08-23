@@ -95,9 +95,9 @@ export const userRepository = {
             .values(data)
             .returning(),
 
-    update: async (id, data) => {
-        await db.update(users).set(data).where(eq(users.id, id))
-        return db.query.users.findFirst({
+    update: async (id, data, tx = db) => {
+        await tx.update(users).set(data).where(eq(users.id, id))
+        return tx.query.users.findFirst({
             where: { id },
             with: { role: true }
         })

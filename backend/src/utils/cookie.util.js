@@ -1,3 +1,4 @@
+//@TODO: sistemare il sameSite a seconda di come verrà hostato il servizio. Se con lo stesso dominio si  può usare strict o lax (nel caso di login google)
 export const setAuthCookies = (res, accessToken, refreshToken) => {
     const isProduction = process.env.NODE_ENV === "production";
 
@@ -6,17 +7,16 @@ export const setAuthCookies = (res, accessToken, refreshToken) => {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax",
-            maxAge: 3600000
+            maxAge: 15 * 60 * 1000 // 15 minuti
         });
     }
 
-    // Rinnovo il token per 7 giorni
     if (refreshToken) {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax",
-            maxAge: 7 * 24 * 3600000
+            maxAge: 14 * 24 * 3600000 // 14 giorni
         });
     }
 };

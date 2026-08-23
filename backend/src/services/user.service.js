@@ -7,6 +7,7 @@ import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID } from "../constants.js";
 import { authService } from "./auth.service.js";
 import { db } from "../db/connection.js";
+import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 
 
 
@@ -67,7 +68,8 @@ export const userService = {
         return userData;
     },
 
-    createByAdmin: async ({ email, password, firstName, lastName, phone, roleId }) => {
+    // Per la creazione di un account tramite pannello admin. L'account viene generato senza password, viene quindi inviata una email all'utente per sceglierne una a suo piacimento e completare la registrazione
+    createByAdmin: async ({ email, firstName, lastName, phone, roleId }) => {
         const existing = await userRepository.findByEmail(email);
         if (existing) throw new AppError("Email already exists", "EMAIL_ALREADY_EXISTS", 409);
 
@@ -111,6 +113,7 @@ export const userService = {
         return updatedUser;
         },
 
+    // Funzione che permette di anonimizzare l'account dell'utente al posto di cancellarlo definitivamente dal sistema, in modo da tenere lo storico e rispettare il diritto all'oblio
     softDelete: async (id) => {
         // Controllo che l'utente sia esistente nel database
         await findUniqueOrThrow(id);
@@ -128,12 +131,16 @@ export const userService = {
             // Se l'utente ha token attivi per il setup password o per il reset password li invalido
             await passwordTokenRepository.invalidateAllByUserId(id, tx);
 
+            // Se l'utente ha refresh token attivi li revoco
+            await refreshTokenRepository.revokeAllByUserId(id, tx);
+
             // Eseguo la anonimizzazione dell'account
             await userRepository.softDelete(id, tx);
         })
         return { message: "User anonymized successfully" };
     },
 
+    // Eliminazione totale del profilo utente
     delete: async (id) => {
         await findUniqueOrThrow(id);
 

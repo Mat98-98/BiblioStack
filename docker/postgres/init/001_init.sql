@@ -113,6 +113,22 @@ CREATE TABLE IF NOT EXISTS password_tokens (
                                                used_at timestamptz
 );
 
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+                                              id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                                              user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                              token_hash TEXT NOT NULL UNIQUE,
+                                              expires_at timestamptz NOT NULL,
+                                              revoked_at timestamptz,
+                                              replaced_by_token_hash TEXT,
+                                              created_at timestamptz NOT NULL DEFAULT now(),
+
+                                              CONSTRAINT chk_refresh_tokens_expires_after_created
+                                                  CHECK (expires_at > created_at),
+
+                                              CONSTRAINT chk_refresh_tokens_replaced_implies_revoked
+                                                  CHECK (replaced_by_token_hash IS NULL OR revoked_at IS NOT NULL)
+);
+
 
 -- Tabella opere
 CREATE TABLE IF NOT EXISTS works (

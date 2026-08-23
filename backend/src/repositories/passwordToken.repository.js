@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
 import { passwordTokens } from "../db/schema.js";
-import {and, eq} from "drizzle-orm"
+import { and, eq, isNull } from "drizzle-orm"
 
 export const passwordTokenRepository = {
 
@@ -22,8 +22,8 @@ export const passwordTokenRepository = {
             orderBy: { createdAt: "desc" }
         }),
 
-    markAsUsed: async (token) =>
-        await db.update(passwordTokens).set({ usedAt: new Date() }).where(eq(passwordTokens.token, token)).returning(),
+    markAsUsed: async (token, tx = db) =>
+        await tx.update(passwordTokens).set({ usedAt: new Date() }).where(eq(passwordTokens.token, token)).returning(),
 
     invalidateAllByUserId: async (userId, tx = db) => {
         await tx.update(passwordTokens)

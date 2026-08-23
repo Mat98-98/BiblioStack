@@ -46,12 +46,23 @@ export const relations = defineRelations(schema, (r) => ({
     },
 
     /*
-        ======== Relazioni della tabella Password_tokens (Password tokens) ========
+        ======== Relazioni della tabella Password_tokens (password tokens) ========
     */
 
     passwordTokens: {
         user: r.one.users({
             from: r.passwordTokens.userId,
+            to: r.users.id
+        })
+    },
+
+    /*
+        ======== Relazioni della tabella Refresh_tokens (refresh tokens) ========
+    */
+
+    refreshTokens: {
+        user: r.one.users({
+            from: r.refreshTokens.userId,
             to: r.users.id
         })
     },

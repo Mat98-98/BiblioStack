@@ -2,39 +2,66 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { subMinutes, isAfter } from "date-fns";
+import { db } from "../db/connection.js";
 import { userRepository } from "../repositories/user.repository.js";
+import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID, TOKEN_TYPES } from "../constants.js";
 import { passwordTokenRepository } from "../repositories/passwordToken.repository.js";
 import { emailService } from "../features/email/email.service.js";
 import { logger } from "../config/logger.config.js";
 
-// Tempo scadenza token
-const TOKEN_EXPIRY_MS = 10 * 60 * 1000; //10 minuti
-
-const SETUP_PASSWORD_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 ore
-
+const TOKEN_EXPIRY_MS = 10 * 60 * 1000;
+const SETUP_PASSWORD_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
 const RATE_LIMIT_MINUTES = 10;
 
-// Funzione per generare il token per il reset e il setup della password
-const generateToken = () => crypto.randomBytes(32).toString("hex")
 
-// Controllo che il token soddisfi i requisiti necessari
+const ACCESS_TOKEN_EXPIRY = "15m";
+const REFRESH_TOKEN_EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 giorni
+
+// Generazione token password
+const generateToken = () => crypto.randomBytes(32).toString("hex");
+
+// Generazione opaque refresh token
+const generateRefreshToken = () => crypto.randomBytes(48).toString("hex");
+
+// Hashing del refresh token dato che verrà salvato a db per le refresh rotation
+const hashRefreshToken = (token) =>
+    crypto.createHash("sha256").update(token).digest("hex");
+
 const validateToken = async (token, expectedType) => {
-
-    const record = await passwordTokenRepository.findByToken(token)
-
+    const record = await passwordTokenRepository.findByToken(token);
     if (!record || record.usedAt || new Date() > record.expiresAt || record.type !== expectedType) {
-        throw new AppError("Invalid token", "INVALID_TOKEN", 400)
+        throw new AppError("Invalid token", "INVALID_TOKEN", 400);
     }
-    return record
-}
+    return record;
+};
 
+// Emette access token (JWT stateless) + refresh token (persistito come hash). Punto unico riusato da login/refresh/futuro Google login.
+const issueTokens = async (user, tx = db) => {
+    const payload = {
+        userId: user.id,
+        roleId: user.roleId,
+        roleName: user.role?.name?.toLowerCase()
+    };
+
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+
+    const refreshToken = generateRefreshToken();
+
+    // Salvo il refresh token a database
+    await refreshTokenRepository.create({
+        userId: user.id,
+        tokenHash: hashRefreshToken(refreshToken),
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS)
+    }, tx);
+
+    return { accessToken, refreshToken };
+};
 
 export const authService = {
 
     register: async ({ email, password, firstName, lastName, phone }) => {
-        // Controlla email duplicata
         const existing = await userRepository.findByEmail(email);
         if (existing) {
             logger.warn({ email }, "Registration attempt with already existing email");
@@ -44,23 +71,17 @@ export const authService = {
         const passwordHash = await bcrypt.hash(password, 12);
 
         const [user] = await userRepository.create({
-            email,
-            firstName,
-            lastName,
-            phone,
-            passwordHash,
-            roleId: DEFAULT_USER_ROLE_ID  // sempre student per registrazione pubblica
+            email, firstName, lastName, phone, passwordHash,
+            roleId: DEFAULT_USER_ROLE_ID
         });
 
         logger.info({ userId: user.id }, "New user registered");
-
         return userRepository.findById(user.id);
     },
 
     login: async ({ email, password }) => {
         const user = await userRepository.findByEmail(email);
 
-        // Messaggio generico — non rivela se l'email esiste
         if (!user) {
             logger.warn({ email }, "Login attempt with non-existent email");
             throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
@@ -68,69 +89,52 @@ export const authService = {
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) {
-            logger.warn({ userId: user.id }, "Login attempt with wrong password")
+            logger.warn({ userId: user.id }, "Login attempt with wrong password");
             throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
         }
 
-        const payload = {
-            userId:   user.id,
-            roleId:   user.roleId,
-            roleName: user.role?.name?.toLowerCase()
-        };
-
-        return {
-            accessToken:  jwt.sign(payload, process.env.JWT_SECRET,  { expiresIn: "1h" }),
-            refreshToken: jwt.sign(payload, process.env.JWT_REFRESH, { expiresIn: "14d" }),
-            user
-        };
+        const { accessToken, refreshToken } = await issueTokens(user);
+        return { accessToken, refreshToken, user };
     },
 
+    // Il refresh token usato viene invalidato e sostituito da uno nuovo ad ogni chiamata /refresh
     refresh: async (refreshToken) => {
         if (!refreshToken) {
             throw new AppError("Refresh token is missing", "NO_TOKEN", 401);
         }
 
-        let decoded;
+        const tokenHash = hashRefreshToken(refreshToken);
+        const record = await refreshTokenRepository.findValidByTokenHash(tokenHash);
 
-        try {
-            decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH);
-        } catch {
+        if (!record || record.revokedAt || new Date() > record.expiresAt) {
             throw new AppError("Expired or invalid refresh token", "INVALID_TOKEN", 401);
         }
 
-        // Ricarico l'utente per avere dati aggiornati (magari nel frattempo è stato assegnato un altro ruolo)
-        const user = await userRepository.findById(decoded.userId);
+        const user = await userRepository.findById(record.userId);
         if (!user) {
             throw new AppError("User not found", "NOT_FOUND", 404);
         }
 
-        const payload = {
-            userId: user.id,
-            roleId: user.roleId,
-            roleName: user.role?.name?.toLowerCase()
-        };
-
-        return {
-            accessToken:  jwt.sign(payload, process.env.JWT_SECRET,  { expiresIn: "1h" }),
-            refreshToken: jwt.sign(payload, process.env.JWT_REFRESH, { expiresIn: "14d" }),
-            user
-        };
+        return await db.transaction(async (tx) => {
+            const { accessToken, refreshToken: newRefreshToken } = await issueTokens(user, tx);
+            await refreshTokenRepository.revoke(record.id, hashRefreshToken(newRefreshToken), tx);
+            return { accessToken, refreshToken: newRefreshToken, user };
+        });
     },
 
+    // Revoca il refresh token lato server e i cookie lato client
+    logout: async (refreshToken) => {
+        if (!refreshToken) return;
+        const tokenHash = hashRefreshToken(refreshToken);
+        const record = await refreshTokenRepository.findValidByTokenHash(tokenHash);
+        if (record) await refreshTokenRepository.revoke(record.id);
+    },
 
-    // Funzione che invia il token e invia la email per il reset della password
     forgotPassword: async ({ email }) => {
-
-        // Verifico l'esistenza dell'utente associato alla email
         const user = await userRepository.findByEmail(email);
         if (!user) return;
 
-        // Imposto un limite di un token ogni 10 minuti
-        const lastToken = await passwordTokenRepository.findLatestByUserIdAndType(
-            user.id,
-            TOKEN_TYPES.RESET
-        );
-
+        const lastToken = await passwordTokenRepository.findLatestByUserIdAndType(user.id, TOKEN_TYPES.RESET);
         if (lastToken) {
             const limitDate = subMinutes(new Date(), RATE_LIMIT_MINUTES);
             if (isAfter(lastToken.createdAt, limitDate)) {
@@ -139,69 +143,59 @@ export const authService = {
         }
 
         const token = generateToken();
-
-        // Aggiungo il token a db
         await passwordTokenRepository.create({
-            token,
-            userId: user.id,
-            type: TOKEN_TYPES.RESET,
+            token, userId: user.id, type: TOKEN_TYPES.RESET,
             expiresAt: new Date(Date.now() + TOKEN_EXPIRY_MS),
-        })
+        });
 
-        // Invio la email
-        await emailService.sendPasswordReset({
-            to: user.email,
-            firstName: user.firstName,
-            token
-        })
+        await emailService.sendPasswordReset({ to: user.email, firstName: user.firstName, token });
     },
 
-    // Funzione che reimposta la password controllando il token
     resetPassword: async ({ token, password }) => {
+        const record = await validateToken(token, TOKEN_TYPES.RESET);
+        const passwordHash = await bcrypt.hash(password, 12);
 
-        // Mi assicuro che il token sia valido
-        const record = await validateToken(token, TOKEN_TYPES.RESET)
+        // Avvio una transazione per garantire che tutti i passaggi vengano eseguiti prima di salvare a database in caso di crash
+        await db.transaction(async (tx) => {
 
-        // Hash della nuova password ricevuta
-        const passwordHash = await bcrypt.hash(password, 12)
+            // Cambio la password
+            await userRepository.update(record.userId, { passwordHash }, tx);
 
-        await userRepository.update(record.userId, { passwordHash })
-        await passwordTokenRepository.markAsUsed(token)
+            // Metto il flag "used" al token per il cambio password
+            await passwordTokenRepository.markAsUsed(token, tx);
+
+            // Revoco tutte le sessioni esistenti per sicurezza
+            await refreshTokenRepository.revokeAllByUserId(record.userId, tx);
+        })
     },
 
-    // Funzione per inviare l'email con il link contenente il token per l'attivazione dell'account
     setupPassword: async (userId) => {
         logger.debug({ userId }, "setupPassword called");
-
         const user = await userRepository.findById(userId);
-
         if (!user) throw new AppError("User not found", "NOT_FOUND", 404);
 
         const token = generateToken();
-
-        const created = await passwordTokenRepository.create({
-            token,
-            userId: user.id,
-            type:   TOKEN_TYPES.SETUP,
+        await passwordTokenRepository.create({
+            token, userId: user.id, type: TOKEN_TYPES.SETUP,
             expiresAt: new Date(Date.now() + SETUP_PASSWORD_TOKEN_EXPIRY_MS),
         });
 
-        await emailService.sendAccountSetup({
-            to:        user.email,
-            firstName: user.firstName,
-            token,
-        });
+        await emailService.sendAccountSetup({ to: user.email, firstName: user.firstName, token });
         logger.info({ userId: user.id }, "Account setup email sent");
     },
 
     setupAccount: async ({ token, password }) => {
+        // Verifica che il token sia valido
+        const record = await validateToken(token, TOKEN_TYPES.SETUP);
 
-        // Mi assicuro che il token sia valido
-        const record = await validateToken(token, TOKEN_TYPES.SETUP)
-        // Hash della password ricevuta
-        const passwordHash = await bcrypt.hash(password, 12)
+        // Genera l'hash della password ricevuta in chiaro dal form
+        const passwordHash = await bcrypt.hash(password, 12);
 
-        await userRepository.update(record.userId, { passwordHash })
-        await passwordTokenRepository.markAsUsed(token)
+        // Uso una transazione per assicurarmi che vengano eseguite tutte le modifiche oppure nessuna
+        await db.transaction(async (tx) => {
+            await userRepository.update(record.userId, { passwordHash }, tx);
+            await passwordTokenRepository.markAsUsed(token, tx);
+        })
+        logger.info({ userId: record.userId }, "Account setup completed successfully");
     }
 };
