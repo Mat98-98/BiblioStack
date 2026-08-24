@@ -13,13 +13,19 @@ import { emailService } from "../features/email/email.service.js";
 import { logger } from "../config/logger.config.js";
 import { OAuth2Client } from "google-auth-library";
 
+// Costanti per il setup e il reset password
 const TOKEN_EXPIRY_MS = 10 * 60 * 1000;
 const SETUP_PASSWORD_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
 const RATE_LIMIT_MINUTES = 10;
 
-
+// Scadenze token auth
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 giorni
+
+// Lista di domini consentiti per il login google. Determina i domini che possono registrarsi attraverso google login automaticamente
+const ALLOWED_GOOGLE_DOMAINS = [
+    "buonarroti.tn.it"
+];
 
 // Generazione token password
 const generateToken = () => crypto.randomBytes(32).toString("hex");
@@ -69,6 +75,17 @@ const capitalizeWords = (value) =>
 
 // Per il login google
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Funzione helper per verificare che il dominio sia tra la lista dei consentiti
+const isAllowedGoogleDomain = (email) => {
+    const domain = email.split("@")[1]?.toLowerCase();
+
+    return !!domain && ALLOWED_GOOGLE_DOMAINS.includes(domain);
+}
+
+// Funzione helper per il intercettare una violazione unique su postgreSQL
+const isUniqueViolation = (error) =>
+    error?.code === "23505";
 
 
 export const authService = {
@@ -130,25 +147,42 @@ export const authService = {
             throw new AppError("Email not verified", "EMAIL_NOT_VERIFIED", 401);
         }
 
+
+        const email = payload.email.toLowerCase();
         let user = await userRepository.findByGoogleId(payload.sub);
 
         if (!user) {
-            const existingByEmail = await userRepository.findByEmail(payload.email);
+            const existingByEmail = await userRepository.findByEmail(email);
 
                 if (existingByEmail) {
                     await userRepository.update(existingByEmail.id, { googleId: payload.sub });
 
                     user = await userRepository.findById(existingByEmail.id);
             } else {
-                const [newUser] = await userRepository.create({
-                    email: payload.email,
-                    firstName: capitalizeWords(payload.given_name ?? null),
-                    lastName: capitalizeWords(payload.family_name ?? null),
-                    passwordHash: null,
-                    googleId: payload.sub,
-                    roleId: DEFAULT_USER_ROLE_ID
-                });
-                user = await userRepository.findById(newUser.id);
+                    if (!isAllowedGoogleDomain(email)) {
+                        throw new AppError("Registration with Google is not allowed for this domain", "GOOGLE_DOMAIN_NOT_ALLOWED", 403);
+                    }
+                    try {
+                        const [newUser] = await userRepository.create({
+                            email: email,
+                            firstName: capitalizeWords(payload.given_name ?? null),
+                            lastName: capitalizeWords(payload.family_name ?? null),
+                            passwordHash: null,
+                            googleId: payload.sub,
+                            roleId: DEFAULT_USER_ROLE_ID
+                        });
+                        user = await userRepository.findById(newUser.id);
+                    } catch (error) {
+                        if (isUniqueViolation(error)) {
+                            user = await userRepository.findByGoogleId(payload.sub);
+
+                            if (!user) {
+                                throw new AppError("Unable to authenticate with Google", "GOOGLE_AUTH_FAILED", 500);
+                            }
+                        } else {
+                            throw error;
+                        }
+                    }
             }
         }
 
