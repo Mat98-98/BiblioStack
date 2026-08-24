@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import {User, BookMarked, Settings, LogOut, Menu, LayoutDashboard, QrCode} from "lucide-react"
+import { User, BookMarked, Settings, LogOut, Menu, LayoutDashboard, QrCode } from "lucide-react"
 import { useAuth } from "@/context/AuthContext.jsx"
 
 import { Button } from "@/components/ui/button.jsx"
@@ -55,7 +55,7 @@ export function DesktopMenu() {
 
                 <DropdownMenuContent align="end" className="w-56">
                     <div className="p-2 font-medium select-none cursor-default">
-                        Ciao
+                        {user.firstName} {user.lastName}
                     </div>
 
                     <DropdownMenuSeparator />

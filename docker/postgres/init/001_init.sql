@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS roles (
 -- Tabelle utenti
 CREATE TABLE IF NOT EXISTS users (
                                      id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                                     google_id text UNIQUE,
                                      role_id smallint NOT NULL REFERENCES roles(id) ON DELETE NO ACTION,
                                      first_name text,
                                      last_name text,

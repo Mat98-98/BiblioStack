@@ -1,8 +1,10 @@
 import { authService } from "../services/auth.service.js";
-import { RegisterSchema, LoginSchema } from "../schemas/auth.schema.js";
-import { UserSafeDTO } from "../dto/user.dto.js";
+import { RegisterSchema, LoginSchema, GoogleLoginSchema } from "../schemas/auth.schema.js";
+import { UserAuthDTO, UserSafeDTO } from "../dto/user.dto.js";
 import { setAuthCookies, clearAuthCookies } from "../utils/cookie.util.js";
-import {ForgotPasswordSchema, ResetPasswordSchema} from "../schemas/passwordToken.schema.js";
+import { ForgotPasswordSchema, ResetPasswordSchema } from "../schemas/passwordToken.schema.js";
+import { userRepository } from "../repositories/user.repository.js";
+import { AppError } from "../utils/appError.js";
 
 export const authController = {
 
@@ -30,6 +32,18 @@ export const authController = {
         }
     },
 
+    googleLogin: async (req, res, next) => {
+        try {
+            const { idToken } = GoogleLoginSchema.parse(req.body);
+            const { accessToken, refreshToken, user } = await authService.loginWithGoogle(idToken);
+
+            setAuthCookies(res, accessToken, refreshToken);
+            res.json({ user: UserSafeDTO.parse(user) });
+        } catch (err) {
+            next(err);
+        }
+    },
+
     refresh: async (req, res, next) => {
         try {
             const { accessToken, refreshToken, user } = await authService.refresh(req.cookies.refreshToken);
@@ -50,8 +64,22 @@ export const authController = {
         }
     },
 
-    me: (req, res) => {
-        res.json(req.user);
+    me: async (req, res, next) => {
+        try {
+            const user = await userRepository.findById(req.user.id);
+
+            if (!user) {
+                throw new AppError(
+                    "User not found",
+                    "USER_NOT_FOUND",
+                    404
+                );
+            }
+
+            res.json(UserAuthDTO.parse(user));
+        } catch (err) {
+            next(err);
+        }
     },
 
     forgotPassword: async (req, res, next) => {

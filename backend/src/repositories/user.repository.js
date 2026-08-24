@@ -54,6 +54,12 @@ export const userRepository = {
         return user ? mapUserWithSuspension(user) : null;
     },
 
+    findByGoogleId: async (googleId) =>
+        await db.query.users.findFirst({
+            where: { googleId },
+            with: { role: true }
+        }),
+
     findByEmail: async (email) =>
         await db.query.users.findFirst({
             where: { email: email },

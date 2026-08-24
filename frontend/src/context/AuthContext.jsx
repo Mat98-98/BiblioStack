@@ -35,6 +35,16 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const loginWithGoogle = async (idToken) => {
+        try {
+            await api.post(`/auth/google`, { idToken });
+            await fetchMe();
+        } catch (err) {
+            setUser(null);
+            throw err;
+        }
+    }
+
     const logout = async () => {
         try {
             await api.post("/auth/logout");
@@ -47,6 +57,7 @@ export function AuthProvider({ children }) {
         <AuthContext.Provider value={{
             user,
             login,
+            loginWithGoogle,
             logout,
             loading,
             isAuthenticated: !!user

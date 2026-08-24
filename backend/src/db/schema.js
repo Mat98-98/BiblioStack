@@ -142,6 +142,7 @@ export const noticeTypes = pgTable('notice_types', {
 export const users = pgTable('users', {
     // Nota: mode 'number' fa sì che JS legga il bigint come numero normale e non come stringa
     id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
+    googleId: text('google_id').unique(),
     roleId: smallint('role_id').notNull().references(() => roles.id),
     firstName: text('first_name'),
     lastName: text('last_name'),

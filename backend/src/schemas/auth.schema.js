@@ -20,3 +20,8 @@ export const LoginSchema = z.object({
     email:    z.email("Invalid email format").toLowerCase(),
     password: z.string().min(1, "Password is required")
 });
+
+// Schema di validazione per il login Google
+export const GoogleLoginSchema = z.object({
+    idToken:     z.string().min(1, "ID token is required")
+});

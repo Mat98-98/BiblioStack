@@ -11,6 +11,7 @@ import { DEFAULT_USER_ROLE_ID, TOKEN_TYPES } from "../constants.js";
 import { passwordTokenRepository } from "../repositories/passwordToken.repository.js";
 import { emailService } from "../features/email/email.service.js";
 import { logger } from "../config/logger.config.js";
+import { OAuth2Client } from "google-auth-library";
 
 const TOKEN_EXPIRY_MS = 10 * 60 * 1000;
 const SETUP_PASSWORD_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
@@ -60,6 +61,16 @@ const issueTokens = async (user, tx = db) => {
     return { accessToken, refreshToken };
 };
 
+// Rende la prima lettera di ogni parola maiuscola e il resto minuscole
+const capitalizeWords = (value) =>
+    value
+        ?.toLowerCase()
+        .replace(/\b\p{L}/gu, (char) => char.toUpperCase());
+
+// Per il login google
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+
 export const authService = {
 
     register: async ({ email, password, firstName, lastName, phone }) => {
@@ -93,6 +104,55 @@ export const authService = {
             logger.warn({ userId: user.id }, "Login attempt with wrong password");
             throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
         }
+
+        const { accessToken, refreshToken } = await issueTokens(user);
+        return { accessToken, refreshToken, user };
+    },
+
+    loginWithGoogle: async (idToken) => {
+        let payload;
+        try {
+            const ticket = await googleClient.verifyIdToken({
+                idToken,
+                audience: process.env.GOOGLE_CLIENT_ID
+            });
+
+            payload = ticket.getPayload();
+        } catch {
+            throw new AppError("Invalid Google token", "INVALID_TOKEN", 401);
+        }
+
+        if (!payload?.sub || !payload?.email) {
+            throw new AppError("Invalid Google token", "INVALID_TOKEN", 401);
+        }
+
+        if (payload.email_verified !== true) {
+            throw new AppError("Email not verified", "EMAIL_NOT_VERIFIED", 401);
+        }
+
+        let user = await userRepository.findByGoogleId(payload.sub);
+
+        if (!user) {
+            const existingByEmail = await userRepository.findByEmail(payload.email);
+
+                if (existingByEmail) {
+                    await userRepository.update(existingByEmail.id, { googleId: payload.sub });
+
+                    user = await userRepository.findById(existingByEmail.id);
+            } else {
+                const [newUser] = await userRepository.create({
+                    email: payload.email,
+                    firstName: capitalizeWords(payload.given_name ?? null),
+                    lastName: capitalizeWords(payload.family_name ?? null),
+                    passwordHash: null,
+                    googleId: payload.sub,
+                    roleId: DEFAULT_USER_ROLE_ID
+                });
+                user = await userRepository.findById(newUser.id);
+            }
+        }
+
+        logger.info({ userId: user.id }, "User logged via Google");
 
         const { accessToken, refreshToken } = await issueTokens(user);
         return { accessToken, refreshToken, user };

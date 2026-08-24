@@ -10,6 +10,9 @@ router.post("/register", authController.register);
 // POST /auth/login
 router.post("/login", authController.login);
 
+// POST /auth/google
+router.post("/google", authController.googleLogin);
+
 //POST /auth/logout
 router.post("/logout", authController.logout);
 

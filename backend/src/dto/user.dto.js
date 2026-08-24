@@ -84,3 +84,9 @@ export const UserSafeDTO = UserCore.extend({
     role:      RoleSchema,
     createdAt: z.date().nullable().optional(),
 });
+
+
+// DTO utilizzato per la risposta degli /me
+export const UserAuthDTO = UserCore.extend({
+    role:     RoleSchema
+});
