@@ -5,6 +5,7 @@ import { setAuthCookies, clearAuthCookies } from "../utils/cookie.util.js";
 import { ForgotPasswordSchema, ResetPasswordSchema } from "../schemas/passwordToken.schema.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { AppError } from "../utils/appError.js";
+import { passwordService } from "../services/password.service.js";
 
 export const authController = {
 
@@ -85,7 +86,7 @@ export const authController = {
     forgotPassword: async (req, res, next) => {
         try {
             const { email } = ForgotPasswordSchema.parse(req.body)
-            await authService.forgotPassword({ email })
+            await passwordService.forgotPassword({ email })
 
             res.json({ message: "Password reset instructions sent"})
         } catch (err) {
@@ -96,7 +97,7 @@ export const authController = {
     resetPassword: async (req, res, next) => {
         try {
             const { token, password } = ResetPasswordSchema.parse(req.body)
-            await authService.resetPassword({ token, password })
+            await passwordService.resetPassword({ token, password })
             res.json({ message: "Account setup completed" })
         } catch (err) {
             next(err)
@@ -106,7 +107,7 @@ export const authController = {
     setupAccount: async (req, res, next) => {
         try {
             const { token, password } = ResetPasswordSchema.parse(req.body)
-            await authService.setupAccount({ token, password })
+            await passwordService.setupAccount({ token, password })
             res.json({ message: "Password reset successful" })
         } catch (err) {
             next(err)

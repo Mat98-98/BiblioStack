@@ -8,6 +8,7 @@ import { DEFAULT_USER_ROLE_ID } from "../constants.js";
 import { authService } from "./auth.service.js";
 import { db } from "../db/connection.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
+import {passwordService} from "./password.service.js";
 
 
 
@@ -85,7 +86,7 @@ export const userService = {
         const createdUser = await userRepository.findById(user.id);
 
         // Invio l'email di setup password all'utente
-        await authService.setupPassword(createdUser.id);
+        await passwordService.setupPassword(createdUser.id);
 
         return createdUser;
     },
