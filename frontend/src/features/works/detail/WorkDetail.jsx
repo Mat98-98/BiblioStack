@@ -12,8 +12,6 @@ import DetailWorkDescription from "@/features/works/detail/components/DetailWork
 import StaffItemsTable from "@/features/items/management/components/StaffItemsTable.jsx";
 
 
-
-
 export default function WorkDetail({ work, loading, error, refetch }) {
     const { user, isAuthenticated } = useAuth();
 
@@ -28,10 +26,11 @@ export default function WorkDetail({ work, loading, error, refetch }) {
         );
     }
 
-    const isStaff = user?.role === "librarian" || user?.role === "admin";
-    const isAdmin = user?.role === "admin";
+    const isStaff = user?.role?.name === "librarian" || user?.role?.name === "admin";
+    const isAdmin = user?.role?.name === "admin";
     const authors = work.authors?.map(a => `${a.firstName} ${a.lastName}`).join(", ") || "—";
     const available = work.availableCount ?? 0;
+
 
     const handleDeleteItem = async (itemId) => {
         try {
