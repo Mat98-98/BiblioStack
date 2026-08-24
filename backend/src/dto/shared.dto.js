@@ -1,5 +1,5 @@
 import { z } from "zod";
-import {RESERVATION_STATUS} from "../constants.js";
+import { RESERVATION_STATUS } from "../constants.js";
 
 export const UserMiniDTO = z.object({
     id: z.number(),

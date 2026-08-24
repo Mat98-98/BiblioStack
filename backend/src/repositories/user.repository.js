@@ -1,7 +1,7 @@
 import { db } from "../db/connection.js";
 import { users } from "../db/schema.js";
 import { normalizeSearch } from "../utils/search.util.js";
-import {eq, ilike, or, sql, desc, isNull} from "drizzle-orm";
+import { eq, ilike, or, sql, desc } from "drizzle-orm";
 
 // Helper per mappare gli utenti con sospensioni attive
 function mapUserWithSuspension(user) {
@@ -74,7 +74,12 @@ export const userRepository = {
                 role: true,
                 activeSuspension: true,
                 loansAsPatron: {
-                    with: {item: true}
+                    with:
+                        {
+                            item: {
+                                with: { work: true }
+                            }
+                        }
                 },
                 reservations: {
                     with: {work: true}

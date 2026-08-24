@@ -35,7 +35,9 @@ const LoanSchema = z.object({
     loanDate: z.date(),
     dueDate: z.date().optional().nullable(),
     returnDate: z.date().optional().nullable(),
-    item: ItemMiniDTO
+    item: ItemMiniDTO.extend({
+        work: WorkMiniDTO
+    })
 });
 
 // ======== Core DTO ========
