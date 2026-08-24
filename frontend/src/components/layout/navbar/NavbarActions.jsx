@@ -20,7 +20,7 @@ export default function NavbarActions() {
                     {open ? <X /> : <Search />}
                 </Button>
 
-                {user?.role === "admin" && (
+                {user?.role?.name === "admin" && (
                     <Button variant="ghost" size="icon" asChild>
                         <Link to="/admin">
                             <LayoutDashboard className="h-5 w-5 text-muted-foreground" />

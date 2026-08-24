@@ -6,7 +6,7 @@ export default function AdminGuard() {
 
     if (loading) return null
 
-    if (!user || user.role !== "admin")
+    if (!user || user.role?.name !== "admin")
         return <Navigate to="/" replace />
 
     return <Outlet />
