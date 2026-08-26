@@ -1,22 +1,29 @@
-import { useForm, Controller } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Loader2 } from "lucide-react"
-
-import { Input } from "@/components/ui/input.jsx"
-import { Button } from "@/components/ui/button.jsx"
-import { Textarea } from "@/components/ui/textarea.jsx"
-import DeweyCombobox from "../../../components/DeweyCombobox.jsx"
-import FormField from "./FormField.jsx"
-import AuthorsField from "./AuthorsField.jsx"
-import GenresField from "./GenresField.jsx"
-import { useGenres } from "../hooks/useGenres.js"
-import { useDeweyCodes } from "@/features/works/hooks/useDeweyCodes.js"
-import { workFormSchema } from "../workForm.schema.js"
-import LanguageCombobox from "@/features/works/components/LanguageCombobox.jsx";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input.jsx";
+import { Button } from "@/components/ui/button.jsx";
+import { Textarea } from "@/components/ui/textarea.jsx";
+import { useDeweyCodes } from "@/features/works/hooks/useDeweyCodes.js";
+import { useLanguages } from "@/features/works/hooks/useLanguages.js";
+import { usePublishers } from "@/features/works/hooks/usePublishers.js";
+import { usePublicationCountries } from "@/features/works/hooks/usePublicationCountries.js";
+import { workFormSchema } from "@/features/works/management/addWorkPage/workForm.schema.js";
+import { useGenres } from "@/features/works/management/addWorkPage/hooks/useGenres.js";
+import FormField from "@/features/works/management/addWorkPage/components/FormField.jsx";
+import GenresField from "@/features/works/management/addWorkPage/components/GenresField.jsx";
+import AuthorsField from "@/features/works/management/addWorkPage/components/AuthorsField.jsx";
+import AppCombobox from "@/components/common/AppCombobox.jsx";
+import DateSelector from "@/components/common/DateSelector.jsx";
 
 export default function WorkForm({ form: externalForm, onSubmit, loading }) {
     const { genres } = useGenres()
-    const deweyCodes = useDeweyCodes()
+    const { codes: deweyCodes, loading: loadingDewey } = useDeweyCodes()
+    const { languages, loading: loadingLanguages } = useLanguages()
+    const { publishers, loading: loadingPublishers } = usePublishers()
+
+    // Corretto mappando le variabili corrette dall'hook
+    const { publicationCountries, loading: loadingPublicationCountries } = usePublicationCountries()
 
     const { register, handleSubmit, control, watch, formState: { errors } } = useForm({
         resolver: zodResolver(workFormSchema),
@@ -63,38 +70,123 @@ export default function WorkForm({ form: externalForm, onSubmit, loading }) {
                     <Input {...register("subtitle")} />
                 </FormField>
 
+                {/* Editore */}
                 <FormField label="Editore" error={errors.publisherName?.message}>
-                    <Input {...register("publisherName")} />
+                    <Controller
+                        name="publisherName"
+                        control={control}
+                        render={({ field }) => (
+                            <AppCombobox
+                                value={field.value ? Number(field.value) : ""}
+                                onChange={(val) => field.onChange(val ? String(val) : "")}
+                                items={publishers}
+                                loading={loadingPublishers}
+                                placeholder="Seleziona editore..."
+                                searchPlaceholder="Cerca editore..."
+                                getOptionValue={(p) => p.id}
+                                renderLabel={(p) => <span className="text-sm">{p.name}</span>}
+                                renderSelected={(p) => p.name}
+                            />
+                        )}
+                    />
                 </FormField>
 
+                {/* Data di pubblicazione */}
                 <FormField label="Data di pubblicazione" error={errors.publicationDate?.message}>
-                    <Input type="date" {...register("publicationDate")} />
+                    <Controller
+                        name="publicationDate"
+                        control={control}
+                        render={({ field }) => (
+                            <DateSelector
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                                placeholder="Seleziona data di pubblicazione"
+                                captionLayout={"dropdown"}
+                                startYear={1800}
+                                endYear={new Date().getFullYear()}
+                            />
+                        )}
+                    />
                 </FormField>
 
                 <FormField label="Pagine" error={errors.pages?.message}>
-                    <Input type="number" {...register("pages")} />
+                    <Input type="number" inputMode="numeric" {...register("pages")} />
                 </FormField>
 
+                {/* Lingua */}
                 <FormField label="Lingua" error={errors.languageCode?.message}>
                     <Controller
                         name="languageCode"
                         control={control}
                         render={({ field }) => (
-                            <LanguageCombobox value={field.value ?? ""} onChange={field.onChange} />
+                            <AppCombobox
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                                items={languages}
+                                loading={loadingLanguages}
+                                placeholder="Seleziona lingua..."
+                                searchPlaceholder="Cerca lingua..."
+                                getOptionValue={(l) => l.languageCode}
+                                renderLabel={(l) => (
+                                    <div className="flex w-full items-center justify-between">
+                                        <span className="text-sm">{l.name}</span>
+                                        <span className="ml-auto text-xs text-muted-foreground">{l.languageCode}</span>
+                                    </div>
+                                )}
+                                renderSelected={(l) => l.name}
+                            />
                         )}
                     />
                 </FormField>
 
+                {/* Paese pubblicazione dinamico da API */}
                 <FormField label="Paese pubblicazione" error={errors.publicationCountry?.message}>
-                    <Input {...register("publicationCountry")} maxLength={2} />
+                    <Controller
+                        name="publicationCountry"
+                        control={control}
+                        render={({ field }) => (
+                            <AppCombobox
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                                items={publicationCountries}
+                                loading={loadingPublicationCountries}
+                                placeholder="Seleziona paese..."
+                                searchPlaceholder="Cerca paese..."
+                                getOptionValue={(c) => c.countryCode}
+                                renderLabel={(c) => (
+                                    <div className="flex w-full items-center justify-between">
+                                        <span className="text-sm">{c.name}</span>
+                                        <span className="ml-auto text-xs text-muted-foreground uppercase">{c.countryCode}</span>
+                                    </div>
+                                )}
+                                renderSelected={(c) => c.name}
+                            />
+                        )}
+                    />
                 </FormField>
 
+                {/* Codice Dewey */}
                 <FormField label="Codice Dewey" error={errors.deweyCode?.message}>
                     <Controller
                         name="deweyCode"
                         control={control}
                         render={({ field }) => (
-                            <DeweyCombobox value={field.value ?? ""} onChange={field.onChange} />
+                            <AppCombobox
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                                items={deweyCodes}
+                                loading={loadingDewey}
+                                placeholder="Seleziona codice Dewey..."
+                                searchPlaceholder="Cerca codice o descrizione..."
+                                getOptionValue={(d) => d.code}
+                                renderLabel={(d) => (
+                                    <div className="flex items-center">
+                                        <span className="font-mono text-sm mr-2">{d.code}</span>
+                                        <span className="text-muted-foreground text-sm truncate">{d.description}</span>
+                                    </div>
+                                )}
+                                renderSelected={(d) => `${d.code} — ${d.description}`}
+                            />
                         )}
                     />
                 </FormField>

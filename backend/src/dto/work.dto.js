@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import {AuthorDTO, ItemMiniDTO} from "./shared.dto.js";
+import { AuthorDTO, ItemMiniDTO } from "./shared.dto.js";
 import { WorkExternalDTO } from "../features/worksExternal/worksExternal.mapper.js";
-import {LocationBaseDTO} from "./location.dto.js";
+import { LocationBaseDTO } from "./location.dto.js";
 
 /* ---------------- COMMON ---------------- */
 
@@ -33,6 +33,11 @@ const DeweySchema = z.object({
     description: z.string().nullable()
 });
 
+const PublicationCountrySchema = z.object({
+    countryCode: z.string(),
+    name: z.string()
+});
+
 /* ---------------- CORE ---------------- */
 
 const WorkCore = {
@@ -43,6 +48,7 @@ const WorkCore = {
 
 const WorkDetailCommon = {
     ...WorkCore,
+    otherTitleInformation: z.string().nullable().optional(),
     authors: z.array(AuthorDTO).default([]),
     genres: z.array(GenreSchema).default([]),
     publisher: PublisherSchema.nullable().optional(),
@@ -75,6 +81,8 @@ export const WorkDetailDTO = z.object({
 // Staff: stesso oggetto + dettagli sulle copie
 export const WorkDetailStaffDTO = z.object({
     ...WorkDetailCommon,
+    pages: z.number().nullable().optional(),
+    country: PublicationCountrySchema.nullable().optional(),
     items: z.array(ItemStaffSchema).default([])
 });
 

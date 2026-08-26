@@ -26,13 +26,14 @@ import languageRoutes from "./routes/language.routes.js";
 import publisherRoutes from "./routes/publisher.routes.js";
 import currencyRoutes from "./routes/currency.routes.js";
 import cardRoutes from "./routes/card.routes.js";
+import publicationCountriesRoutes from "./routes/publication.countries.routes.js";
 
 
 const app = express()
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
     ? ['https://urlreale'] // da cambiare in produzione
-    : ['http://localhost:5173']; // frontend locale
+    : [process.env.FRONTEND_URL]; // frontend locale
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -89,6 +90,8 @@ app.use("/api/languages", languageRoutes)
 app.use("/api/publishers", publisherRoutes)
 
 app.use("/api/currencies", currencyRoutes)
+
+app.use("/api/publicationCountries", publicationCountriesRoutes)
 
 app.use("/api/cards", cardRoutes)
 

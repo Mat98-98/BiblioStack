@@ -26,7 +26,7 @@ export const workController = {
             // Controllo (se l'utente è loggato) se fa parte dello staff
             const isStaff = req.user?.role === "librarian" || req.user?.role === "admin";
 
-            const work = await workService.getById(req.params.id, { forStaff: isStaff}); // Se isStaff = true il service fa la chiamata riservata allo staff, altrimenti passerà false e quindi chiamata normale
+            const work = await workService.getById(req.params.id, isStaff); // Se isStaff = true il service fa la chiamata riservata allo staff, altrimenti passerà false e quindi chiamata normale
 
             // Costruisco la response con il dto in base al ruolo dell'utente
             const data = isStaff ? WorkDetailStaffDTO : WorkDetailDTO;

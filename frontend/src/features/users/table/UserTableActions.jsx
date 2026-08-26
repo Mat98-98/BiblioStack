@@ -1,14 +1,12 @@
 import { useState } from "react";
-import {MoreHorizontal, Shield, Ban, Trash2, Pencil, ShieldCheck} from "lucide-react";
-import { Button } from "@/components/ui/button.jsx";
-import {
-    DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-    DropdownMenuSeparator, DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu.jsx";
+import { Shield, Ban, Trash2, Pencil, ShieldCheck } from "lucide-react";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu.jsx";
+import { ActionsMenu } from "@/components/common/dialogs/ActionsMenu.jsx";
 import SuspendUserDialog from "@/features/users/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
 import EditUserDialog from "@/features/users/dialogs/editUserDialog/EditUserDialog.jsx";
 import ChangeRoleDialog from "@/features/users/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
+
 
 export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, onUnsuspend, onEdit }) {
     const [deleteOpen, setDeleteOpen]   = useState(false);
@@ -31,13 +29,7 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
 
     return (
         <>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
+            <ActionsMenu>
                     <DropdownMenuItem onClick={() => setEditOpen(true)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Modifica
@@ -72,9 +64,9 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                         <Trash2 className="mr-2 h-4 w-4" />
                         Elimina
                     </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            </ActionsMenu>
 
+            {/* Dialog di conferma soft delete utente */}
             <ConfirmDialog
                 open={deleteOpen}
                 onClose={() => setDeleteOpen(false)}
@@ -86,6 +78,7 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                 variant="destructive"
             />
 
+            {/* Dialog sospensione utente */}
             <SuspendUserDialog
                 user={user}
                 open={suspendOpen}
@@ -93,6 +86,7 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                 onConfirm={onSuspend}
             />
 
+            {/* Dialog modifica utente */}
             <EditUserDialog
                 user={user}
                 open={editOpen}
@@ -100,6 +94,7 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                 onConfirm={onEdit}
             />
 
+            {/* Dialog cambio ruolo utente */}
             <ChangeRoleDialog
                 user={user}
                 open={roleOpen}
@@ -110,6 +105,7 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                 }}
             />
 
+            {/* Dialog di conferma sospensione e riammissione utente */}
             <ConfirmDialog
                 open={unsuspendOpen}
                 onClose={() => setUnsuspendOpen(false)}

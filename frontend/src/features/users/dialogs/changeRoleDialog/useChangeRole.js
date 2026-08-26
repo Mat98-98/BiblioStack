@@ -1,28 +1,45 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { changeRoleSchema } from "./changeRole.schema.js";
 
-export function useChangeRole(user, onSuccess) {
+export function useChangeRole(user) {
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingData, setPendingData] = useState(null);
+
     const form = useForm({
         resolver: zodResolver(changeRoleSchema),
         values: {
             role: user?.role?.name
         }
-    })
+    });
 
-    const { handleSubmit, watch, setValue } = form
+    const { handleSubmit, watch, setValue, reset } = form;
 
-    const role = watch("role")
+    const role = watch("role");
 
-    const submit = handleSubmit(async (data) => {
-        if (!user?.id) return
+    // Intercetta il submit e apre la conferma
+    const handlePreSubmit = (data) => {
+        setPendingData(data);
+        setConfirmDialogOpen(true);
+    };
 
-        // Passa l'id e il ruolo direttamente alla funzione genitore (updateRole)
-        // L'API e le notifiche verranno gestite da useAdminUsers.js
-        if (onSuccess) {
-            await onSuccess(user.id, data.role);
-        }
-    })
+    // Resetta tutto quando si chiude il dialog
+    const resetAll = () => {
+        setPendingData(null);
+        setConfirmDialogOpen(false);
+        reset({ role: user?.role?.name });
+    };
 
-    return { form, role, setValue, submit }
+    return {
+        form,
+        role,
+        setValue,
+        handleSubmit,
+        handlePreSubmit,
+        confirmDialogOpen,
+        setConfirmDialogOpen,
+        pendingData,
+        resetAll
+    };
 }

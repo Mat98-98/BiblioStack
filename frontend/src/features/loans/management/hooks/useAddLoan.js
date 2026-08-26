@@ -12,6 +12,19 @@ import api from "@/api/axios.js";
 function getDefaultDueDate() {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);     // + 1 mese dalla data odierna
+
+    const dayOfWeek = date.getDay();
+
+    // Se il giorno è domenica la impostiamo al giorno dopo
+    if (dayOfWeek === 0) {
+        date.setDate(date.getDate() + 1);
+    }
+
+    // Se il giorno è sabato la impostiamo al lunedì successivo
+    if (dayOfWeek === 6) {
+        date.setDate(date.getDate() + 2);
+    }
+
     return date.toISOString().split("T")[0];
 }
 
@@ -27,6 +40,7 @@ export function useAddLoan(onSuccess) {
 
     // Stato per il dialog di riepilogo
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingData, setPendingData] = useState(null);
 
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -95,26 +109,26 @@ export function useAddLoan(onSuccess) {
     }, [itemIdValue]);
 
     // Intercetto il submit del form aprendo il dialog di riepilogo prima di salvare
-    const handlePreSubmit = () => {
+    const handlePreSubmit = async (values) => {
+        const valid = await form.trigger();
+        if (!valid) return;
+        setPendingData(values)
         setConfirmDialogOpen(true);
     };
 
 
     // Conferma finale
     const confirmAndSubmit = async () => {
-        const values = form.getValues();
+        if (!pendingData) return;
         setLoading(true);
         try {
             await api.post("/loans", {
-                ...values,
+                ...pendingData,
                 handledBy: user.id,
             });
 
             notify.success("Prestito registrato con successo!");
-            form.reset({ userId: null, itemId: "", dueDate: getDefaultDueDate() });
-            setPatronInfo(null);
-            setItemInfo(null);
-            setConfirmDialogOpen(false);
+            resetAll();
             onSuccess?.();
             return true;
         } catch (err) {
@@ -126,10 +140,10 @@ export function useAddLoan(onSuccess) {
     };
 
     const resetAll = () => {
-        form.reset();
+        form.reset({ userId: null, itemId: "", dueDate: getDefaultDueDate()});
         setItemInfo(null);
         setPatronInfo(null);
-        setItemInfo(null);
+        setPendingData(null);
         setConfirmDialogOpen(false);
     }
 
@@ -144,6 +158,7 @@ export function useAddLoan(onSuccess) {
         setItemLoading,
         confirmDialogOpen,
         setConfirmDialogOpen,
+        pendingData,
         handlePreSubmit,
         confirmAndSubmit,
         resetAll

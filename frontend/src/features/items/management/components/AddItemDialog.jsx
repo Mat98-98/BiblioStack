@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Loader2 } from "lucide-react";
+import { Loader2, Hash, MapPin, Calendar, Euro } from "lucide-react";
+import { Button } from "@/components/ui/button.jsx";
+import { Input } from "@/components/ui/input.jsx";
+import { Label } from "@/components/ui/label.jsx";
+import { SummaryRow } from "@/components/common/SummaryRow.jsx";
+import { useAddItem } from "@/features/items/management/hooks/useAddItem.js";
+import { format } from "date-fns";
+import { it } from "date-fns/locale"
 import {
     Dialog,
     DialogContent,
@@ -8,19 +15,17 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog.jsx";
-import { Button } from "@/components/ui/button.jsx";
-import { Input } from "@/components/ui/input.jsx";
-import { Label } from "@/components/ui/label.jsx";
-import { useAddItem } from "@/features/items/management/hooks/useAddItem.js";
-import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
-import ConfirmAddItemDialog from "@/features/items/management/components/ConfirmAddItemDialog.jsx";
 import LocationSelect from "@/features/items/management/components/LocationSelect.jsx";
+import DateSelector from "@/components/common/DateSelector.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
+
 
 
 function FieldError({ message }) {
     if (!message) return null;
     return <p className="text-xs text-destructive mt-1">{message}</p>;
 }
+
 
 export default function AddItemDialog({ open, onClose, onSuccess, workId, workTitle }) {
     const { form, loading, locations, submit } = useAddItem(workId, open);
@@ -76,9 +81,9 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
             <Dialog open={open && !confirmOpen && !addAnotherOpen} onOpenChange={handleClose}>
                 <DialogContent className="max-w-md">
 
-                    <DialogHeader>
-                        <DialogTitle>Aggiungi copia</DialogTitle>
-                        <DialogDescription>
+                    <DialogHeader className="">
+                        <DialogTitle className="text-xl">Aggiungi copia</DialogTitle>
+                        <DialogDescription className="text-sm text-muted-foreground">
                             {workTitle
                                 ? `Aggiungi una nuova copia di "${workTitle}".`
                                 : "Aggiungi una nuova copia dell'opera."}
@@ -108,8 +113,12 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label>Data acquisizione</Label>
-                                <Input type="date" {...register("acquisitionDate")} />
+                                <Label>Data di acquisizione</Label>
+                                <DateSelector
+                                    value={watch("acquisitionDate") ?? ""}
+                                    onChange={(val) => setValue("acquisitionDate", val, { shouldValidate: true })}
+                                    placeholder={"Seleziona data"}
+                                />
                                 <FieldError message={errors.acquisitionDate?.message} />
                             </div>
 
@@ -147,15 +156,40 @@ export default function AddItemDialog({ open, onClose, onSuccess, workId, workTi
             </Dialog>
 
             {/* Conferma con riepilogo dati nuova copia */}
-            <ConfirmAddItemDialog
+            <ConfirmDialog
                 open={confirmOpen}
                 onClose={handleClose}
-                onBack={() => setConfirmOpen(false)}
                 onConfirm={handleConfirm}
                 loading={loading}
-                data={summaryData}
-                workTitle={workTitle}
-            />
+                title="Conferma inserimento copia"
+                description={workTitle ? `Controlla i dati per la nuova copia di "${workTitle}":` : "Controlla i dati per la nuova copia:"}
+                confirmLabel="Conferma e aggiungi"
+                cancelLabel="Indietro"
+                onCancel={() => setConfirmOpen(false)}
+            >
+                <div className="space-y-3 py-2">
+                    <SummaryRow
+                        icon={Hash}
+                        label={"ID copia"}
+                        value={summaryData.id}
+                    />
+                    <SummaryRow
+                        icon={MapPin}
+                        label={"Posizione"}
+                        value={summaryData.locationLabel || "Non specificata"}
+                    />
+                    <SummaryRow
+                        icon={Calendar}
+                        label={"Data di acquisizione"}
+                        value={summaryData.acquisitionDate ? format(new Date(summaryData.acquisitionDate), "PPP", { locale: it }) : "Non specificata"}
+                    />
+                    <SummaryRow
+                        icon={Euro}
+                        label={"Prezzo"}
+                        value={summaryData.price ? `€ ${Number(summaryData.price).toFixed(2)}` : "Non specificato"}
+                    />
+                </div>
+            </ConfirmDialog>
 
             {/* Richiede se si vuole aggiungere un'altra copia dell'opera */}
             <ConfirmDialog

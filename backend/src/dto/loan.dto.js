@@ -2,9 +2,11 @@ import { z } from 'zod';
 import { UserMiniDTO } from "./shared.dto.js";
 
 // Costruisco i DTO di supporto per la risposta
-
 const ItemSchema = z.object({
-    id: z.string()
+    id: z.string(),
+    work: z.object({
+        title: z.string()
+    })
 });
 
 const NoticeSchema = z.object({

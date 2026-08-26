@@ -4,7 +4,11 @@ import { useAddLoan } from "@/features/loans/management/hooks/useAddLoan.js";
 import { Label } from "@/components/ui/label.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { Button } from "@/components/ui/button.jsx";
-import { Loader2, QrCode, User, BookOpen, XCircle } from "lucide-react";
+import { Controller } from "react-hook-form";
+import { SummaryRow } from "@/components/common/SummaryRow.jsx";
+import { Loader2, QrCode, User, BookOpen, XCircle, BookPlus, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { it } from "date-fns/locale"
 import {
     Dialog,
     DialogContent,
@@ -14,7 +18,10 @@ import {
     DialogTitle
 } from "@/components/ui/dialog.jsx";
 import CodeScannerDialog from "@/features/qrCode/CodeScannerDialog.jsx";
-import ConfirmAddLoanDialog from "@/features/loans/management/components/ConfirmAddLoanDialog.jsx";
+import DateSelector from "@/components/common/DateSelector.jsx";
+import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
+import {safeFormat} from "@/lib/dateUtils.js";
+
 
 export default function AddLoanDialog({ open, onClose }) {
     const {
@@ -22,17 +29,17 @@ export default function AddLoanDialog({ open, onClose }) {
         loading,
         patronInfo,
         patronLoading,
-        setPatronInfo,
         itemInfo,
         itemLoading,
         confirmDialogOpen,
         setConfirmDialogOpen,
+        pendingData,
         handlePreSubmit,
         confirmAndSubmit,
         resetAll
     } = useAddLoan(onClose);
 
-    const { register, handleSubmit, setValue, watch, formState: { errors } } = form;
+    const { register, handleSubmit, setValue, control, formState: { errors } } = form;
 
     const [scannerOpen, setScannerOpen] = useState(false);
     const { verify, reset: resetVerification } = useCardVerification();
@@ -145,9 +152,22 @@ export default function AddLoanDialog({ open, onClose }) {
 
                         {/* Sezione Scadenza */}
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="dueDate">Data di scadenza</Label>
-                            <Input id="dueDate" type="date" {...register("dueDate")} />
+                            <Label>Data di scadenza</Label>
+                            <Controller
+                                name="dueDate"
+                                control={control}
+                                render={({ field }) => (
+                                    <DateSelector
+                                        value={field.value ?? ""}
+                                        onChange={field.onChange}
+                                        placeholder={"Seleziona la data di scadenza"}
+                                        minDate={new Date()}
+                                        excludeWeekends={true}
+                                    />
+                                )}
+                            />
                             {errors.dueDate && <span className="text-xs text-destructive">{errors.dueDate.message}</span>}
+
                         </div>
 
                         <DialogFooter className="mt-2">
@@ -168,16 +188,36 @@ export default function AddLoanDialog({ open, onClose }) {
             </Dialog>
 
             {/* Dialog di Riepilogo Finale */}
-            <ConfirmAddLoanDialog
+            <ConfirmDialog
                 open={confirmDialogOpen}
                 onClose={() => setConfirmDialogOpen(false)}
                 onBack={() => setConfirmDialogOpen(false)}
                 onConfirm={confirmAndSubmit}
                 loading={loading}
-                patron={patronInfo?.user}
-                item={itemInfo?.item}
-                dueDate={watch("dueDate")}
-            />
+                title={"Conferma prestito"}
+                description={"Controlla i dati prima di registrare il prestito"}
+                confirmLabel={"Conferma e registra"}
+                cancelLabel={"Indietro"}
+                onCancel={() => setConfirmDialogOpen(false)}
+            >
+                <div className="space-y-3 py-2">
+                    <SummaryRow
+                        icon={User}
+                        label={"Utente"}
+                        value={patronInfo?.user ? `${patronInfo.user.firstName} ${patronInfo.user.lastName}` : pendingData?.userId}
+                    />
+                    <SummaryRow
+                        icon={BookPlus}
+                        label={"Opera / Copia"}
+                        value={itemInfo?.item?.work?.title ? `${itemInfo.item.work.title} (${pendingData?.itemId})` : pendingData?.itemId}
+                    />
+                    <SummaryRow
+                        icon={Calendar}
+                        label={"Data di scadenza"}
+                        value={safeFormat(pendingData?.dueDate) || "Non definita"}
+                    />
+                </div>
+            </ConfirmDialog>
         </>
     );
 }

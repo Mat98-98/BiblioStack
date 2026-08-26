@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label.jsx";
 import { notify } from "@/lib/notify.js";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 import api from "@/api/axios.js";
+import {quickCheckInSchema} from "@/features/loans/management/schemas/loan.schema.js";
 
 
 export default function CheckInDialog({ open, onClose, loan = null, onSuccess }) {
@@ -25,11 +26,12 @@ export default function CheckInDialog({ open, onClose, loan = null, onSuccess })
             onSuccess?.();
         } else {
             // Modalità tramite button nell'header
-            const trimmedId = itemId.trim();
-            if (!trimmedId) {
-                notify.error("Inserisci il codice inventario della copia");
-                throw new Error("Codice vuoto"); // Impedisce la chiusura del dialog
+            const result = quickCheckInSchema.safeParse({ itemId: itemId.trim() });
+            if (!result.success) {
+                notify.error(result.error.issues[0].message);
+                throw new Error("Validazione fallita");
             }
+            const trimmedId = result.data.itemId;
 
             const { data: itemData } = await api.get(`/items/${trimmedId}`);
 

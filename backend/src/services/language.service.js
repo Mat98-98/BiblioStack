@@ -2,7 +2,7 @@ import { AppError } from "../utils/appError.js";
 import { languageRepository } from "../repositories/language.repository.js";
 
 
-// Funzione per verificare l'esistenza di un tipo una lingua, usata in getById, update e delete
+// Funzione per verificare l'esistenza di un tipo una lingua, usata in getByLanguageCode, update e delete
 const findUniqueOrThrow = async (languageCode) => {
     const language = await languageRepository.findByLanguageCode(languageCode);
 

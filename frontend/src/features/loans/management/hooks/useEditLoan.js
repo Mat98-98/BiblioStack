@@ -10,6 +10,11 @@ import api from "@/api/axios.js";
 
 export function useEditLoan(loan, open, onSuccess) {
     const [loading, setLoading] = useState(false);
+
+    // Stati per il dialog di riepilogo
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingData, setPendingData] = useState(null);
+
     const navigate = useNavigate();
 
     const form = useForm({
@@ -17,20 +22,40 @@ export function useEditLoan(loan, open, onSuccess) {
         defaultValues: { dueDate: "", returnDate: null },
     });
 
+    const formatDate = (dateVal) => {
+        if (!dateVal) return null;
+        try {
+            return new Date(dateVal).toISOString().split("T")[0];
+        } catch {
+            return null;
+        }
+    };
+
     useEffect(() => {
         if (!loan || !open) return;
         form.reset({
-            dueDate: loan.dueDate ? new Date(loan.dueDate).toISOString().split("T")[0] : "",
-            returnDate: loan.returnDate ? new Date(loan.returnDate).toISOString().split("T")[0] : null,
+            dueDate: formatDate(loan.dueDate),
+            returnDate: formatDate(loan.returnDate),
         });
+        setPendingData(null);
+        setConfirmDialogOpen(false);
     }, [loan, open]);
 
-    const submit = async () => {
-        const values = form.getValues();
+
+    // Intercetta il submit del form, valida e apre il dialog di riepilogo
+    const handlePreSubmit = async (values) => {
+        setPendingData(values);
+        setConfirmDialogOpen(true);
+    };
+
+    // Chiamata API finale dopo la conferma di riepilogo
+    const handleConfirmFinal = async () => {
+        if (!pendingData || !loan) return;
         setLoading(true);
         try {
-            await api.patch(`/loans/${loan.id}`, values);
+            await api.patch(`/loans/${loan.id}`, pendingData);
             notify.success("Prestito aggiornato con successo!");
+            resetAll();
             onSuccess?.();
             return true;
         } catch (err) {
@@ -41,5 +66,11 @@ export function useEditLoan(loan, open, onSuccess) {
         }
     };
 
-    return { form, loading, submit };
+    const resetAll = () => {
+        setPendingData(null);
+        setConfirmDialogOpen(false);
+    };
+
+
+    return { form, loading, confirmDialogOpen, setConfirmDialogOpen, pendingData, handlePreSubmit, handleConfirmFinal, resetAll };
 }

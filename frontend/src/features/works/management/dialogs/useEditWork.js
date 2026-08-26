@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {editWorkSchema} from "@/features/works/management/dialogs/editWork.schema.js";
+import { handleApiError } from "@/lib/handleApiError.js";
+import { editWorkSchema } from "@/features/works/management/dialogs/editWork.schema.js";
 import api from "@/api/axios.js";
 
 
@@ -14,7 +16,7 @@ function mapWorkToForm(data) {
         publicationDate:       data.publicationDate
             ? new Date(data.publicationDate).toISOString().split("T")[0]
             : "",
-        publicationCountry:    data.publicationCountry    ?? "",
+        publicationCountry:    data.country?.countryCode    ?? "",
         languageCode:          data.language?.languageCode ?? "",
         deweyCode:             data.dewey?.code            ?? "",
         publisherId:           data.publisher?.id?.toString() ?? "",
@@ -23,7 +25,11 @@ function mapWorkToForm(data) {
 }
 
 export function useEditWork(work, open) {
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [pendingData, setPendingData] = useState(null);
+
+    const navigate = useNavigate();
 
     const form = useForm({
         resolver: zodResolver(editWorkSchema),
@@ -39,31 +45,47 @@ export function useEditWork(work, open) {
             publisherId:           "",
             coverUrl:              "",
         }
-    })
+    });
 
     useEffect(() => {
-        if (!open || !work?.id) return
-        let cancelled = false
+        if (!open || !work?.id) return;
 
         const fetchWork = async () => {
             try {
                 const { data } = await api.get(`/works/${work.id}`);
-
                 form.reset(mapWorkToForm(data));
-            } catch (error) {}
-        }
-            /*
-        api.get(`/works/${work.id}`)
-            .then(({ data }) => {
-                if (!cancelled) form.reset(mapWorkToForm(data))
-            })
-            .catch(() => {})
+            } catch (error) {
+                handleApiError(error, navigate)
+            }
+        };
+        fetchWork();
+        setPendingData(null);
+        setConfirmDialogOpen(false);
+    }, [work?.id, open]);
 
-        return () => { cancelled = true }
+    // Intercetta il submit, valida e apre il riepilogo
+    const handlePreSubmit = async (values) => {
+        const valid = await form.trigger();
+        if (!valid) return;
 
-             */
-        fetchWork()
-    }, [work?.id, open])
+        setPendingData(values);
+        setConfirmDialogOpen(true);
+    };
 
-    return { form, loading, setLoading }
+
+    const resetAll = () => {
+        setPendingData(null);
+        setConfirmDialogOpen(false);
+    };
+
+    return {
+        form,
+        loading,
+        setLoading,
+        confirmDialogOpen,
+        setConfirmDialogOpen,
+        pendingData,
+        handlePreSubmit,
+        resetAll
+    };
 }

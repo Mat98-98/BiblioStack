@@ -1,6 +1,6 @@
+import { useAddWork } from "./useAddWork.js";
 import WorkFormStep from "./steps/WorkFormStep.jsx";
 import AuthorConflictStep from "./steps/AuthorConflictStep.jsx";
-import { useAddWork } from "./useAddWork.js";
 import AddItemDialog from "@/features/items/management/components/AddItemDialog.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 

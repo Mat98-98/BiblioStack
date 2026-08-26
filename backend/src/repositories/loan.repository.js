@@ -15,7 +15,7 @@ export const loanRepository = {
             limit,
             offset,
             with: {
-                item: true,
+                item: { with: { work: {columns: { title: true }}}},
                 patron: { columns: userSelect.safe },
                 librarian: { columns: userSelect.safe }
             },
@@ -27,7 +27,7 @@ export const loanRepository = {
         await db.query.loans.findFirst({
             where: { id },
             with: {
-                item: true,
+                item: { with: { work: {columns: { title: true }}}},
                 patron: { columns: userSelect.safe },
                 librarian: { columns: userSelect.safe },
                 notices: true
@@ -126,7 +126,7 @@ export const loanRepository = {
         const fullLoans = await db.query.loans.findMany({
             where: { id: { in: ids } },
             with: {
-                item: true,
+                item: { with: { work: {columns: { title: true }}}},
                 patron: { columns: userSelect.safe },
                 librarian: { columns: userSelect.safe }
             }

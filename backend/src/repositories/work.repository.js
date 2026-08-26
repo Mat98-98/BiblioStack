@@ -13,6 +13,7 @@ const fetchWorkWithRelations = (id, { withLocation = false } = {}) =>
             publisher: true,
             language: true,
             dewey: true,
+            country: true,
             items: withLocation
                 ? { with: { location: {
                     with : {
