@@ -1,7 +1,15 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { User, Plus, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
 import { Badge } from "@/components/ui/badge.jsx"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog.jsx"
 
 function CandidateButton({ candidate, selected, onSelect }) {
     return (
@@ -104,15 +112,20 @@ function ConflictCard({ conflict, resolution, onResolve }) {
     )
 }
 
-export default function AuthorConflictStep({
-                                               conflicts,
-                                               onResolve,
-                                               onBack,
-                                               loading
-                                           }) {
-    const [resolutions, setResolutions] = useState(() => {
-        const initial = new Map()
+export default function AuthorConflictDialog({
+                                                 open,
+                                                 conflicts,
+                                                 onResolve,
+                                                 onBack,
+                                                 loading
+                                             }) {
+    const [resolutions, setResolutions] = useState(new Map())
 
+    // Ricalcola le risoluzioni ogni volta che il dialog si apre con nuovi conflitti
+    useEffect(() => {
+        if (!open) return
+
+        const initial = new Map()
         conflicts.forEach(c => {
             if (c.suggestedMatch !== null) {
                 initial.set(c.inputName, {
@@ -121,9 +134,8 @@ export default function AuthorConflictStep({
                 })
             }
         })
-
-        return initial
-    })
+        setResolutions(initial)
+    }, [open, conflicts])
 
     const handleResolve = (inputName, authorId) => {
         setResolutions(prev =>
@@ -140,55 +152,60 @@ export default function AuthorConflictStep({
         onResolve(payload)
     }
 
+    const handleFullClose = () => {
+        if (loading) return
+        onBack()
+    }
+
     return (
-        <div className="space-y-6">
-            <div className="space-y-1">
-                <h2 className="text-lg font-semibold">
-                    Risolvi conflitti autori
-                </h2>
+        <Dialog open={open} onOpenChange={(v) => { if (!v) handleFullClose(); }}>
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>Risolvi conflitti autori</DialogTitle>
+                    <DialogDescription>
+                        Per {conflicts.length}{" "}
+                        {conflicts.length === 1 ? "autore" : "autori"} sono stati
+                        trovati conflitti o possibili duplicati.
+                    </DialogDescription>
+                </DialogHeader>
 
-                <p className="text-sm text-muted-foreground">
-                    Per {conflicts.length}{" "}
-                    {conflicts.length === 1 ? "autore" : "autori"} sono stati
-                    trovati conflitti o possibili duplicati.
-                </p>
-            </div>
+                <div className="flex flex-col gap-4 py-2">
+                    {conflicts.map(conflict => (
+                        <ConflictCard
+                            key={conflict.inputName}
+                            conflict={conflict}
+                            resolution={resolutions.get(conflict.inputName)}
+                            onResolve={handleResolve}
+                        />
+                    ))}
+                </div>
 
-            <div className="flex flex-col gap-4">
-                {conflicts.map(conflict => (
-                    <ConflictCard
-                        key={conflict.inputName}
-                        conflict={conflict}
-                        resolution={resolutions.get(conflict.inputName)}
-                        onResolve={handleResolve}
-                    />
-                ))}
-            </div>
+                <DialogFooter>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleFullClose}
+                        disabled={loading}
+                    >
+                        Torna al form
+                    </Button>
 
-            <div className="flex gap-2">
-                <Button
-                    variant="outline"
-                    onClick={onBack}
-                    disabled={loading}
-                >
-                    Torna al form
-                </Button>
-
-                <Button
-                    className="flex-1"
-                    onClick={handleSubmit}
-                    disabled={!allResolved || loading}
-                >
-                    {loading ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Salvataggio...
-                        </>
-                    ) : (
-                        "Conferma e salva"
-                    )}
-                </Button>
-            </div>
-        </div>
+                    <Button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={!allResolved || loading}
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Salvataggio...
+                            </>
+                        ) : (
+                            "Conferma e salva"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 }

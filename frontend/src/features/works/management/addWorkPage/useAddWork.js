@@ -17,6 +17,10 @@ export function useAddWork() {
     const [confirmCopyOpen, setConfirmCopyOpen] = useState(false);
     const [addItemWork, setAddItemWork]         = useState(null);
 
+    // Stato per il dialog che chiede se si vuole aggiungere una copia dopo l'inserimento di un'opera nuova
+    const [askAddItemOpen, setAskAddItemOpen] = useState(false);
+
+
     const navigate = useNavigate();
 
     // Mapping delle lingue da ISO 639-1 a ISO 639-2
@@ -64,11 +68,24 @@ export function useAddWork() {
         }
     };
 
-    // Azione confermata dall'avviso "opera già presente" (passa all'apertura del dialog copia)
+    // Conferma dell'avviso opera già presente dopo ricerca ISBN
     const handleConfirmAddCopy = async () => {
         setConfirmCopyOpen(false);
-        setAddItemOpen(true);
+        setTimeout(() => setAddItemOpen(true), 150);
     };
+
+    // Conferma del dialog che chiede se si vogliono aggiungere copie
+    const handleConfirmAskAddItem = () => {
+        setAskAddItemOpen(false);
+        setTimeout(() => setAddItemOpen(true), 150);
+    };
+
+    // Rifiuto del dialog che chiede se si vogliono aggiungere copie associate all'opera
+    const handleDeclineAskAddItem = () => {
+        setAskAddItemOpen(false);
+        navigate("/admin/works");
+    };
+
 
     // Invio dei dati per la creazione di una nuova opera
     const submit = async (validatedData, resolvedAuthors = []) => {
@@ -80,10 +97,13 @@ export function useAddWork() {
         setForm(payload);
         setSubmitLoading(true);
         try {
-            await api.post("/works/from-external", payload)
-            notify.success("Opera aggiunta con successo")
-            navigate("/admin/works")
+            const { data } = await api.post("/works/from-external", payload);
+            notify.success("Opera aggiunta con successo");
 
+            setAddItemWork(data);
+            setStep("form");
+            setConflicts([]);
+            setAskAddItemOpen(true);
         } catch (err) {
             // Gestione dei conflitti sugli autori (es. autori omonimi)
             if (err.response?.status === 409) {
@@ -98,13 +118,14 @@ export function useAddWork() {
     }
 
     // Risoluzione dei conflitti sugli autori riprovando il submit
-    const resolveConflicts = (resolutions) => submit(null, resolutions)
+    const resolveConflicts = (resolutions) => submit(null, resolutions);
 
     // Ritorna allo step del form principale
     const backToForm = () => {
         setStep("form");
         setConflicts([]);
-    }
+    };
+
 
     return {
         step,
@@ -115,6 +136,7 @@ export function useAddWork() {
         addItemOpen,
         addItemWork,
         confirmCopyOpen,
+        askAddItemOpen,
         setAddItemOpen,
         setConfirmCopyOpen,
         fetchByIsbn,
@@ -122,5 +144,7 @@ export function useAddWork() {
         resolveConflicts,
         backToForm,
         handleConfirmAddCopy,
+        handleConfirmAskAddItem,
+        handleDeclineAskAddItem
     }
 }

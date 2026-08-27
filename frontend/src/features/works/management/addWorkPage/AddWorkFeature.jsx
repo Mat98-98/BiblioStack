@@ -1,14 +1,10 @@
-import { useAddWork } from "./useAddWork.js";
-import WorkFormStep from "./steps/WorkFormStep.jsx";
-import AuthorConflictStep from "./steps/AuthorConflictStep.jsx";
 import AddItemDialog from "@/features/items/management/components/AddItemDialog.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
+import WorkFormStep from "@/features/works/management/addWorkPage/steps/WorkFormStep.jsx";
+import AuthorConflictDialog from "@/features/works/management/addWorkPage/steps/AuthorWorkConflictDialog.jsx";
+import { useNavigate } from "react-router-dom";
+import { useAddWork } from "@/features/works/management/addWorkPage/useAddWork.js";
 
-
-const steps = {
-    form:      WorkFormStep,
-    conflicts: AuthorConflictStep,
-}
 
 export default function AddWorkFeature() {
     const {
@@ -19,6 +15,7 @@ export default function AddWorkFeature() {
         addItemOpen,
         addItemWork,
         confirmCopyOpen,
+        askAddItemOpen,
         setAddItemOpen,
         setConfirmCopyOpen,
         submitLoading,
@@ -27,9 +24,11 @@ export default function AddWorkFeature() {
         resolveConflicts,
         backToForm,
         handleConfirmAddCopy,
-    } = useAddWork()
+        handleConfirmAskAddItem,
+        handleDeclineAskAddItem
+    } = useAddWork();
 
-    const StepComponent = steps[step]
+    const navigate = useNavigate();
 
     return (
         <main className="min-h-screen bg-background">
@@ -43,22 +42,25 @@ export default function AddWorkFeature() {
                     </p>
                 </div>
 
-                {/* Render dinamico dello step corrente (Form dati oppure Conflitti autori) */}
-                <StepComponent
-                    // Props per WorkFormStep
+                {/* Form principale - resta una pagina, viste le dimensioni */}
+                <WorkFormStep
                     form={form}
                     isbnLoading={isbnLoading}
                     submitLoading={submitLoading}
                     onIsbnSearch={fetchByIsbn}
                     onSubmit={submit}
-                    // Props per AuthorConflictStep
-                    conflicts={conflicts}
-                    onResolve={resolveConflicts}
-                    onBack={backToForm}
-                    loading={submitLoading}
                 />
 
             </div>
+
+            {/* Dialog di risoluzione conflitti autori (es. autori omonimi) */}
+            <AuthorConflictDialog
+                open={step === "conflicts"}
+                conflicts={conflicts}
+                onResolve={resolveConflicts}
+                onBack={backToForm}
+                loading={submitLoading}
+            />
 
             {/* Dialog di avviso: l'opera cercata tramite ISBN esiste già nel catalogo */}
             <ConfirmDialog
@@ -75,14 +77,30 @@ export default function AddWorkFeature() {
                 cancelLabel="Annulla"
             />
 
-            {/* Dialog per l'aggiunta delle copie (gestisce internamente il loop di inserimento multiplo) */}
+            {/* Dialog di conferma per aggiunta nuova copia all'opera */}
+            <ConfirmDialog
+                open={askAddItemOpen}
+                onClose={handleDeclineAskAddItem}
+                onConfirm={handleConfirmAskAddItem}
+                closeOnConfirm={false}
+                title={"Opera aggiunta"}
+                description={
+                    addItemWork?.title ? `Vuoi aggiungere subito una copia di "${addItemWork.title}"?` : "Vuoi aggiungere una nuova copia?"
+                }
+                confirmLabel="Aggiungi copia"
+                cancelLabel="No, grazie"
+            />
+
+            {/* Dialog per l'aggiunta delle copie */}
             <AddItemDialog
                 open={addItemOpen}
-                onClose={() => setAddItemOpen(false)}
+                onClose={() => {
+                    setAddItemOpen(false);
+                    navigate("/admin/works");
+                }}
                 workId={addItemWork?.id}
                 workTitle={addItemWork?.title}
             />
-
         </main>
     )
 }

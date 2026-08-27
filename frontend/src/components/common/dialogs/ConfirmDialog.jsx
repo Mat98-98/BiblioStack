@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/dialog.jsx";
 import { Button } from "@/components/ui/button.jsx";
 
-export default function ConfirmDialog({
-                                          open,
+export function ConfirmDialogContent({
                                           onClose,
                                           onConfirm,
                                           title,
@@ -38,45 +37,52 @@ export default function ConfirmDialog({
     };
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md">
+        <>
+            <DialogHeader className="space-y-0.5">
+                <DialogTitle className="text-xl">{title}</DialogTitle>
+                {description && (
+                    <DialogDescription>{description}</DialogDescription>
+                )}
+            </DialogHeader>
 
-                <DialogHeader className="space-y-0.5">
-                    <DialogTitle className="text-xl">{title}</DialogTitle>
-                    {description && (
-                        <DialogDescription>{description}</DialogDescription>
+            {children}
+
+            <DialogFooter className="gap-2">
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    disabled={loading}
+                >
+                    {cancelLabel}
+                </Button>
+
+                <Button
+                    type="button"
+                    variant={variant}
+                    onClick={handleConfirm}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {confirmLabel}...
+                        </>
+                    ) : (
+                        confirmLabel
                     )}
-                </DialogHeader>
+                </Button>
+            </DialogFooter>
+        </>
+    );
+}
 
-                {children}
-
-                <DialogFooter className="gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={onClose}
-                        disabled={loading}
-                    >
-                        {cancelLabel}
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant={variant}
-                        onClick={handleConfirm}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                {confirmLabel}...
-                            </>
-                        ) : (
-                            confirmLabel
-                        )}
-                    </Button>
-                </DialogFooter>
-
+// Uso standalone: apre il proprio <Dialog>
+export default function ConfirmDialog({ open, onClose, ...props }) {
+    return (
+        <Dialog open={open} onOpenChange={onclose}>
+            <DialogContent className="sm:max-w-md">
+                <ConfirmDialogContent onClose={onClose} {...props} />
             </DialogContent>
         </Dialog>
     );
