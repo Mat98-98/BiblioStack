@@ -41,8 +41,14 @@ export const tryAuthenticate = (req, res, next) => {
             roleId: decoded.roleId,
             role: decoded.roleName
         };
-    } catch {
-        // token scaduto/invalido → prosegue come anonimo, non è un errore bloccante qui
+        return next();
+    } catch (error) {
+        // Token scaduto. Propaga 401 così l'interceptor fa il refresh e ritenta la richiesta, se ha successo questo middleware trova un token valido e popola req.user correttamente. In caso di fallimento l'interceptor gestirà il logout forzato
+        if (error.name === "TokenExpiredError") {
+            return next(new AppError(
+                "Expired token", "EXPIRED_TOKEN", 401
+            ));
+        }
     }
 
     next();
