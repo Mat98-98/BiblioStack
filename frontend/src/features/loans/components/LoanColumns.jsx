@@ -22,11 +22,13 @@ function formatDate(date) {
 function getLoanStatus(loan) {
     if (loan.returnDate) return "returned";
     if (loan.dueDate && new Date(loan.dueDate) < new Date()) return "overdue";
+    if (loan.dueDate && ((new Date(loan.dueDate) - new Date()) <= 3 * 24 *60 *60 *1000)) return "dueSoon"; // Va in dueSoon da 3 giorni prima che scada
     return "active";
 }
 
 const STATUS_CONFIG = {
     active:   { label: "Attivo",   variant: "secondary" },
+    dueSoon:  { label: "In scadenza", variant: "warning" },
     overdue:  { label: "In ritardo", variant: "destructive" },
     returned: { label: "Restituito", variant: "outline" },
 };
@@ -40,6 +42,11 @@ export const getLoansColumns = ({ onEdit, onDelete }) => [
             const config = STATUS_CONFIG[status];
             return <Badge variant={config.variant}>{config.label}</Badge>;
         },
+    },
+    {
+        accessorKey: "item.work.title",
+        header: "Opera",
+        cell: ({ getValue }) => <span className={"text-sm"}>{getValue()}</span>
     },
     {
         accessorKey: "item.id",
