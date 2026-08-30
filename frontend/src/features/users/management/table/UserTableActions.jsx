@@ -36,8 +36,8 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
                 <DropdownMenuItem onClick={() => navigate(`/admin/users/${user.id}`)}>
                     <User className="mr-2 h-4 w-4"/>
                     Vai al profilo
-                    <DropdownMenuSeparator />
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setEditOpen(true)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Modifica
