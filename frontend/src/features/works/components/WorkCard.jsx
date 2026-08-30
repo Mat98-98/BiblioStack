@@ -28,7 +28,7 @@ function FakeCover({ title, authors }) {
 export default function WorkCard({ work }) {
     return (
         <Link to={`/works/${work.id}`} className="group flex flex-col rounded-md border border-border bg-card overflow-hidden hover:shadow-md transition-shadow h-70 w-40">
-
+            {/* Copertina */}
             <div className="aspect-2/3 bg-secondary/50 flex items-center justify-center overflow-hidden">
                 {work.coverUrl ? (
                     <img

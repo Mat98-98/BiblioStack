@@ -34,7 +34,7 @@ export default function CatalogGrid({ works, loading, hasFilters }) {
     if (works.length === 0) return <EmptyState hasFilters={hasFilters} />
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 gap-y-12 2xl:grid-cols-7">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-7 gap-x-4 gap-y-8 sm:gap-y-12">
             {works.map(work => (
                 <WorkCard key={work.id} work={work} />
             ))}
