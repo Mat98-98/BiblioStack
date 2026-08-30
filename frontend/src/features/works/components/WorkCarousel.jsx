@@ -82,11 +82,11 @@ export default function WorkCarousel({
                         }}
                         className="w-full"
                     >
-                        <CarouselContent className="-ml-2">
+                        <CarouselContent className="-ml-4">
                             {displayed.map((work) => (
                                 <CarouselItem
                                     key={work.id}
-                                    className="pl-2 basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6 2xl:basis-1/8"
+                                    className="pl-4 basis-50 shrink-0"
                                 >
                                     <WorkCard work={work} />
                                 </CarouselItem>

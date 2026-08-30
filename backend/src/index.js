@@ -34,7 +34,7 @@ const app = express()
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
     ? ['https://urlreale'] // da cambiare in produzione
-    : [process.env.FRONTEND_URL]; // frontend locale
+    : ["http://192.168.0.33:5173"]; // frontend locale
 
 app.use(cors({
     origin: (origin, callback) => {
