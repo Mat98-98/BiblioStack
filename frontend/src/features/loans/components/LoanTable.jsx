@@ -3,8 +3,8 @@ import { getLoansColumns } from "@/features/loans/components/LoanColumns.jsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.jsx";
 import LoansTableSkeleton from "@/features/loans/components/LoanTableSkeleton.jsx";
 
-export default function LoansTable({ loans, loading, onEdit, onDelete }) {
-    const columns = getLoansColumns({ onEdit, onDelete });
+export default function LoansTable({ loans, loading, onEdit, onDelete, onNotify, showPatron = true }) {
+    const columns = getLoansColumns({ onEdit, onDelete, onNotify, showPatron });
 
     const table = useReactTable({
         data: loans,

@@ -1,7 +1,7 @@
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.jsx";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
-import { getUserColumns } from "@/features/users/table/UserTableColumns.jsx";
+import { getUserColumns } from "@/features/users/management/table/UserTableColumns.jsx";
 
 function TableSkeleton() {
     return (

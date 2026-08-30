@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleApiError } from "@/lib/handleApiError.js";
 import api from "@/api/axios.js";
+import {notify} from "@/lib/notify.js";
 
 
 export function useLoan({ workId , userId }) {
@@ -49,10 +50,24 @@ export function useLoan({ workId , userId }) {
     // Euristica: se la pagina è piena, probabilmente ce n'è un'altra
     const hasMore = loans.length === limit;
 
+
+    // Hook per creare una segnalazione utente associata al prestito
+    const createNotice = async (payload) => {
+        try {
+            await api.post(`/notices`, payload);
+            await fetchLoans();
+            notify.success("Segnalazione registrata con successo");
+        } catch (error) {
+            notify.error("Errore nella registrazione della segnalazione");
+            throw error;
+        }
+    }
+
     return {
         loans, loading, error, refetch,
         page, setPage, limit, setLimit, hasMore,
         search, setSearch, status, setStatus,
-        sortBy, setSortBy, sortOrder, setSortOrder
+        sortBy, setSortBy, sortOrder, setSortOrder,
+        createNotice
     };
 }

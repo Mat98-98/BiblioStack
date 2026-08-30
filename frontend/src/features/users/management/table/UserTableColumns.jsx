@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
 import { Badge } from "@/components/ui/badge.jsx";
-import UserActions from "@/features/users/table/UserTableActions.jsx";
-import { roleColors, roleLabels } from "@/features/users/table/usersTable.constants.js";
+import UserActions from "@/features/users/management/table/UserTableActions.jsx";
+import { roleColors, roleLabels } from "@/features/users/management/table/usersTable.constants.js";
 
 export function getUserColumns({ onUpdateRole, onDelete, onSuspend, onUnsuspend, onEdit }) {
     return [

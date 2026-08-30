@@ -1,11 +1,7 @@
 import { BookOpen, Clock, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
+import { daysUntil } from "@/lib/dateUtils.js";
 
-function daysUntil(date) {
-    if (!date) return null;
-    const diff = Math.ceil((new Date(date) - new Date()) / (1000 * 60 * 60 * 24))
-    return diff;
-}
 
 function DueBadge({ dueDate }) {
     const days = daysUntil(dueDate)
@@ -22,7 +18,7 @@ function DueBadge({ dueDate }) {
 
     if (days <= 3)
         return (
-            <Badge variant="outline" className="gap-1 border-orange-500 text-orange-500">
+            <Badge variant="outline" className="gap-1 border-warning text-warning-foreground">
                 <Clock className="h-3 w-3" />
                 Scade tra {days}g
             </Badge>

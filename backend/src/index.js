@@ -27,6 +27,7 @@ import publisherRoutes from "./routes/publisher.routes.js";
 import currencyRoutes from "./routes/currency.routes.js";
 import cardRoutes from "./routes/card.routes.js";
 import publicationCountriesRoutes from "./routes/publication.countries.routes.js";
+import noticeTypesRoutes from "./routes/notice.types.routes.js";
 
 
 const app = express()
@@ -73,7 +74,7 @@ app.use("/api/roles", roleRoutes)
 
 app.use("/api/works-external", worksExternalRoutes)
 
-app.use("/api/deweyCodes", deweyCodeRoutes)
+app.use("/api/dewey-codes", deweyCodeRoutes)
 
 app.use("/api/notices", noticeRoutes)
 
@@ -91,9 +92,11 @@ app.use("/api/publishers", publisherRoutes)
 
 app.use("/api/currencies", currencyRoutes)
 
-app.use("/api/publicationCountries", publicationCountriesRoutes)
+app.use("/api/publication-countries", publicationCountriesRoutes)
 
 app.use("/api/cards", cardRoutes)
+
+app.use("/api/notice-types", noticeTypesRoutes)
 
 app.use(errorMiddleware);
 

@@ -234,6 +234,10 @@ export const relations = defineRelations(schema, (r) => ({
         work: r.one.works({
             from: r.reservations.workId,
             to: r.works.id
+        }),
+        assignedItem: r.one.items({
+            from: r.reservations.assignedItemId,
+            to: r.items.id
         })
     },
 

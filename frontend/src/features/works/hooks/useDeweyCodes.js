@@ -9,7 +9,7 @@ export function useDeweyCodes() {
         const fetch = async () => {
             setLoading(true)
             try {
-                const { data } = await api.get("/deweyCodes", { params: { limit: 1000 } })
+                const { data } = await api.get("/dewey-codes", { params: { limit: 1000 } })
                 setCodes(data)
             } catch {}
             finally { setLoading(false) }

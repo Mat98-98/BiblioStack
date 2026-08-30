@@ -1,10 +1,10 @@
 import { useState } from "react";
-import {ArrowDownLeft, Check, CheckCircle, CheckCircle2, LogIn, Plus, RotateCcw, ScanLine} from "lucide-react";
+import { CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import AddLoanDialog from "@/features/loans/management/components/AddLoanDialog.jsx";
 import CheckInDialog from "@/features/loans/management/components/CheckInDialog.jsx";
 
-export default function LoansHeader({ onLoanAdded }) {
+export default function LoansHeader({ onLoanAdded, onNotify }) {
     const [addOpen, setAddOpen] = useState(false);
     const [quickCheckInOpen, setQuickCheckInOpen] = useState(false);
 
@@ -38,6 +38,7 @@ export default function LoansHeader({ onLoanAdded }) {
                 open={quickCheckInOpen}
                 onClose={() =>  setQuickCheckInOpen(false)}
                 onSuccess={onLoanAdded}
+                onNotify={onNotify}
             />
         </div>
     );

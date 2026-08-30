@@ -1,14 +1,6 @@
-import { CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { CheckCircle, Clock, AlertTriangle, BookX } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
-
-function daysUntil(date) {
-    if (!date) return null;
-
-    return Math.max(0, Math.ceil(
-        (new Date(date) - new Date()) /
-        (1000 * 60 * 60 * 24)
-    ));
-}
+import { daysUntil } from "@/lib/dateUtils.js";
 
 export default function StatusBadge({ status, expiresAt }) {
     const days = daysUntil(expiresAt);
@@ -20,7 +12,7 @@ export default function StatusBadge({ status, expiresAt }) {
                     variant="outline"
                     className="gap-1 border-warning text-warning"
                 >
-                    <AlertTriangle className="h-3 w-3" />
+                    <AlertTriangle className="h-4 w-4" />
                     Scade {days === 0 ? "oggi" : `tra ${days}g`}
                 </Badge>
             );
@@ -31,7 +23,7 @@ export default function StatusBadge({ status, expiresAt }) {
                 variant="outline"
                 className="gap-1 border-success text-success"
             >
-                <CheckCircle className="h-3 w-3" />
+                <CheckCircle className="h-4 w-4" />
                 Pronto al ritiro
             </Badge>
         );
@@ -41,10 +33,34 @@ export default function StatusBadge({ status, expiresAt }) {
         return (
             <Badge
                 variant="outline"
-                className="gap-1 text-muted-foreground"
+                className="gap-1 text-muted-foreground border-muted-foreground"
             >
-                <Clock className="h-3 w-3" />
+                <Clock className="h-4 w-4" />
                 In attesa
+            </Badge>
+        );
+    }
+
+    if (status === "expired") {
+        return (
+            <Badge
+                variant="outline"
+                className="gap-1 text-destructive border-destructive"
+            >
+                <Clock className="h-4 w-4" />
+                Scaduta
+            </Badge>
+        );
+    }
+
+    if (status === "cancelled") {
+        return (
+            <Badge
+                variant="outline"
+                className="gap-1 text-muted-foreground bg-muted border-muted-foreground"
+            >
+                <BookX className="h-4 w-4" />
+                Annullata
             </Badge>
         );
     }

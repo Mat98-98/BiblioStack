@@ -13,7 +13,8 @@ export default function Loans({ workId, userId }) {
     const {
         loans, loading, page, setPage, limit, setLimit, hasMore, refetch,
         search, setSearch, status, setStatus,
-        sortBy, sortOrder, setSortBy, setSortOrder
+        sortBy, sortOrder, setSortBy, setSortOrder,
+        createNotice
     } = useLoan( { workId, userId });
 
 
@@ -34,7 +35,7 @@ export default function Loans({ workId, userId }) {
 
     return (
         <div className="space-y-6">
-            <LoansHeader onLoanAdded={refetch}/>
+            <LoansHeader onLoanAdded={refetch} onNotify={createNotice} />
 
             <LoansFilters
                 search={search} onSearch={setSearch}
@@ -47,6 +48,7 @@ export default function Loans({ workId, userId }) {
                 loading={loading}
                 onEdit={refetch}
                 onDelete={handleDeleteOpen}
+                onNotify={createNotice}
             />
 
             <TablePagination

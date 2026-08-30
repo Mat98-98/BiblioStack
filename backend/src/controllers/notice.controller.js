@@ -25,7 +25,11 @@ export const noticeController = {
     create: async (req, res, next) => {
         try {
             const validatedData = CreateNoticeSchema.parse(req.body);
-            const newNotice = await noticeService.create(validatedData);
+
+            // Estraggo l'id dell'operatore che fa la segnalazione
+            const operatorId = req.user.id;
+
+            const newNotice = await noticeService.create(validatedData, operatorId);
             res.status(201).json(newNotice);
         } catch (error) {
             next(error);

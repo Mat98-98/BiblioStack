@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ItemMiniDTO, WorkMiniDTO } from "./shared.dto.js";
+import {ItemMiniDTO, UserMiniDTO, WorkMiniDTO} from "./shared.dto.js";
 import { ReservationStatusEnum } from "./shared.dto.js";
 
 // ======== DTO di supporto ========
@@ -73,11 +73,14 @@ export const AdminDashboardDTO = UserCore.extend({
     phone: z.string().optional().nullable(),
     role: RoleSchema,
     suspension: ActiveSuspensionSchema.default(null),
-    loansAsPatron: z.array(LoanSchema).default([]),
-    reservations: z.array(ReservationSchema).default([]),
-    noticesReceived: z.array(NoticeMiniSchema).default([]),
-    noticesHandled:  z.array(NoticeMiniSchema).default([])
-})
+    loansAsPatron: z.array(LoanSchema.extend({
+        librarian: UserMiniDTO.optional().nullable()
+    })).default([]),
+    reservations: z.array(ReservationSchema.extend({
+        assignedItem: ItemMiniDTO.optional().nullable()
+    })).default([]),
+    noticesReceived: z.array(NoticeMiniSchema).default([])
+});
 
 // DTO sicuro per la risposta dopo register/login — niente passwordHash @todo Probabilmente da rimuovere
 export const UserSafeDTO = UserCore.extend({

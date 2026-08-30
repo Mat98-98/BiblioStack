@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { useAdminUsers } from "@/features/users/hooks/useAdminUsers.js";
+import { useAdminUsers } from "@/features/users/management/hooks/useAdminUsers.js";
 import TablePagination from "@/components/common/TablePagination.jsx";
 import SearchBar from "@/components/common/SearchBar.jsx";
-import UsersHeader from "@/features/users/components/UsersHeader.jsx";
-import UsersTable from "@/features/users/table/UsersTable.jsx";
-import CreateUserDialog from "@/features/users/dialogs/createUserDialog/CreateUserDialog.jsx";
+import UsersHeader from "@/features/users/management/components/UsersHeader.jsx";
+import UsersTable from "@/features/users/management/table/UsersTable.jsx";
+import CreateUserDialog from "@/features/users/management/dialogs/createUserDialog/CreateUserDialog.jsx";
+
 
 export default function AdminUsersPage() {
     const {

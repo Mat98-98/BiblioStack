@@ -9,7 +9,7 @@ export function usePublicationCountries() {
         const fetchCountries = async () => {
             setLoading(true);
             try {
-                const { data } = await api.get("/publicationCountries", { params: { limit: 100 } });
+                const { data } = await api.get("/publication-countries", { params: { limit: 100 } });
                 setPublicationCountries(data);
             } catch (error) {
                 console.error("Errore durante il caricamento dei paesi di pubblicazione:", error);

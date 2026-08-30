@@ -1,26 +1,24 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { suspendUserSchema } from "@/features/users/dialogs/suspendUserDialog/suspendUser.schema.js";
+import { createNoticeSchema } from "@/features/notices/schema/notice.schema.js";
 
-export function useSuspendUser() {
+
+export function useCreateNotice() {
     const [loading, setLoading] = useState(false);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [pendingData, setPendingData] = useState(null);
 
     const form = useForm({
-        resolver: zodResolver(suspendUserSchema),
+        resolver: zodResolver(createNoticeSchema),
         defaultValues: {
-            reason: "",
-            endDate: "",
+            noticeTypeId: "",
+            description: "",
         }
     });
 
     const handlePreSubmit = (data) => {
-        setPendingData({
-            reason: data.reason || null,
-            endDate: data.endDate || null,
-        });
+        setPendingData(data);
         setConfirmDialogOpen(true);
     };
 
@@ -31,13 +29,8 @@ export function useSuspendUser() {
     };
 
     return {
-        form,
-        loading,
-        setLoading,
-        confirmDialogOpen,
-        setConfirmDialogOpen,
-        pendingData,
-        handlePreSubmit,
-        resetAll
+        form, loading, setLoading,
+        confirmDialogOpen, setConfirmDialogOpen,
+        pendingData, handlePreSubmit, resetAll
     };
 }

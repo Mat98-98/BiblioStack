@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { AlertTriangle, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { ActionsMenu } from "@/components/common/dialogs/ActionsMenu.jsx";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu.jsx";
 import { DeleteConfirmDialog } from "@/components/common/dialogs/DeleteConfirmDialog.jsx";
 import EditLoanDialog from "@/features/loans/management/components/EditLoanDialog.jsx";
 import CheckInDialog from "@/features/loans/management/components/CheckInDialog.jsx";
+import NoticeDialog from "@/features/notices/dialogs/NoticeDialog.jsx";
 
 
-export function LoanTableActions({ loan, onEdit, onDelete }) {
+export function LoanTableActions({ loan, onEdit, onDelete, onNotify }) {
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [checkInOpen, setCheckInOpen] = useState(false);
+    const [noticeOpen, setNoticeOpen] = useState(false);
 
     const isReturned = Boolean(loan.returnDate);
 
@@ -29,6 +31,10 @@ export function LoanTableActions({ loan, onEdit, onDelete }) {
                     <Pencil className="mr-2 h-4 w-4" />
                     Modifica
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setNoticeOpen(true)}>
+                    <AlertTriangle className="mr-2 h-4 w-4" />
+                    Segnala
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                     onClick={() => setDeleteOpen(true)}
@@ -44,6 +50,14 @@ export function LoanTableActions({ loan, onEdit, onDelete }) {
                 onClose={() => setCheckInOpen(false)}
                 loan={loan}
                 onSuccess={onEdit}
+                onNotify={onNotify}
+            />
+
+            <NoticeDialog
+                loan={loan}
+                open={noticeOpen}
+                onClose={() => setNoticeOpen(false)}
+                onConfirm={onNotify}
             />
 
             <DeleteConfirmDialog

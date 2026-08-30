@@ -86,7 +86,7 @@ export default function EditWorkDialog({ work, open, onClose, onConfirm }) {
             <Dialog open={open && !confirmDialogOpen} onOpenChange={(v) => { if (!v) handleFullClose(); }}>
                 <DialogContent className="sm:max-w-2xl xl:min-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Modifica opera</DialogTitle>
+                        <DialogTitle className="text-xl">Modifica opera</DialogTitle>
                         <DialogDescription className="sr-only">
                             Modifica i dati dell'opera
                         </DialogDescription>

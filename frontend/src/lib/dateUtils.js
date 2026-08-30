@@ -6,3 +6,12 @@ export function safeFormat (date) {
     const d = date instanceof Date ? date : parseISO(date);
     return format(d, "PPP", { locale: it });
 }
+
+export function daysUntil(date) {
+    if (!date) return null;
+
+    return Math.max(0, Math.ceil(
+        (new Date(date) - new Date()) /
+        (1000 * 60 * 60 * 24)
+    ));
+}

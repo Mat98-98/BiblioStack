@@ -80,7 +80,7 @@ export function ConfirmDialogContent({
 // Uso standalone: apre il proprio <Dialog>
 export default function ConfirmDialog({ open, onClose, ...props }) {
     return (
-        <Dialog open={open} onOpenChange={onclose}>
+        <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md">
                 <ConfirmDialogContent onClose={onClose} {...props} />
             </DialogContent>

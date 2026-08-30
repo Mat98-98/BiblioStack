@@ -2,6 +2,7 @@ import { db } from "../db/connection.js";
 import { users } from "../db/schema.js";
 import { normalizeSearch } from "../utils/search.util.js";
 import { eq, ilike, or, sql, desc } from "drizzle-orm";
+import {userSelect} from "./presets/user.preset.js";
 
 // Helper per mappare gli utenti con sospensioni attive
 function mapUserWithSuspension(user) {
@@ -41,7 +42,11 @@ export const userRepository = {
                 activeSuspension: true,
                 loansAsPatron: {
                     with: {
-                        item: true
+                        item: {
+                            with: {
+                                work: true
+                            }
+                        }
                     }
                 },
                 reservations: {
@@ -78,17 +83,18 @@ export const userRepository = {
                         {
                             item: {
                                 with: { work: true }
-                            }
+                            },
+                            librarian: { columns: userSelect.safe }
                         }
                 },
                 reservations: {
-                    with: {work: true}
+                    with: {
+                        work: true,
+                        assignedItem: true
+                    }
                 },
                 noticesReceived: {
-                    with: {type: true}
-                },
-                noticesHandled: {
-                    with: {type: true}
+                    with: { type: true }
                 }
             }
         });

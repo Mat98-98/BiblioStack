@@ -1,45 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { editUserSchema } from "@/features/users/dialogs/editUserDialog/editUser.schema.js";
-import api from "@/api/axios.js";
+import { createUserSchema } from "@/features/users/management/dialogs/createUserDialog/createUser.schema.js";
 
-export function useEditUser(user, open) {
+export function useCreateUser() {
     const [loading, setLoading] = useState(false);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [pendingData, setPendingData] = useState(null);
 
     const form = useForm({
-        resolver: zodResolver(editUserSchema),
+        resolver: zodResolver(createUserSchema),
         defaultValues: {
             firstName: "",
             lastName:  "",
             email:     "",
-            phone:     "",
+            phone:     ""
         }
     });
-
-    // Fetch dati utente
-    useEffect(() => {
-        if (!open || !user?.id) {
-            return;
-        }
-
-        const fetchUser = async () => {
-            try {
-                const { data } = await api.get(`/users/${user.id}`);
-
-                form.reset({
-                    firstName: data.firstName ?? "",
-                    lastName:  data.lastName  ?? "",
-                    email:     data.email     ?? "",
-                    phone:     data.phone     ?? "",
-                });
-            } catch (error) {}
-        };
-
-        fetchUser();
-    }, [user?.id, open]);
 
     // Intercetta il submit del form e apre il dialog di riepilogo
     const handlePreSubmit = (data) => {
@@ -50,8 +27,9 @@ export function useEditUser(user, open) {
         setConfirmDialogOpen(true);
     };
 
-    // Resetta tutto quando si chiude
+    // Resetta tutto lo stato
     const resetAll = () => {
+        form.reset();
         setPendingData(null);
         setConfirmDialogOpen(false);
     };

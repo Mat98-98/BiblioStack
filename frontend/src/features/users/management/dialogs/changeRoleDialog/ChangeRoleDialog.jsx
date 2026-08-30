@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button.jsx";
 import { Label } from "@/components/ui/label.jsx";
 import { SummaryRow } from "@/components/common/SummaryRow.jsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.jsx";
-import { useChangeRole } from "@/features/users/dialogs/changeRoleDialog/useChangeRole.js";
+import { useChangeRole } from "@/features/users/management/dialogs/changeRoleDialog/useChangeRole.js";
 import { ShieldAlert, UserCog } from "lucide-react";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 

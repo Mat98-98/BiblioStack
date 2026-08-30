@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input.jsx";
-import { Label } from "@/components/ui/label.jsx";
 import { notify } from "@/lib/notify.js";
+import { quickCheckInSchema } from "@/features/loans/management/schemas/loan.schema.js";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 import api from "@/api/axios.js";
-import {quickCheckInSchema} from "@/features/loans/management/schemas/loan.schema.js";
+import NoticeDialog from "@/features/notices/dialogs/NoticeDialog.jsx";
+import { Field , FieldGroup, FieldLabel } from "@/components/ui/field.jsx";
+import { Button } from "@/components/ui/button.jsx"
+import {Barcode} from "lucide-react";
 
 
-export default function CheckInDialog({ open, onClose, loan = null, onSuccess }) {
+export default function CheckInDialog({ open, onClose, loan = null, onSuccess, onNotify }) {
     const [itemId, setItemId] = useState("");
+    const [checkedInLoan, setCheckedInLoan] = useState(null);
+    const [askNoticeOpen, setAskNoticeOpen] = useState(false);
+    const [noticeOpen, setNoticeOpen] = useState(false);
+
     const isQuickMode = !loan;
 
     // Pulisce lo stato quando si chiude il dialog
@@ -18,12 +25,20 @@ export default function CheckInDialog({ open, onClose, loan = null, onSuccess })
         }
     }, [open]);
 
+    const finishWithoutNotice = () => {
+        setAskNoticeOpen(false);
+        setCheckedInLoan(null);
+        onClose();
+    }
+
     const handleCheckInConfirm = async () => {
         if (!isQuickMode) {
             // Modalità da azioni tabella
             await api.patch(`/loans/${loan.id}/checkIn`);
             notify.success(`Copia ${loan.item?.id} riconsegnata con successo!`);
             onSuccess?.();
+            setCheckedInLoan(loan);
+            setAskNoticeOpen(true);
         } else {
             // Modalità tramite button nell'header
             const result = quickCheckInSchema.safeParse({ itemId: itemId.trim() });
@@ -51,6 +66,8 @@ export default function CheckInDialog({ open, onClose, loan = null, onSuccess })
             notify.success(`Copia ${trimmedId} riconsegnata con successo!`);
             setItemId("");
             onSuccess?.();
+            setCheckedInLoan({ ...activeLoan, item: { id: trimmedId } });
+            setAskNoticeOpen(true);
         }
     };
 
@@ -61,27 +78,70 @@ export default function CheckInDialog({ open, onClose, loan = null, onSuccess })
         : `Vuoi registrare la riconsegna per la copia ${loan?.item?.id}?`;
 
     return (
-        <ConfirmDialog
-            open={open}
-            onClose={onClose}
-            onConfirm={handleCheckInConfirm}
-            title={title}
-            description={description}
-            confirmLabel={isQuickMode ? "Conferma Riconsegna" : "Riconsegna"}
-        >
-            {/* Mostra il form solo se richiamata dal button nell'header */}
-            {isQuickMode && (
-                <div className="flex flex-col gap-2 py-2">
-                    <Label htmlFor="checkInItemId">Codice inventario copia</Label>
-                    <Input
-                        id="checkInItemId"
-                        value={itemId}
-                        onChange={(e) => setItemId(e.target.value)}
-                        placeholder="Es. INV-1001"
-                        autoFocus
-                    />
-                </div>
-            )}
-        </ConfirmDialog>
+        <>
+            <ConfirmDialog
+                open={open && !askNoticeOpen && !noticeOpen}
+                onClose={onClose}
+                onConfirm={handleCheckInConfirm}
+                title={title}
+                description={description}
+                confirmLabel={isQuickMode ? "Conferma Riconsegna" : "Riconsegna"}
+            >
+                {/* Mostra il form solo se richiamata dal button nell'header */}
+                {isQuickMode && (
+                    <FieldGroup className="py-2">
+                        <Field>
+                            <FieldLabel htmlFor="checkInItemId">
+                                Codice inventario copia <span className="text-primary">*</span>
+                            </FieldLabel>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="checkInItemId"
+                                    value={itemId}
+                                    onChange={(e) => setItemId(e.target.value)}
+                                    placeholder="Es. INV-1001"
+                                    autoFocus
+                                    required
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0 transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-primary/50"
+                                    onClick={() => notify.info("Funzionalità non ancora implementata")}
+                                >
+                                    <Barcode className="h-4 w-4"/>
+                                </Button>
+                            </div>
+                        </Field>
+                    </FieldGroup>
+                )}
+            </ConfirmDialog>
+
+            <ConfirmDialog
+                open={askNoticeOpen}
+                onClose={finishWithoutNotice}
+                onConfirm={() => {
+                    setAskNoticeOpen(false);
+                    setNoticeOpen(true);
+                }}
+                closeOnConfirm={false}
+                title="Segnalare un problema?"
+                description={`Vuoi registrare una segnalazione relativa alla copia ${checkedInLoan?.item?.id}?`}
+                confirmLabel="Sì, segnala"
+                cancelLabel="No, ho finito"
+            />
+
+            <NoticeDialog
+                loan={checkedInLoan}
+                open={noticeOpen}
+                onClose={() => {
+                    setNoticeOpen(false);
+                    setCheckedInLoan(null);
+                    onClose();
+                }}
+                onConfirm={onNotify}
+            />
+        </>
     );
 }

@@ -1,5 +1,6 @@
 import { noticeRepository } from "../repositories/notice.repository.js";
 import { AppError } from "../utils/appError.js";
+import {loanRepository} from "../repositories/loan.repository.js";
 
 // Funzione per verificare l'esistenza di una segnalazione, usata in getById, update e delete
 const findUniqueOrThrow = async (id) => {
@@ -26,8 +27,23 @@ export const noticeService = {
         return  await findUniqueOrThrow(id);
     },
 
-    create: async (data) => {
-        const [notice] = await noticeRepository.create(data);
+    create: async (data, operatorId) => {
+        // Verifico che il prestito da associare alla segnalazione utente esista
+        const loan = await loanRepository.findById(data.loanId);
+        if (!loan) {
+            throw new AppError("Loan not found", "NOT_FOUND", 404);
+        }
+
+        const secureData = {
+            loanId: data.loanId,
+            noticeTypeId: data.noticeTypeId,
+            description: data.description,
+            userId: loan.userId,
+            handledBy: operatorId,
+            issuedAt: new Date()
+        };
+
+        const [notice] = await noticeRepository.create(secureData);
         return notice;
     },
 

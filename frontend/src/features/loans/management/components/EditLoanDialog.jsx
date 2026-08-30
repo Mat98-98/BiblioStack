@@ -49,7 +49,7 @@ export default function EditLoanDialog({ loan, open, onClose, onConfirm }) {
             <Dialog open={open && !confirmDialogOpen} onOpenChange={(v) => { if (!v) handleFullClose(); }}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Modifica prestito</DialogTitle>
+                        <DialogTitle className="text-xl">Modifica prestito</DialogTitle>
                         <DialogDescription>
                             Copia <span className="font-mono">{loan.item.id}</span>
                         </DialogDescription>

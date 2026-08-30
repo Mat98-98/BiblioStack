@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Shield, Ban, Trash2, Pencil, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { UserCog, Ban, Trash2, Pencil, ShieldCheck, User } from "lucide-react";
 import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu.jsx";
 import { ActionsMenu } from "@/components/common/dialogs/ActionsMenu.jsx";
-import SuspendUserDialog from "@/features/users/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
-import EditUserDialog from "@/features/users/dialogs/editUserDialog/EditUserDialog.jsx";
-import ChangeRoleDialog from "@/features/users/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
+import SuspendUserDialog from "@/features/users/management/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
+import EditUserDialog from "@/features/users/management/dialogs/editUserDialog/EditUserDialog.jsx";
+import ChangeRoleDialog from "@/features/users/management/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
+
 
 
 export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, onUnsuspend, onEdit }) {
@@ -15,6 +17,7 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
     const [editOpen, setEditOpen]       = useState(false);
     const [roleOpen, setRoleOpen]       = useState(false);
 
+    const navigate = useNavigate();
     const isSuspended = !!user.suspension;
 
     // Gestione della cancellazione
@@ -30,13 +33,18 @@ export default function UserActions({ user, onUpdateRole, onDelete, onSuspend, o
     return (
         <>
             <ActionsMenu>
+                <DropdownMenuItem onClick={() => navigate(`/admin/users/${user.id}`)}>
+                    <User className="mr-2 h-4 w-4"/>
+                    Vai al profilo
+                    <DropdownMenuSeparator />
+                </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setEditOpen(true)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Modifica
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setRoleOpen(true)}>
-                        <Shield className="mr-2 h-4 w-4" />
+                        <UserCog className="mr-2 h-4 w-4" />
                         Cambia ruolo
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

@@ -6,15 +6,13 @@ import { Label } from "@/components/ui/label.jsx";
 import { Textarea } from "@/components/ui/textarea.jsx";
 import { SummaryRow } from "@/components/common/SummaryRow.jsx";
 import { AlertTriangle, FileText } from "lucide-react";
-import { format } from "date-fns";
-import { it } from "date-fns/locale";
 import { addDays } from "date-fns";
-import { useSuspendUser } from "@/features/users/dialogs/suspendUserDialog/useSuspendUser.js";
+import { useSuspendUser } from "@/features/users/management/dialogs/suspendUserDialog/useSuspendUser.js";
 import { useAuth } from "@/context/AuthContext.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 import DateSelector from "@/components/common/DateSelector.jsx";
 import { Controller } from "react-hook-form";
-import {safeFormat} from "@/lib/dateUtils.js";
+import { safeFormat } from "@/lib/dateUtils.js";
 
 
 export default function SuspendUserDialog({ user, open, onClose, onConfirm }) {
@@ -90,7 +88,7 @@ export default function SuspendUserDialog({ user, open, onClose, onConfirm }) {
                             <Textarea
                                 placeholder="Motivo della sospensione (opzionale)"
                                 rows={3}
-                                className="resize-none"
+                                className="resize-none break-all"
                                 {...register("reason")}
                             />
                             {errors.reason && (
