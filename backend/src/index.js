@@ -28,13 +28,14 @@ import currencyRoutes from "./routes/currency.routes.js";
 import cardRoutes from "./routes/card.routes.js";
 import publicationCountriesRoutes from "./routes/publication.countries.routes.js";
 import noticeTypesRoutes from "./routes/notice.types.routes.js";
+import operatorDashboardRoutes from "./features/operatorDashboard/operator.dashboard.routes.js";
 
 
 const app = express()
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
     ? ['https://urlreale'] // da cambiare in produzione
-    : ["http://192.168.0.33:5173"]; // frontend locale
+    : [process.env.FRONTEND_URL]; // frontend locale
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -97,6 +98,8 @@ app.use("/api/publication-countries", publicationCountriesRoutes)
 app.use("/api/cards", cardRoutes)
 
 app.use("/api/notice-types", noticeTypesRoutes)
+
+app.use("/api/operator-dashboard", operatorDashboardRoutes)
 
 app.use(errorMiddleware);
 
