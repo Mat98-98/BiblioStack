@@ -11,4 +11,7 @@ router.get("/stats", verifyUser, permit("librarian", "admin"), operatorDashboard
 // GET /operator-dashboard/recent-notices?limit=5
 router.get("/recent-notices", verifyUser, permit("librarian", "admin"), operatorDashboardController.getRecentNotices);
 
+// GET /operator-dashboard/ready-reservations?limit=5
+router.get("/ready-reservations", verifyUser, permit("librarian", "admin"), operatorDashboardController.getReadyReservations);
+
 export default router;

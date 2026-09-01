@@ -1,7 +1,8 @@
 import { db } from "../../db/connection.js";
-import { count, isNull, and, lte } from "drizzle-orm";
+import { count, isNull, and, lt } from "drizzle-orm";
 import { itemAvailability, items, loans, users } from "../../db/schema.js";
 import { userSelect } from "../../repositories/presets/user.preset.js";
+import {RESERVATION_STATUS} from "../../constants.js";
 
 
 export const operatorDashboardRepository = {
@@ -16,7 +17,7 @@ export const operatorDashboardRepository = {
             [{ value: totalUsers }],
         ] = await Promise.all([
             db.select({ value: count() }).from(loans).where(isNull(loans.returnDate)),
-            db.select({ value: count() }).from(loans).where(and(isNull(loans.returnDate), lte(loans.dueDate, today))),
+            db.select({ value: count() }).from(loans).where(and(isNull(loans.returnDate), lt(loans.dueDate, today))),
             db.select({ value: count() }).from(itemAvailability),
             db.select({ value: count() }).from(items),
             db.select({ value: count() }).from(users).where(isNull(users.deletedAt))
@@ -33,5 +34,28 @@ export const operatorDashboardRepository = {
                 type: true
             },
             orderBy: { issuedAt: "desc"}
+        }),
+
+    getReadyReservations: async (limit) =>
+        await db.query.reservations.findMany({
+            where: {
+                status: RESERVATION_STATUS.READY
+            },
+            limit,
+            orderBy: { expiresAt: "asc"},
+            with: {
+                user: { columns: userSelect.mini },
+                work: { columns: { title: true }},
+                assignedItem: {
+                    columns: { id: true},
+                    with: {
+                        location: { columns: { shelfCode: true },
+                            with: {
+                                school: { columns: { name: true }}
+                            }
+                        }
+                    }
+                }
+            }
         })
 };

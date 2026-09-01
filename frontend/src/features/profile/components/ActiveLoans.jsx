@@ -16,6 +16,14 @@ function DueBadge({ dueDate }) {
             </Badge>
         )
 
+    if (days === 0)
+        return (
+            <Badge variant="outline" className="gap-1 border-warning text-warning-foreground">
+                <Clock className="h-3 w-3" />
+                Scade oggi
+            </Badge>
+        )
+
     if (days <= 3)
         return (
             <Badge variant="outline" className="gap-1 border-warning text-warning-foreground">

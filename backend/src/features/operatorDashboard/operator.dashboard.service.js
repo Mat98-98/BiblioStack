@@ -6,5 +6,8 @@ export const operatorDashboardService = {
         await operatorDashboardRepository.getStats(),
 
     getRecentNotices: async (limit) =>
-        await operatorDashboardRepository.getRecentNotices(limit)
+        await operatorDashboardRepository.getRecentNotices(limit),
+
+    getReadyReservations: async (limit) =>
+        await operatorDashboardRepository.getReadyReservations(limit)
 };

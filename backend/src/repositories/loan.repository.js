@@ -1,6 +1,6 @@
 import { loans, items, works, users } from "../db/schema.js";
 import { db } from "../db/connection.js";
-import { eq, isNull, isNotNull, and, or, ilike, lte, gte, sql, asc, desc } from "drizzle-orm";
+import { eq, isNull, isNotNull, and, or, ilike, lt, gte, sql, asc, desc } from "drizzle-orm";
 import { userSelect } from "./presets/user.preset.js";
 import { normalizeSearch } from "../utils/search.util.js";
 
@@ -99,7 +99,7 @@ export const loanRepository = {
         if (status === "returned") {
             conditions.push(isNotNull(loans.returnDate));
         } else if (status === "overdue") {
-            conditions.push(and(isNull(loans.returnDate), lte(loans.dueDate, new Date().toISOString().split('T')[0])));
+            conditions.push(and(isNull(loans.returnDate), lt(loans.dueDate, new Date().toISOString().split('T')[0])));
         } else if (status === "active") {
             conditions.push(and(isNull(loans.returnDate), or(isNull(loans.dueDate), gte(loans.dueDate, new Date().toISOString().split('T')[0]))));
         }

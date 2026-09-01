@@ -23,14 +23,18 @@ function LoanStatusBadge({ loan }) {
     if (days !== null && days < 0) {
         return <Badge variant="destructive">Scaduto da {Math.abs(days)}g</Badge>;
     }
+
+    if (days !== null && days === 0) {
+        return <Badge variant="outline" className="border-warning text-warning">Scade oggi</Badge>;
+    }
+
     if (days !== null && days <= 3) {
         return <Badge variant="outline" className="border-warning text-warning">Scade tra {days}g</Badge>;
     }
     return <Badge variant="outline" className="border-primary text-primary">In corso</Badge>;
 }
 
-// showPatron: false quando la tabella è già scoped a un singolo utente (es. dashboard admin utente) —
-// evita di ripetere una colonna "Utente" sempre uguale su ogni riga
+// showPatron: false quando la tabella è già scoped a un singolo utente (es. dashboard admin utente) 
 export const getLoansColumns = ({ onEdit, onDelete, onNotify, showPatron = true }) => [
     {
         id: "status",

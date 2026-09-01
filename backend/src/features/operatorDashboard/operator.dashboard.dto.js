@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserMiniDTO } from "../../dto/shared.dto.js";
+import {UserMiniDTO, WorkMiniDTO} from "../../dto/shared.dto.js";
 
 
 export const OperatorDashboardStatsDTO = z.object({
@@ -21,3 +21,22 @@ export const RecentNoticeDTO = z.object({
 });
 
 export const RecentNoticeListDTO = z.array(RecentNoticeDTO);
+
+
+export const ReadyReservationDTO = z.object({
+    id: z.number(),
+    expiresAt: z.date().nullable(),
+    user: UserMiniDTO,
+    work: z.object({ title: z.string() }),
+    assignedItem: z.object({
+        id: z.string(),
+        location: z.object({
+            shelfCode: z.string().nullable(),
+            school: z.object({
+                name: z.string().nullable(),
+            }),
+        }).nullable()
+    }).nullable(),
+});
+
+export const ReadyReservationListDTO = z.array(ReadyReservationDTO);

@@ -4,18 +4,20 @@ import { Button } from "@/components/ui/button.jsx";
 import AddLoanDialog from "@/features/loans/management/components/AddLoanDialog.jsx";
 import CheckInDialog from "@/features/loans/management/components/CheckInDialog.jsx";
 
-export default function LoansHeader({ onLoanAdded, onNotify }) {
+export default function LoansHeader({ onLoanAdded, onNotify, showTitle = true}) {
     const [addOpen, setAddOpen] = useState(false);
     const [quickCheckInOpen, setQuickCheckInOpen] = useState(false);
 
     return (
         <div className="flex items-center justify-between">
-            <div>
-                <h1 className="text-2xl font-bold">Prestiti</h1>
-                <p className="text-sm text-muted-foreground">
-                    Elenco dei prestiti registrati
-                </p>
-            </div>
+            {showTitle ? (
+                <div>
+                    <h1 className="text-2xl font-bold">Prestiti</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Elenco dei prestiti registrati
+                    </p>
+                </div>
+            ) : <div />}
 
             <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={() => setQuickCheckInOpen(true)} className="gap-2">
