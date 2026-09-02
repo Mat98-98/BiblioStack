@@ -1,6 +1,7 @@
 import { db } from "../db/connection.js";
 import { suspensions } from "../db/schema.js";
 import { eq } from "drizzle-orm";
+import {userSelect} from "./presets/user.preset.js";
 
 export const suspensionRepository = {
     findAll: async ({ page, limit }) => {
@@ -10,7 +11,7 @@ export const suspensionRepository = {
             limit: limit,
             offset: offset,
             with: {
-                user: true,
+                user: userSelect.safe,
                 handler: false
             }
         })
@@ -22,8 +23,8 @@ export const suspensionRepository = {
                 id: id
             },
             with: {
-                user: true,
-                handler: true
+                user: userSelect.safe,
+                handler: userSelect.safe
             }
         }),
 

@@ -10,6 +10,7 @@ import DetailWorkCover from "@/features/works/detail/components/DetailWorkCover.
 import DetailWorkInfoGrid from "@/features/works/detail/components/DetailWorkInfoGrid.jsx";
 import DetailWorkDescription from "@/features/works/detail/components/DetailWorkDescription.jsx";
 import StaffItemsTable from "@/features/items/management/components/StaffItemsTable.jsx";
+import WorkReservationQueue from "@/features/works/detail/components/WorkReservationQueue.jsx";
 
 
 export default function WorkDetail({ work, loading, error, refetch }) {
@@ -82,7 +83,10 @@ export default function WorkDetail({ work, loading, error, refetch }) {
             <DetailWorkDescription description={work.description}/>
 
             {isStaff && work.items?.length > 0 && (
-                <StaffItemsTable items={work.items} isAdmin={isAdmin} onEdit={refetch} onDelete={handleDeleteItem}/>
+                <>
+                    <StaffItemsTable items={work.items} isAdmin={isAdmin} onEdit={refetch} onDelete={handleDeleteItem}/>
+                    <WorkReservationQueue reservations={work.activeReservations}/>
+                </>
             )}
         </div>
     );

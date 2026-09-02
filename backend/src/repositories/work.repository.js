@@ -1,10 +1,12 @@
 import { db } from "../db/connection.js";
-import {works, authors, authorWorks, workGenres, items, loans, itemAvailability} from "../db/schema.js";
-import {eq, ilike, or, and, sql, asc, desc, count} from "drizzle-orm";
+import { works, authors, authorWorks, workGenres, items, loans, itemAvailability } from "../db/schema.js";
+import { eq, ilike, or, and, sql, asc, desc, count } from "drizzle-orm";
 import { normalizeSearch } from "../utils/search.util.js";
+import { userSelect } from "./presets/user.preset.js";
+import { RESERVATION_STATUS } from "../constants.js";
 
 // Query base condivisa per findById e findByIdForStaff
-const fetchWorkWithRelations = (id, { withLocation = false } = {}) =>
+const fetchWorkWithRelations = (id, { withLocation = false, withReservations = false } = {}) =>
     db.query.works.findFirst({
         where: { id },
         with: {
@@ -15,12 +17,18 @@ const fetchWorkWithRelations = (id, { withLocation = false } = {}) =>
             dewey: true,
             country: true,
             items: withLocation
-                ? { with: { location: {
-                    with : {
-                        school: true
+                ? { with: { location: { with: { school: true } } } }
+                : true,
+            ...(withReservations && {
+                activeReservations: {
+                    where: { status: { in: [RESERVATION_STATUS.PENDING, RESERVATION_STATUS.READY] } },
+                    orderBy: { status: "asc", reservationDate: "asc" },
+                    with: {
+                        user: userSelect.mini,
+                        assignedItem: { columns: { id: true } }
                     }
-                        } } }
-                : true
+                }
+            })
         }
     });
 
@@ -55,7 +63,7 @@ export const workRepository = {
     findByIdForStaff: async (id) => {
         const [work, availableCount, availableIds] = await Promise.all([
             // Chiamo la query base richiedendo anche la locazione
-            fetchWorkWithRelations(id, { withLocation: true }),
+            fetchWorkWithRelations(id, { withLocation: true, withReservations: true }),
             // Conto le copie disponibili
             db.$count(itemAvailability, eq(itemAvailability.workId, id)),
             db

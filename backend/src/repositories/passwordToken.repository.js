@@ -1,13 +1,14 @@
 import { db } from "../db/connection.js";
 import { passwordTokens } from "../db/schema.js";
 import { and, eq, isNull } from "drizzle-orm"
+import {userSelect} from "./presets/user.preset.js";
 
 export const passwordTokenRepository = {
 
     findByToken: async (token) => {
         return await db.query.passwordTokens.findFirst({
             where: { token: token },
-            with: { user: true }
+            with: { user: userSelect.safe },
         });
     },
 

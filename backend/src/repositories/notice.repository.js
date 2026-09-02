@@ -1,6 +1,7 @@
 import { notices } from "../db/schema.js";
 import { db } from "../db/connection.js";
 import {eq} from "drizzle-orm";
+import {userSelect} from "./presets/user.preset.js";
 
 export const noticeRepository = {
     findAll: async ({ page, limit }) => {
@@ -12,7 +13,7 @@ export const noticeRepository = {
             offset: offset,
             with: {
                 loan: true,
-                user: true,
+                user: userSelect.safe,
                 type: true,
             },
             orderBy: { issuedAt: { desc: "desc" } }
@@ -24,8 +25,8 @@ export const noticeRepository = {
             where: {id: id},
             with: {
                 loan: true,
-                user: true,
-                handler: true,
+                user: userSelect.safe,
+                handler: userSelect.safe,
                 type: true
             }
         }),

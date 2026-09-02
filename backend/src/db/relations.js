@@ -33,6 +33,10 @@ export const relations = defineRelations(schema, (r) => ({
             from: r.works.id,
             to: r.items.workId
         }),
+        activeReservations: r.many.reservations({
+            from: r.works.id,
+            to: r.reservations.workId
+        }),
         // Collegamento (N-N) con la tabella Authors passando per AuthorWorks (un'opera può avere ha più autori)
         authors: r.many.authors({
             from: r.works.id.through(r.authorWorks.workId),

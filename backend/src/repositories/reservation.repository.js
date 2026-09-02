@@ -1,7 +1,8 @@
 import { db } from "../db/connection.js";
 import { reservations } from "../db/schema.js";
 import { eq, and, inArray, or } from "drizzle-orm";
-import {EXPIRY_MS, RESERVATION_STATUS} from "../constants.js";
+import { EXPIRY_MS, RESERVATION_STATUS } from "../constants.js";
+import { userSelect } from "./presets/user.preset.js";
 
 const ACTIVE_STATUSES = [RESERVATION_STATUS.PENDING, RESERVATION_STATUS.READY];
 
@@ -16,7 +17,7 @@ export const reservationRepository = {
         return await db.query.reservations.findMany({
             limit,
             offset,
-            with: { user: true, work: true },
+            with: { user: userSelect.safe, work: true },
             orderBy: { reservationDate: "desc" }
         });
     },
@@ -24,7 +25,7 @@ export const reservationRepository = {
     findById: async (id) =>
         await db.query.reservations.findFirst({
             where: { id },
-            with: { user: true, work: true }
+            with: { user: userSelect.safe, work: true }
         }),
 
 
@@ -33,7 +34,7 @@ export const reservationRepository = {
         await tx.query.reservations[onlyFirst ? "findFirst" : "findMany"]({ // Se si vuole solo il primo risultato passare onlyFirst = true
             where: { workId, status: RESERVATION_STATUS.PENDING },
             orderBy: { reservationDate: "asc" },
-            with: { user: true, work: true }
+            with: { user: userSelect.safe, work: true }
         }),
 
     findActiveByUserAndWork: async (userId, workId) =>
@@ -62,7 +63,7 @@ export const reservationRepository = {
                 assignedItemId: itemId,
                 status: RESERVATION_STATUS.READY
             },
-            with: { user: true }
+            with: { user: userSelect.safe },
         }),
 
     create: async (data) =>

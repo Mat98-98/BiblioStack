@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AuthorDTO, ItemMiniDTO } from "./shared.dto.js";
+import {AuthorDTO, ItemMiniDTO, UserMiniDTO} from "./shared.dto.js";
 import { WorkExternalDTO } from "../features/worksExternal/worksExternal.mapper.js";
 import { LocationBaseDTO } from "./location.dto.js";
 
@@ -37,6 +37,16 @@ const PublicationCountrySchema = z.object({
     countryCode: z.string(),
     name: z.string()
 });
+
+const ActiveReservationsSchema = z.object({
+    id: z.number(),
+    status: z.enum(["pending", "ready"]),
+    reservationDate: z.date(),
+    expiresAt: z.date().nullable(),
+    user: UserMiniDTO,
+    assignedItem: z.object({ id: z.string()}).nullable(),
+
+})
 
 /* ---------------- CORE ---------------- */
 
@@ -78,12 +88,13 @@ export const WorkDetailDTO = z.object({
     items: z.array(ItemMiniDTO).default([])
 });
 
-// Staff: stesso oggetto + dettagli sulle copie
+// Staff: stesso oggetto + dettagli sulle copie + coda di prenotazioni attive (ready e pending)
 export const WorkDetailStaffDTO = z.object({
     ...WorkDetailCommon,
     pages: z.number().nullable().optional(),
     country: PublicationCountrySchema.nullable().optional(),
-    items: z.array(ItemStaffSchema).default([])
+    items: z.array(ItemStaffSchema).default([]),
+    activeReservations: z.array(ActiveReservationsSchema).default([])
 });
 
 
