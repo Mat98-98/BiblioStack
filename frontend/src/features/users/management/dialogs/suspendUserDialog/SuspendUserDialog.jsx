@@ -74,7 +74,7 @@ export default function SuspendUserDialog({ user, open, onClose, onConfirm }) {
             <Dialog open={open && !confirmDialogOpen} onOpenChange={(v) => { if (!v) handleFullClose(); }}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="text-xl">
                             Sospendi {user?.firstName} {user?.lastName}
                         </DialogTitle>
                         <DialogDescription>

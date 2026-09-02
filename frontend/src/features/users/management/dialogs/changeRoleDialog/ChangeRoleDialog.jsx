@@ -70,7 +70,7 @@ export default function ChangeRoleDialog({ user, open, onClose, onUpdated }) {
             <Dialog open={open && !confirmDialogOpen} onOpenChange={(v) => { if (!v) handleFullClose(); }}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Cambia ruolo</DialogTitle>
+                        <DialogTitle className="text-xl">Cambia ruolo</DialogTitle>
                         <DialogDescription>
                             Modifica i privilegi di accesso nel sistema per questo utente.
                         </DialogDescription>
