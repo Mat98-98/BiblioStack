@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button.jsx";
 import { safeFormat } from "@/lib/dateUtils.js";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { PackageCheck, PackageX, CalendarClock } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import ReadyReservationDialog from "@/features/operatorDashboard/components/ReadyReservationDialog.jsx";
+
 
 export default function ReadyReservationsCard({ reservations, loading }) {
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -26,7 +28,14 @@ export default function ReadyReservationsCard({ reservations, loading }) {
                 ))}
 
                 {!loading && reservations.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-6">Nessuna prenotazione da ritirare</p>
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyMedia variant="icon">
+                                <PackageX />
+                            </EmptyMedia>
+                            <EmptyTitle>Nessuna prenotazione da ritirare</EmptyTitle>
+                        </EmptyHeader>
+                    </Empty>
                 )}
 
                 {!loading && reservations.map(reservation => {

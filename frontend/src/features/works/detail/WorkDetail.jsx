@@ -3,6 +3,7 @@ import { handleApiError } from "@/lib/handleApiError.js";
 import { notify } from "@/lib/notify.js";
 import { BookOpen } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
+import {Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle} from "@/components/ui/empty.jsx";
 import api from "@/api/axios.js";
 import WorkReservationButton from "@/features/works/detail/components/WorkReservationButton.jsx";
 import DetailWorkDetailSkeleton from "@/features/works/detail/components/DetailWorkSkeleton.jsx";
@@ -13,6 +14,7 @@ import StaffItemsTable from "@/features/items/management/components/StaffItemsTa
 import WorkReservationQueue from "@/features/works/detail/components/WorkReservationQueue.jsx";
 
 
+
 export default function WorkDetail({ work, loading, error, refetch }) {
     const { user, isAuthenticated } = useAuth();
 
@@ -20,10 +22,17 @@ export default function WorkDetail({ work, loading, error, refetch }) {
 
     if (error || !work) {
         return (
-            <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-                <BookOpen className="h-10 w-10 mb-3 opacity-30" />
-                <span className="text-sm">Opera non trovata</span>
-            </div>
+            <Empty>
+                <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                        <BookOpen />
+                    </EmptyMedia>
+                    <EmptyTitle>Opera non trovata</EmptyTitle>
+                    <EmptyDescription>
+                        Il libro richiesto potrebbe essere stato rimosso o l'indirizzo non è corretto.
+                    </EmptyDescription>
+                </EmptyHeader>
+            </Empty>
         );
     }
 
