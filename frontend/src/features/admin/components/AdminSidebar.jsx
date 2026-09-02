@@ -5,7 +5,7 @@ import {
     BookOpen,
     BookMarked,
     CalendarClock,
-    LogOut
+    House
 } from "lucide-react";
 import {
     Sidebar,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar.jsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
 import { useAuth } from "@/context/AuthContext.jsx";
+import UserMenu from "@/components/common/userMenu/UserMenu.jsx";
 
 const navItems = [
     {
@@ -38,20 +39,19 @@ const navItems = [
             { to: "/admin/reservations", icon: CalendarClock, label: "Prenotazioni" },
         ]
     },
-]
+];
 
 export default function AdminSidebar() {
-    const { user, logout } = useAuth()
-    const navigate = useNavigate()
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const initials = user
         ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`
         : "?"
 
-    const handleLogout = async () => {
-        await logout()
-        navigate("/login")
-    }
+    const handleExitAdmin = () => {
+        navigate("/");
+    };
 
     return (
         <Sidebar>
@@ -98,24 +98,35 @@ export default function AdminSidebar() {
 
             <SidebarFooter className="p-4 border-t border-border">
                 <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8 rounded-lg">
-                        <AvatarFallback className="rounded-lg text-xs">
-                            {initials}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col flex-1 min-w-0">
-                        <span className="text-sm font-medium truncate">
-                            {user?.firstName} {user?.lastName}
-                        </span>
-                        <span className="text-xs text-muted-foreground truncate">
-                            {user?.email}
-                        </span>
-                    </div>
+                    <UserMenu
+                        dropdownSide="top"
+                        dropdownAlign="start"
+                        sheetSide="bottom"
+                        trigger={
+                            <button className="flex items-center gap-3 flex-1 min-w-0 text-left rounded-lg hover:bg-secondary/60 transition-colors p-1 -m-1">
+                                <Avatar className="h-8 w-8 rounded-lg">
+                                    <AvatarFallback className="rounded-lg text-xs">
+                                        {initials}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col flex-1 min-w-0">
+                                    <span className="text-sm font-medium truncate">
+                                        {user?.firstName} {user?.lastName}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground truncate">
+                                        {user?.email}
+                                    </span>
+                                </div>
+                            </button>
+                        }
+                    />
+
                     <button
-                        onClick={handleLogout}
-                        className="text-muted-foreground hover:text-destructive transition-colors"
+                        onClick={handleExitAdmin}
+                        title="Vai alla home"
+                        className="p-2 ml-auto text-muted-foreground hover:text-primary transition-colors shrink-0"
                     >
-                        <LogOut className="h-4 w-4" />
+                        <House className="h-4 w-4" />
                     </button>
                 </div>
             </SidebarFooter>

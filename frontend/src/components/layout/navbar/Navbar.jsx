@@ -1,6 +1,7 @@
-import NavbarLogo from "./NavbarLogo"
-import { DesktopSearch } from "./NavbarSearch"
-import NavbarActions from "./NavbarActions"
+import NavbarLogo from "@/components/layout/navbar/NavbarLogo.jsx";
+import NavbarActions from "@/components/layout/navbar/NavbarActions.jsx";
+import { DesktopSearch } from "@/components/layout/navbar/NavbarSearch.jsx";
+
 
 export default function Navbar() {
     return (

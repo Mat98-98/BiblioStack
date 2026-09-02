@@ -1,12 +1,12 @@
+import { Link } from "react-router-dom"
 import { Search, X, Bell, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
-import { Link } from "react-router-dom"
-import NavbarThemeToggle from "./NavbarThemeToggle"
-import { DesktopMenu, MobileMenu } from "./NavbarMenu"
-import { useMobileSearch, MobileSearchBar } from "./NavbarSearch"
+import { notify } from "@/lib/notify.js";
+import { DesktopMenu, MobileMenu } from "@/components/layout/navbar/NavbarMenu.jsx"
+import { useMobileSearch, MobileSearchBar } from "@/components/layout/navbar/NavbarSearch.jsx"
 import { useAuth } from "@/context/AuthContext.jsx"
 import NavbarLogin from "@/components/layout/navbar/NavbarLogin.jsx"
-import {notify} from "@/lib/notify.js";
+import NavbarThemeToggle from "@/components/layout/navbar/NavbarThemeToggle.jsx"
 
 export default function NavbarActions() {
     const { open, toggle } = useMobileSearch()
