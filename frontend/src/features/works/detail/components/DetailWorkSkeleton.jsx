@@ -1,4 +1,4 @@
-import {Skeleton} from "@/components/ui/skeleton.jsx";
+import { Skeleton } from "@/components/ui/skeleton.jsx";
 
 export default function DetailWorkDetailSkeleton() {
     return (

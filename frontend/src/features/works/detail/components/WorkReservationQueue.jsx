@@ -30,7 +30,7 @@ export default function WorkReservationQueue({ reservations }) {
                          <ItemContent>
                              <ItemTitle>#{i + 1} · {r.user.firstName} {r.user.lastName}</ItemTitle>
                              <ItemDescription>
-                                 {r.status === "ready" ? `Pronta · scade ${safeFormat(r.expiresAt)}` : `In coda dal ${safeFormat(r.reservationDate)}`}
+                                 {r.status === "ready" ? `Pronta - Scade il ${safeFormat(r.expiresAt)}` : `In coda dal ${safeFormat(r.reservationDate)}`}
                              </ItemDescription>
 
                          </ItemContent>
