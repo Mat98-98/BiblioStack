@@ -148,7 +148,7 @@ export const users = pgTable('users', {
     lastName: text('last_name'),
     email: text('email').notNull().unique(),
     phone: text('phone'),
-    cardVersion: smallint('card_version').notNull().default(1),
+    cardVersion: smallint('card_version').default(1),
     passwordHash: text('password_hash'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true, mode: 'date' }).default(null)

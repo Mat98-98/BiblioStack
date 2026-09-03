@@ -123,10 +123,12 @@ export const userRepository = {
     softDelete: async (id, tx = db) => {
         // Definisco i dati da immettere per anonimizzare l'utente
         const anonymizedData = {
+            googleId: null,
             firstName: "Deleted",
             lastName: "User",
             email: `deleted_id${id}@anonymized.local`,
             phone: null,
+            cardVersion: null,
             passwordHash: null,
             deletedAt: new Date(),
         };
