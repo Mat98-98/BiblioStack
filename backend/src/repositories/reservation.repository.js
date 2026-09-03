@@ -22,8 +22,8 @@ export const reservationRepository = {
         });
     },
 
-    findById: async (id) =>
-        await db.query.reservations.findFirst({
+    findById: async (id, tx = db) =>
+        await tx.query.reservations.findFirst({
             where: { id },
             with: { user: userSelect.safe, work: true }
         }),
@@ -37,8 +37,8 @@ export const reservationRepository = {
             with: { user: userSelect.safe, work: true }
         }),
 
-    findActiveByUserAndWork: async (userId, workId) =>
-        await db.query.reservations.findFirst({
+    findActiveByUserAndWork: async (userId, workId, tx = db) =>
+        await tx.query.reservations.findFirst({
             where: {
                 userId,
                 workId,
@@ -57,8 +57,8 @@ export const reservationRepository = {
             }
         }),
 
-    findReadyByItemId: async (itemId) =>
-        await db.query.reservations.findFirst({
+    findReadyByItemId: async (itemId, tx = db) =>
+        await tx.query.reservations.findFirst({
             where: {
                 assignedItemId: itemId,
                 status: RESERVATION_STATUS.READY
@@ -66,8 +66,8 @@ export const reservationRepository = {
             with: { user: userSelect.safe },
         }),
 
-    findExpiringSoon: async (startDate, endDate) =>
-        await db.query.reservations.findMany({
+    findExpiringSoon: async (startDate, endDate, tx = db) =>
+        await tx.query.reservations.findMany({
             where: {
                 status: RESERVATION_STATUS.READY, expiresAt: { gte: startDate, lte: endDate },
             }
@@ -84,8 +84,8 @@ export const reservationRepository = {
         expiresAt: new Date(Date.now() + EXPIRY_MS)
     }, tx),
 
-    findExpiredReady: async () =>
-        await db.query.reservations.findMany({
+    findExpiredReady: async (tx = db) =>
+        await tx.query.reservations.findMany({
             where: {
                 status: RESERVATION_STATUS.READY,
                 expiresAt: { lt: new Date() }

@@ -31,6 +31,7 @@ import noticeTypesRoutes from "./routes/notice.types.routes.js";
 import operatorDashboardRoutes from "./features/operatorDashboard/operator.dashboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import {startReservationReminderJob} from "./features/reservationExpiry/reservationReminder.job.js";
+import {startLoanExpiryJob} from "./features/loanExpiry/loanExpiry.job.js";
 
 
 const app = express()
@@ -114,6 +115,9 @@ startReservationExpiryJob();
 
 // Lancio il job per processare e inviare le notifiche automatiche sulle prenotazioni in scadenza
 startReservationReminderJob();
+
+// Lancio il job per processare i prestiti scaduti o in scadenza
+startLoanExpiryJob();
 
 // Avvio del server
 const PORT = process.env.PORT || 5001

@@ -53,11 +53,19 @@ export const loanRepository = {
         return loan?.item?.workId === workId ? loan : null;
     },
 
-    create: async (data) =>
-        await db.insert(loans).values(data).returning(),
+    // Query per prelevare i prestiti non restituiti in base alla data di scadenza. Il parametro è mandato dal service e di default è eq.
+    findByDueDateStatus: async (dateStr, comparator = "eq") => {
+        return await db.query.loans.findMany({
+            where: { returnDate: { isNull: true }, dueDate: { [comparator]: dateStr } },
+        })
+    },
 
-    update: async (id, data) =>
-        await db.update(loans).set(data).where(eq(loans.id, id)).returning(),
+
+    create: async (data, tx = db) =>
+        await tx.insert(loans).values(data).returning(),
+
+    update: async (id, data, tx = db) =>
+        await tx.update(loans).set(data).where(eq(loans.id, id)).returning(),
 
     delete: (id) =>
         db.delete(loans).where(eq(loans.id, id)).returning(),
