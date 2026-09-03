@@ -235,6 +235,17 @@ CREATE TABLE IF NOT EXISTS notices (
                                        issued_at timestamptz DEFAULT now()
 );
 
+-- Tabella notifiche
+CREATE TABLE IF NOT EXISTS notifications (
+                                             id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                                             user_id int NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                                             title text NOT NULL CHECK (length(title) <= 64),
+                                             message text NOT NULL CHECK (length(message) <= 255),
+                                             created_at timestamptz NOT NULL DEFAULT now(),
+                                             read_at timestamptz,
+                                             CONSTRAINT notifications_read_after_created_check CHECK (read_at IS NULL OR read_at >= created_at)
+);
+
 
 -- Tabella generi
 CREATE TABLE IF NOT EXISTS genres (

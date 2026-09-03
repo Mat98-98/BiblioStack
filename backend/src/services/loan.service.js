@@ -4,6 +4,7 @@ import { reservationRepository } from "../repositories/reservation.repository.js
 import { AppError } from "../utils/appError.js";
 import { reservationService } from "./reservation.service.js";
 import { userRepository } from "../repositories/user.repository.js";
+import {notificationService} from "./notification.service.js";
 
 const findUniqueOrThrow = async (id) => {
     const loan = await loanRepository.findById(id);
@@ -55,6 +56,13 @@ export const loanService = {
         if (reservation && reservation.userId === data.userId) {
             await reservationRepository.fulfill(reservation.id);
         }
+
+        // Creo la notifica per l'utente
+        await notificationService.create({
+            userId: data.userId,
+            title: "Prestito effettuato",
+            message: `Il prestito è stato registrato con successo. Ricordati di riportare il libro entro il ${newLoan.dueDate.toLocaleDateString("it-IT")}`
+        })
 
         return await loanRepository.findById(newLoan.id);
     },

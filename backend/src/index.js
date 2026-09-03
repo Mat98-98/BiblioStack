@@ -29,6 +29,7 @@ import cardRoutes from "./routes/card.routes.js";
 import publicationCountriesRoutes from "./routes/publication.countries.routes.js";
 import noticeTypesRoutes from "./routes/notice.types.routes.js";
 import operatorDashboardRoutes from "./features/operatorDashboard/operator.dashboard.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 
 const app = express()
@@ -100,6 +101,8 @@ app.use("/api/cards", cardRoutes)
 app.use("/api/notice-types", noticeTypesRoutes)
 
 app.use("/api/operator-dashboard", operatorDashboardRoutes)
+
+app.use("/api/notifications", notificationRoutes)
 
 app.use(errorMiddleware);
 

@@ -241,6 +241,22 @@ export const notices = pgTable('notices', {
     issuedAt: timestamp('issued_at', { withTimezone: true, mode: 'date' }).defaultNow(),
 });
 
+export const notifications = pgTable('notifications', {
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+    userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id,  {onDelete: 'cascade' }),
+    title: text('title').notNull(),
+    message: text('message').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+    readAt: timestamp('read_at', { withTimezone: true, mode: 'date' })
+}, (table) => [
+    check('notifications_title_length_check',
+        sql`length(${table.title}) <= 64`),
+    check('notifications_message_length_check',
+        sql`length(${table.message}) <= 255`),
+    check('notifications_read_after_created_check',
+        sql`${table.readAt} IS NULL OR ${table.readAt} >= ${table.createdAt}`)
+]);
+
 
 // --- VIEWS ---
 export const itemAvailability = pgView("item_availability", {

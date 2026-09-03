@@ -1,5 +1,5 @@
 import { noticeTypesService } from "../services/notice.types.service.js";
-import {NoticeTypeDTO, NoticeTypeListDTO} from "../dto/notice.types.dto.js";
+import { NoticeTypeDTO, NoticeTypeListDTO } from "../dto/notice.types.dto.js";
 
 export const noticeTypesController = {
     getAll: async (req, res, next) => {
