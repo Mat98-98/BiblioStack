@@ -16,5 +16,8 @@ export const notificationRepository = {
         await db
             .update(notifications)
             .set({ readAt: readAt})
-            .where(and(eq(notifications.id, id), isNull(notifications.readAt))).returning()
+            .where(and(eq(notifications.id, id), isNull(notifications.readAt))).returning(),
+
+    deleteAllByUserId: async (userId, tx = db) =>
+        await tx.delete(notifications).where(eq(notifications.userId, userId))
 };

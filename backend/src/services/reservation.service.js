@@ -202,18 +202,20 @@ export const reservationService = {
 
     // Cancella in blocco tutte le prenotazioni attive di un utente (usato dal soft-delete utente)
     cancelAllActiveByUserId: async (userId, tx = db) => {
-        const activeReservations = await reservationRepository.findActiveByUserId(userId, tx);
+        return await db.transaction(async (tx) => {
+            const activeReservations = await reservationRepository.findActiveByUserId(userId, tx);
 
-        if (activeReservations.length === 0) return { processed: 0 };
+            if (activeReservations.length === 0) return { processed: 0 };
 
-        for (const reservation of activeReservations) {
-            // Se era READY, liberiamo la copia per il prossimo in coda, dentro la stessa transazione
-            if (reservation.status === RESERVATION_STATUS.READY) {
-                await reassignFreedItem(reservation.workId, reservation.assignedItemId, tx);
+            for (const reservation of activeReservations) {
+                // Se era READY, liberiamo la copia per il prossimo in coda, dentro la stessa transazione
+                if (reservation.status === RESERVATION_STATUS.READY) {
+                    await reassignFreedItem(reservation.workId, reservation.assignedItemId, tx);
+                }
             }
-        }
 
-        await reservationRepository.cancelManyByUserId(userId, tx);
-        return { processed: activeReservations.length };
+            await reservationRepository.cancelManyByUserId(userId, tx);
+            return { processed: activeReservations.length };
+        });
     }
 };

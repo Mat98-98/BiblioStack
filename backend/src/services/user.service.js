@@ -9,6 +9,7 @@ import { authService } from "./auth.service.js";
 import { db } from "../db/connection.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import {passwordService} from "./password.service.js";
+import {notificationRepository} from "../repositories/notification.repository.js";
 
 
 
@@ -131,6 +132,9 @@ export const userService = {
 
             // Se l'utente ha token attivi per il setup password o per il reset password li invalido
             await passwordTokenRepository.invalidateAllByUserId(id, tx);
+
+            // Se l'utente ha notifiche le elimino
+            await notificationRepository.deleteAllByUserId(id, tx);
 
             // Se l'utente ha refresh token attivi li revoco
             await refreshTokenRepository.revokeAllByUserId(id, tx);
