@@ -9,8 +9,8 @@ export const notificationRepository = {
             where: { id: id }
         }),
 
-    create: async (data) =>
-        await db.insert(notifications).values(data).returning(),
+    create: async (data, tx = db) =>
+        await tx.insert(notifications).values(data).returning(),
 
     markAsRead: async (id, readAt) =>
         await db

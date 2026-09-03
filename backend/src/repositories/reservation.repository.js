@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
 import { reservations } from "../db/schema.js";
-import { eq, and, inArray, or } from "drizzle-orm";
+import { eq, and, inArray, or, gte, lte } from "drizzle-orm";
 import { EXPIRY_MS, RESERVATION_STATUS } from "../constants.js";
 import { userSelect } from "./presets/user.preset.js";
 
@@ -66,8 +66,15 @@ export const reservationRepository = {
             with: { user: userSelect.safe },
         }),
 
-    create: async (data) =>
-        await db.insert(reservations).values(data).returning(),
+    findExpiringSoon: async (startDate, endDate) =>
+        await db.query.reservations.findMany({
+            where: {
+                status: RESERVATION_STATUS.READY, expiresAt: { gte: startDate, lte: endDate },
+            }
+        }),
+
+    create: async (data, tx = db) =>
+        await tx.insert(reservations).values(data).returning(),
 
     update: (id, data, tx = db) => updateFields(id, data, tx),
 

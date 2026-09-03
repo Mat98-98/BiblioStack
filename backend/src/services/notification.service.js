@@ -1,5 +1,6 @@
 import { notificationRepository } from "../repositories/notification.repository.js";
 import { AppError } from "../utils/appError.js";
+import {db} from "../db/connection.js";
 
 const findUniqueOrThrow = async (id) => {
     const notification = await notificationRepository.findById(id);
@@ -15,8 +16,8 @@ export const notificationService = {
         return await findUniqueOrThrow(id);
     },
 
-    create: async (data) => {
-        const [newNotification] = await notificationRepository.create(data);
+    create: async (data, tx = db) => {
+        const [newNotification] = await notificationRepository.create(data, tx);
         return newNotification;
     },
 

@@ -30,6 +30,7 @@ import publicationCountriesRoutes from "./routes/publication.countries.routes.js
 import noticeTypesRoutes from "./routes/notice.types.routes.js";
 import operatorDashboardRoutes from "./features/operatorDashboard/operator.dashboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import {startReservationReminderJob} from "./features/reservationExpiry/reservationReminder.job.js";
 
 
 const app = express()
@@ -107,8 +108,12 @@ app.use("/api/notifications", notificationRoutes)
 app.use(errorMiddleware);
 
 
-// Lancia il job per verificare la scadenza delle prenotazioni
+
+// Lancio il job per verificare la scadenza delle prenotazioni
 startReservationExpiryJob();
+
+// Lancio il job per processare e inviare le notifiche automatiche sulle prenotazioni in scadenza
+startReservationReminderJob();
 
 // Avvio del server
 const PORT = process.env.PORT || 5001

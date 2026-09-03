@@ -5,6 +5,8 @@ import { loanRepository } from "../repositories/loan.repository.js";
 import { AppError } from "../utils/appError.js";
 import { RESERVATION_STATUS, EXPIRY_MS } from "../constants.js";
 import { assertNotSuspended } from "../utils/suspension.util.js";
+import {NotificationEvent} from "../features/notifications/notification.events.js";
+import {notifier} from "../features/notifications/notification.notifier.js";
 
 const findUniqueOrThrow = async (id) => {
     const reservation = await reservationRepository.findById(id);
@@ -70,6 +72,7 @@ export const reservationService = {
         }
 
         const availableItem = await itemRepository.findAvailableByWorkId(data.workId);
+        const status = availableItem ? RESERVATION_STATUS.READY : RESERVATION_STATUS.PENDING;
 
         const reservationData = {
             ...data,
@@ -80,8 +83,24 @@ export const reservationService = {
             })
         };
 
-        const [newReservation] = await reservationRepository.create(reservationData);
-        return newReservation;
+        // Avvio una transazione per rendere atomici inserimento e notifica in-app
+        let newReservation;
+        await db.transaction(async (tx) => {
+            [newReservation] = await reservationRepository.create(reservationData, tx);
+
+            const eventType = status === RESERVATION_STATUS.READY
+                ? NotificationEvent.RESERVATION_READY
+                : NotificationEvent.RESERVATION_CREATED;
+
+            // Inviamo la notifica in-app legata alla transazione
+            await notifier.send(eventType, {
+                user: { id: data.userId },
+                reservation: newReservation,
+                tx
+            });
+        });
+
+                return newReservation;
     },
 
     handleItemCheckIn: async (itemId) => {
@@ -106,10 +125,42 @@ export const reservationService = {
         let processed = 0;
 
         for (const reservation of expiredReservations) {
-            await closeReservation(reservation, reservationRepository.expire);
+            // Avvio una transazione per ogni chiusura, mandando una notifica di prenotazione scaduta
+            await db.transaction(async (tx) => {
+                await closeReservation(reservation, reservationRepository.expire, tx);
+
+                await notifier.send(NotificationEvent.RESERVATION_EXPIRED, {
+                    user: { id: reservation.userId },
+                    reservation: reservation,
+                    tx
+                });
+            });
             processed++;
         }
+        return { processed };
+    },
 
+    processExpiringSoonReservations: async () => {
+        // Calcolo il range temporale
+        const now = new Date();
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+        const expiringReservations = await reservationRepository.findExpiringSoon(now, tomorrow);
+
+        if (expiringReservations.length === 0) return { processed: 0 };
+
+        let processed = 0;
+
+        for (const reservation of expiringReservations) {
+            await db.transaction(async (tx) => {
+                await notifier.send(NotificationEvent.RESERVATION_EXPIRING_SOON, {
+                    user: { id: reservation.userId },
+                    reservation,
+                    tx
+                });
+            });
+            processed++;
+        }
         return { processed };
     },
 
