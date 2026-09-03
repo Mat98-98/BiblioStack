@@ -1,6 +1,9 @@
 import { suspensionRepository } from "../repositories/suspension.repository.js";
 import { AppError } from "../utils/appError.js";
 import {suspensions} from "../db/schema.js";
+import {NotificationEvent} from "../features/notifications/notification.events.js";
+import {db} from "../db/connection.js";
+import {notifier} from "../features/notifications/notification.notifier.js";
 
 // Funzione per verificare l'esistenza di una sospensione, usata in getById, update e delete
 const findUniqueOrThrow = async (id) => {
@@ -34,14 +37,31 @@ export const suspensionService = {
             throw new AppError("No active suspension found for this user", "NOT_FOUND", 404);
         }
 
-        // Se ne trovo una attiva procedo con il soft delete
-        await suspensionRepository.endById(active.id);
+        // Se ne trovo una attiva procedo con il soft delete e mando la notifica di riabilitazione dell'account all'utente
+        await db.transaction(async (tx) => {
+            await suspensionRepository.endById(active.id, tx);
+
+            await notifier.send(NotificationEvent.USER_REINSTATED, {
+                user: { id: userId },
+                tx
+            });
+        });
+        // Refetch con le relazioni popolate per la risposta completa al frontend
         return await suspensionRepository.findById(active.id);
     },
 
     create: async (data) => {
-        const [suspension] = await suspensionRepository.create(data);
-        return suspension;
+        let newSuspension;
+        await db.transaction(async (tx) => {
+            [newSuspension] = await suspensionRepository.create(data, tx);
+
+            await notifier.send(NotificationEvent.USER_SUSPENDED, {
+                user: { id: data.userId },
+                suspension: newSuspension,
+                tx
+            });
+        });
+        return newSuspension;
     },
 
     update: async (id, data) => {

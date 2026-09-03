@@ -25,4 +25,7 @@ export const notificationTemplates = {
     [NotificationEvent.USER_SUSPENDED]: ({ suspension }) => ({
         inApp: { title: "Account sospeso", message: suspension.reason ?? "Il tuo account è stato sospeso. Contatta la biblioteca per maggiori informazioni." }
     }),
+    [NotificationEvent.USER_REINSTATED]: () => ({
+        inApp: { title: "Sospensione terminata", message: "La tua sospensione è terminata. Puoi tornare a utilizzare i servizi della biblioteca." }
+    })
 };

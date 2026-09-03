@@ -17,8 +17,8 @@ export const suspensionRepository = {
         })
     },
 
-    findById: async (id) =>
-        await db.query.suspensions.findFirst({
+    findById: async (id, tx = db) =>
+        await tx.query.suspensions.findFirst({
             where: {
                 id: id
             },
@@ -41,21 +41,21 @@ export const suspensionRepository = {
             .where(eq(suspensions.id, id))
             .returning(),
 
-    create: async (data) =>
-        await db
+    create: async (data, tx = db) =>
+        await tx
             .insert(suspensions)
             .values(data)
             .returning(),
 
-    update: async (id, data) =>
-        await db
+    update: async (id, data, tx = db) =>
+        await tx
             .update(suspensions)
             .set(data)
             .where(eq(suspensions.id, id))
             .returning(),
 
-    delete: async (id) =>
-        await db
+    delete: async (id, tx = db) =>
+        await tx
             .delete(suspensions)
             .where(eq(suspensions.id, id))
             .returning()

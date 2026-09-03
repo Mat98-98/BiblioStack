@@ -103,7 +103,7 @@ export const loanRepository = {
             ));
         }
 
-        // Filtro per stato del prestito (per all non serve alcun filtro)
+        // Filtro per stato del prestito (per all non serve alcun filtro) @todo: spostare le date e passarle dal service
         if (status === "returned") {
             conditions.push(isNotNull(loans.returnDate));
         } else if (status === "overdue") {
