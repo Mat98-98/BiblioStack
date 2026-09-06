@@ -1,14 +1,22 @@
 import { db } from "../db/connection.js";
 import { reservations } from "../db/schema.js";
-import { eq, and, inArray, or, gte, lte } from "drizzle-orm";
-import { EXPIRY_MS, RESERVATION_STATUS } from "../constants.js";
+import { eq, and, inArray, gte, lte } from "drizzle-orm";
+import { RESERVATION_STATUS } from "../constants.js";
 import { userSelect } from "./presets/user.preset.js";
 
 const ACTIVE_STATUSES = [RESERVATION_STATUS.PENDING, RESERVATION_STATUS.READY];
 
-// Helper interno: tutti gli update "di stato" passano da qui (fulfill/expire/cancel/update/assignItemToReservation)
+// Helper interno per tutti gli aggiornamenti condizionati dallo stato
 const updateFields = async (id, fields, tx = db) =>
     await tx.update(reservations).set(fields).where(eq(reservations.id, id)).returning();
+
+const transitionStatus = async (id, expectedStatus, fields, tx = db) =>
+    tx.update(reservations)
+        .set(fields)
+        .where(and(
+            eq(reservations.id, id),
+            eq(reservations.status, expectedStatus)
+        )).returning();
 
 export const reservationRepository = {
 
@@ -78,25 +86,51 @@ export const reservationRepository = {
 
     update: (id, data, tx = db) => updateFields(id, data, tx),
 
-    assignItemToReservation: (reservationId, itemId, tx = db) => updateFields(reservationId, {
-        assignedItemId: itemId,
-        status: RESERVATION_STATUS.READY,
-        expiresAt: new Date(Date.now() + EXPIRY_MS)
-    }, tx),
+    assignItemToReservation: (reservationId, itemId, expiresAt, tx = db) =>
+        transitionStatus(
+            reservationId,
+            RESERVATION_STATUS.PENDING,
+            {
+                    assignedItemId: itemId,
+                status: RESERVATION_STATUS.READY,
+                expiresAt
+                },
+            tx
+        ),
 
-    findExpiredReady: async (tx = db) =>
+    findExpiredReady: async (now, tx = db) =>
         await tx.query.reservations.findMany({
             where: {
                 status: RESERVATION_STATUS.READY,
-                expiresAt: { lt: new Date() }
+                expiresAt: { lt: now }
             }
         }),
 
-    fulfill: (id, tx = db) => updateFields(id, { status: RESERVATION_STATUS.FULFILLED }, tx),
+    fulfill: (id, tx = db) =>
+        transitionStatus(
+            id, RESERVATION_STATUS.READY,
+            { status: RESERVATION_STATUS.FULFILLED },
+            tx
+        ),
 
-    expire: (id, tx = db) => updateFields(id, { status: RESERVATION_STATUS.EXPIRED }, tx),
+    expire: (id, tx = db) =>
+        transitionStatus(
+            id,
+            RESERVATION_STATUS.READY,
+            { status: RESERVATION_STATUS.EXPIRED },
+            tx
+        ),
 
-    cancel: (id, tx = db) => updateFields(id, { status: RESERVATION_STATUS.CANCELLED }, tx),
+    cancel: (id, tx = db) =>
+        tx.update(reservations)
+            .set({ status: RESERVATION_STATUS.CANCELLED })
+            .where(and(
+                eq(reservations.id, id),
+                inArray(reservations.status, [
+                    RESERVATION_STATUS.PENDING,
+                    RESERVATION_STATUS.READY
+                ])
+            )).returning(),
 
     cancelManyByUserId: async (userId, tx = db) =>
         await tx
@@ -106,5 +140,12 @@ export const reservationRepository = {
             .returning(),
 
     delete: async (id, tx = db) =>
-        await tx.delete(reservations).where(eq(reservations.id, id)).returning(),
+        await tx.delete(reservations)
+            .where(and(
+                eq(reservations.id, id),
+                inArray(reservations.status, [
+                    RESERVATION_STATUS.PENDING,
+                    RESERVATION_STATUS.READY,
+                ])
+            )).returning()
 };

@@ -1,9 +1,8 @@
 import { suspensionRepository } from "../repositories/suspension.repository.js";
 import { AppError } from "../utils/appError.js";
-import {suspensions} from "../db/schema.js";
-import {NotificationEvent} from "../features/notifications/notification.events.js";
-import {db} from "../db/connection.js";
-import {notifier} from "../features/notifications/notification.notifier.js";
+import { NotificationEvent } from "../features/notifications/notification.events.js";
+import { db } from "../db/connection.js";
+import { notifier } from "../features/notifications/notification.notifier.js";
 
 // Funzione per verificare l'esistenza di una sospensione, usata in getById, update e delete
 const findUniqueOrThrow = async (id) => {
@@ -66,7 +65,7 @@ export const suspensionService = {
 
     update: async (id, data) => {
         await findUniqueOrThrow(id);
-        const [updatedSuspension] = await suspensionRepository.update(data);
+        const [updatedSuspension] = await suspensionRepository.update(id, data);
 
         return updatedSuspension;
     },

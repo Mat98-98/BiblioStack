@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
 import { items, itemAvailability } from "../db/schema.js";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export const itemRepository = {
 
@@ -14,8 +14,8 @@ export const itemRepository = {
         });
     },
 
-    findById: async (id) =>
-        await db.query.items.findFirst({
+    findById: async (id, tx = db) =>
+        await tx.query.items.findFirst({
             where: { id },
             with: {
                 work: true,
@@ -31,9 +31,9 @@ export const itemRepository = {
 
 
     // Trova il primo item disponibile per un'opera, se esiste lo ritorna completo di work
-    findAvailableByWorkId: async (workId) => {
+    findAvailableByWorkId: async (workId, tx = db) => {
         // Cerca nella vista un item disponibile per l'opera
-        const [available] = await db
+        const [available] = await tx
             .select()
             .from(itemAvailability)
             .where(eq(itemAvailability.workId, workId))
@@ -42,33 +42,11 @@ export const itemRepository = {
         if (!available) return null;
 
         // Recupera l'item completo con i dati dell'opera
-        return db.query.items.findFirst({
+        return tx.query.items.findFirst({
             where: { id: available.itemId },
             with: { work: true }
         });
     },
-/*
-    findAvailableByWorkId: async (workId) =>
-        await db.query.items.findFirst({
-                where: {
-                    workId,
-                    RAW: (table) => sql`
-                NOT EXISTS (
-                    SELECT 1 FROM loans
-                    WHERE loans.item_id = ${table.id}
-                    AND loans.return_date IS NULL
-                )
-                AND NOT EXISTS (
-                    SELECT 1 FROM reservations
-                    WHERE reservations.assigned_item_id = ${table.id}
-                    AND reservations.status = 'ready'
-                )
-                `
-                },
-                with: { work: true }
-        }),
- */
-
 
     create: async (data) =>
         await db.insert(items).values(data).returning(),

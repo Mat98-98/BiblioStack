@@ -5,8 +5,10 @@ import { loanRepository } from "../repositories/loan.repository.js";
 import { AppError } from "../utils/appError.js";
 import { RESERVATION_STATUS, EXPIRY_MS } from "../constants.js";
 import { assertNotSuspended } from "../utils/suspension.util.js";
-import {NotificationEvent} from "../features/notifications/notification.events.js";
-import {notifier} from "../features/notifications/notification.notifier.js";
+import { NotificationEvent } from "../features/notifications/notification.events.js";
+import { notifier } from "../features/notifications/notification.notifier.js";
+import {isUniqueViolation} from "../utils/db.util.js";
+import {workRepository} from "../repositories/work.repository.js";
 
 const findUniqueOrThrow = async (id) => {
     const reservation = await reservationRepository.findById(id);
@@ -17,30 +19,57 @@ const findUniqueOrThrow = async (id) => {
     return reservation;
 };
 
-// Funzione di supporto per riassegnare una copia liberata al prossimo in coda
+const noop = async () => {};
+
+// Assegna una copia liberata alla prenotazione data in input e notifica l'utente
+const assignItemAndNotify = async (nextReservation, itemId, tx) => {
+    const expiresAt = new Date (Date.now() + EXPIRY_MS);
+    const result = await reservationRepository.assignItemToReservation(
+        nextReservation.id,
+        itemId,
+        expiresAt,
+        tx);
+
+    // Se il risultato è 0 (non è stata fatta alcuna modifica) un altro processo ha già modificato la prenotazione nel frattempo, quindi non ci sono notifiche da mandare
+    if (result.length === 0) return null;
+
+    const [updatedReservation] = result;
+
+    const sendEmail = await notifier.send(NotificationEvent.RESERVATION_READY, {
+        user: nextReservation.user ?? { id: nextReservation.userId },
+        reservation: updatedReservation,
+        tx
+    });
+    return { reservation: updatedReservation, sendEmail };
+};
+
+// Cerca il prossimo in coda (pending) per un'opera, se esiste gli assegna la copia appena liberata, altrimenti ritorna null
 const reassignFreedItem = async (workId, assignedItemId, tx = db) => {
-    if (!assignedItemId) return;
+    if (!assignedItemId) return null;
 
     const nextReservation = await reservationRepository.findQueueByWorkId(workId, { onlyFirst: true }, tx);
 
-    if (nextReservation) {
-        // Se c'è qualcuno in coda, gli assegniamo direttamente la copia liberata
-        await reservationRepository.assignItemToReservation(
-            nextReservation.id,
-            assignedItemId,
-            tx
-        );
-    }
-    // Se non c'è nessuno in coda, la copia torna semplicemente disponibile (non ha più prenotazioni ready collegate)
+    if (!nextReservation) return null;  // Se non c'è nessuno in coda, la copia torna semplicemente disponibile (non ha più prenotazioni ready collegate)
+
+    // Se c'è qualcuno in coda, gli assegniamo direttamente la copia liberata
+    return assignItemAndNotify(nextReservation, assignedItemId, tx);
+
 };
 
-// Accorpa "cambio stato" + eventuale riassegnazione copia liberata
+// Gestisce la chiusura della prenotazione e la riassegnazione dell'eventuale copia associata (se prenotata passa al prossimo in coda)
 const closeReservation = async (reservation, closeFn, tx = db) => {
     const result = await closeFn(reservation.id, tx);
-    if (reservation.status === RESERVATION_STATUS.READY) {
-        await reassignFreedItem(reservation.workId, reservation.assignedItemId, tx);
+
+    if (result.length === 0 ) {
+        return { result, sendEmail: noop}
     }
-    return result;
+
+    let sendEmail = noop;
+    if (reservation.status === RESERVATION_STATUS.READY && reservation.assignedItemId) {
+        const reassigned = await reassignFreedItem(reservation.workId, reservation.assignedItemId, tx);
+        if (reassigned) sendEmail = reassigned.sendEmail;
+    }
+    return { result, sendEmail };
 };
 
 export const reservationService = {
@@ -51,95 +80,136 @@ export const reservationService = {
     getById: (id) =>
         findUniqueOrThrow(id),
 
+    // Crea una nuova prenotazione, ready se c'è una copia libera altrimenti pending
     create: async (data) => {
         // Controllo che l'utente non sia sospeso
         await assertNotSuspended(data.userId);
 
-        const activeLoan = await loanRepository.findActiveByUserAndWork(data.userId, data.workId);
-        if (activeLoan) {
-            throw new AppError(
-                "User already has an active loan for this work",
-                "ALREADY_LOANED", 400
-            );
-        }
-
-        const existingReservation = await reservationRepository.findActiveByUserAndWork(
-            data.userId,
-            data.workId
-        );
-        if (existingReservation) {
-            throw new AppError("Double booking is not allowed", "ALREADY_RESERVED", 400);
-        }
-
-        const availableItem = await itemRepository.findAvailableByWorkId(data.workId);
-        const status = availableItem ? RESERVATION_STATUS.READY : RESERVATION_STATUS.PENDING;
-
-        const reservationData = {
-            ...data,
-            status: availableItem ? RESERVATION_STATUS.READY : RESERVATION_STATUS.PENDING,
-            ...(availableItem && {
-                assignedItemId: availableItem.id,
-                expiresAt: new Date(Date.now() + EXPIRY_MS)
-            })
-        };
-
         // Avvio una transazione per rendere atomici inserimento e notifica in-app
         let newReservation;
-        await db.transaction(async (tx) => {
-            [newReservation] = await reservationRepository.create(reservationData, tx);
+        let sendEmail = noop;
 
-            const eventType = status === RESERVATION_STATUS.READY
-                ? NotificationEvent.RESERVATION_READY
-                : NotificationEvent.RESERVATION_CREATED;
+        try {
+            await db.transaction(async (tx) => {
+                // Controllo che l'opera esista
+                const work = await workRepository.findById(data.workId, tx);
+                if(!work) throw new AppError("Work not found", "NOT_FOUND", 404);
 
-            // Inviamo la notifica in-app legata alla transazione
-            await notifier.send(eventType, {
-                user: { id: data.userId },
-                reservation: newReservation,
-                tx
+                // Controllo che l'utente non abbia prestiti attivi relativi all'opera
+                const activeLoan = await loanRepository.findActiveByUserAndWork(
+                    data.userId,
+                    data.workId,
+                    tx);
+                if (activeLoan) {
+                    throw new AppError(
+                        "User already has an active loan for this work",
+                        "ALREADY_LOANED", 400
+                    );
+                }
+
+                // Controllo che l'utente non abbia prenotazioni attive per quest'opera
+                const existingReservation = await reservationRepository.findActiveByUserAndWork(
+                    data.userId,
+                    data.workId,
+                    tx
+                );
+                if (existingReservation) {
+                    throw new AppError("Double booking is not allowed", "ALREADY_RESERVED", 400);
+                }
+
+                // Controllo se ci sono copie disponibili per l'opera
+                const availableItem = await itemRepository.findAvailableByWorkId(data.workId, tx);
+                const status = availableItem ? RESERVATION_STATUS.READY : RESERVATION_STATUS.PENDING;
+
+                const reservationData = {
+                    ...data,
+                    status,
+                    ...(availableItem && {
+                        assignedItemId: availableItem.id,
+                        expiresAt: new Date(Date.now() + EXPIRY_MS)
+                    })
+                };
+
+                [newReservation] = await reservationRepository.create(reservationData, tx);
+
+                const eventType = status === RESERVATION_STATUS.READY
+                    ? NotificationEvent.RESERVATION_READY
+                    : NotificationEvent.RESERVATION_CREATED;
+
+                // La notifica in-app viene salvata nella stessa transazione, mentre l'email viene preparata per essere inviata dopo il commit
+                sendEmail = await notifier.send(eventType, {
+                    user: { id: data.userId },
+                    reservation: newReservation,
+                    tx
+                });
             });
-        });
-
-                return newReservation;
+        } catch (error) {
+            if (isUniqueViolation(error) && error.constraint === "reservations_user_work_active_unique") {
+                throw new AppError(
+                    "User already has an active reservation for this work",
+                    "ALREADY_RESERVED",
+                    400
+                );
+            }
+            throw error;
+        }
+        // Email dopo il commit
+        await sendEmail();
+        return newReservation;
     },
 
-    handleItemCheckIn: async (itemId) => {
-        const item = await itemRepository.findById(itemId);
+    // Chiamata dal check-in di un prestito. Se qualcuno era in coda per l'opera gli assegno la copia appena rientrata
+    handleItemCheckIn: async (itemId, tx = db) => {
+        const item = await itemRepository.findById(itemId, tx);
         if (!item) return null;
 
-        const nextReservation = await reservationRepository.findQueueByWorkId(item.workId, { onlyFirst: true });
+        const nextReservation = await reservationRepository.findQueueByWorkId(item.workId, { onlyFirst: true }, tx);
         if (!nextReservation) return null;
 
-        const [updatedReservation] = await reservationRepository.assignItemToReservation(
-            nextReservation.id,
-            itemId
-        );
-        return updatedReservation;
+        return assignItemAndNotify(nextReservation, itemId, tx);
     },
 
+    // Assegna lo stato expired alle prenotazioni non ritirate e riassegna l'eventuale copia al prossimo in coda
     processExpiredReservations: async () => {
-        const expiredReservations = await reservationRepository.findExpiredReady();
+        const now = new Date();
+        const expiredReservations = await reservationRepository.findExpiredReady(now);
 
         if (expiredReservations.length === 0) return { processed: 0 };
 
         let processed = 0;
 
         for (const reservation of expiredReservations) {
+            let sendExpiredMail = noop;
+            let sendReadyEmail = noop;
+            let wasProcessed = false;
+
             // Avvio una transazione per ogni chiusura, mandando una notifica di prenotazione scaduta
             await db.transaction(async (tx) => {
-                await closeReservation(reservation, reservationRepository.expire, tx);
+                const closeResult = await closeReservation(reservation, reservationRepository.expire, tx);
 
-                await notifier.send(NotificationEvent.RESERVATION_EXPIRED, {
+                // Controllo se sono effettivamente state fatte modifiche, altrimenti un altro processo le ha già fatte e non notifico l'utente nuovamente
+                if (closeResult.result.length === 0) return;
+
+                wasProcessed = true;
+                sendReadyEmail = closeResult.sendEmail;
+
+                sendExpiredMail = await notifier.send(NotificationEvent.RESERVATION_EXPIRED, {
                     user: { id: reservation.userId },
-                    reservation: reservation,
+                    reservation,
                     tx
                 });
             });
-            processed++;
+            // Email dopo il commit
+            await sendExpiredMail();
+            await sendReadyEmail();
+            if (wasProcessed) {
+                processed++;
+            }
         }
         return { processed };
     },
 
+    // Avvisa chi ha una prenotazione in stato ready che sta per scadere (minimo 24 ore prima)
     processExpiringSoonReservations: async () => {
         // Calcolo il range temporale
         const now = new Date();
@@ -150,15 +220,17 @@ export const reservationService = {
         if (expiringReservations.length === 0) return { processed: 0 };
 
         let processed = 0;
-
         for (const reservation of expiringReservations) {
+            let sendEmail = noop;
             await db.transaction(async (tx) => {
-                await notifier.send(NotificationEvent.RESERVATION_EXPIRING_SOON, {
+                sendEmail = await notifier.send(NotificationEvent.RESERVATION_EXPIRING_SOON, {
                     user: { id: reservation.userId },
                     reservation,
                     tx
                 });
             });
+            // Email dopo il commit
+            await sendEmail();
             processed++;
         }
         return { processed };
@@ -176,13 +248,22 @@ export const reservationService = {
         }
 
         // Se è il proprietario ma utente base e fa una richiesta diversa da cancelled blocco la modifica
-        if (isOwner && !isStaff && data.status !== "cancelled") {
+        if (isOwner && !isStaff && data.status !== RESERVATION_STATUS.CANCELLED) {
             throw new AppError("Users can only cancel their own reservations", "FORBIDDEN", 403);
         }
 
         // Se sto cancellando, uso closeReservation per gestire anche l'eventuale riassegnazione copia
-        if (data.status === "cancelled") {
-            const [updatedReservation] = await closeReservation(reservation, reservationRepository.cancel);
+        if (data.status === RESERVATION_STATUS.CANCELLED) {
+            let updatedReservation;
+            let sendEmail = noop;
+
+            await db.transaction(async (tx) => {
+                const closeResult = await closeReservation(reservation, reservationRepository.cancel, tx);
+                [updatedReservation] = closeResult.result;
+                sendEmail = closeResult.sendEmail;
+            });
+            // Email dopo il commit
+            await sendEmail();
             return updatedReservation;
         }
 
@@ -195,27 +276,34 @@ export const reservationService = {
         const reservation = await findUniqueOrThrow(id);
 
         // Se viene eliminata una prenotazione READY, liberiamo la copia per il prossimo in coda
-        await closeReservation(reservation, reservationRepository.delete);
-
+        let sendEmail = noop;
+        await db.transaction(async (tx) => {
+                const closeResult = await closeReservation(reservation, reservationRepository.delete, tx);
+                sendEmail = closeResult.sendEmail;
+        });
+        // Email dopo il commit
+        await sendEmail();
         return { message: "Reservation deleted successfully" };
     },
 
     // Cancella in blocco tutte le prenotazioni attive di un utente (usato dal soft-delete utente)
     cancelAllActiveByUserId: async (userId, tx = db) => {
-        return await db.transaction(async (tx) => {
-            const activeReservations = await reservationRepository.findActiveByUserId(userId, tx);
+        const activeReservations = await reservationRepository.findActiveByUserId(userId, tx);
+        if (activeReservations.length === 0) return { processed: 0, sendEmails: [] };
 
-            if (activeReservations.length === 0) return { processed: 0 };
+        // Cancello tutte le prenotazioni attive dell'utente dato in input, in questo modo nessuna di esse è in ready e quindi la riassegnazione successiva non trova conflitti sullo unique index
+        await reservationRepository.cancelManyByUserId(userId, tx);
 
-            for (const reservation of activeReservations) {
-                // Se era READY, liberiamo la copia per il prossimo in coda, dentro la stessa transazione
-                if (reservation.status === RESERVATION_STATUS.READY) {
-                    await reassignFreedItem(reservation.workId, reservation.assignedItemId, tx);
-                }
+        // Riassegno le copie tenute da prenotazioni ready al prossimo utente in coda
+        const sendEmails = [];
+        for (const reservation of activeReservations) {
+            if (reservation.status === RESERVATION_STATUS.READY) {
+                const reassigned = await reassignFreedItem(reservation.workId, reservation.assignedItemId, tx);
+                if (reassigned) sendEmails.push(reassigned.sendEmail);
             }
+        }
 
-            await reservationRepository.cancelManyByUserId(userId, tx);
-            return { processed: activeReservations.length };
-        });
+
+        return { processed: activeReservations.length, sendEmails };
     }
 };

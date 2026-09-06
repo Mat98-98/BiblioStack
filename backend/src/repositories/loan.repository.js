@@ -23,8 +23,8 @@ export const loanRepository = {
         });
     },
 
-    findById: async (id) =>
-        await db.query.loans.findFirst({
+    findById: async (id, tx = db) =>
+        await tx.query.loans.findFirst({
             where: { id },
             with: {
                 item: { with: { work: {columns: { title: true }}}},
@@ -34,19 +34,33 @@ export const loanRepository = {
             }
         }),
 
-    findActiveByItemId: async (itemId) =>
-        await db.query.loans.findFirst({
+    findActiveByItemId: async (itemId, tx = db) =>
+        await tx.query.loans.findFirst({
             where: {
                 itemId,
                 returnDate: { isNull: true }
             }
         }),
 
-    findActiveByUserAndWork: async (userId, workId) => {
-        const loan = await db.query.loans.findFirst({
+    /*
+    findActiveByUserAndWork: async (userId, workId, tx = db) => {
+        const loan = await tx.query.loans.findFirst({
             where: {
                 userId,
                 returnDate: { isNull: true }
+            },
+            with: { item: true }
+        });
+        return loan?.item?.workId === workId ? loan : null;
+    },
+     */
+
+    findActiveByUserAndWork: async (userId, workId, tx = db) => {
+        const loan = await tx.query.loans.findFirst({
+            where: {
+                userId,
+                returnDate: { isNull: true },
+                item: { workId }
             },
             with: { item: true }
         });
@@ -67,8 +81,8 @@ export const loanRepository = {
     update: async (id, data, tx = db) =>
         await tx.update(loans).set(data).where(eq(loans.id, id)).returning(),
 
-    delete: (id) =>
-        db.delete(loans).where(eq(loans.id, id)).returning(),
+    delete: async (id, tx = db) =>
+        await tx.delete(loans).where(eq(loans.id, id)).returning(),
 
     search: async ({ page, limit, search, status, sortBy, sortOrder, workId, userId }) => {
         const offset = (page - 1) * limit;

@@ -9,6 +9,7 @@ import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID, TOKEN_TYPES } from "../constants.js";
 import { logger } from "../config/logger.config.js";
 import { OAuth2Client } from "google-auth-library";
+import { isUniqueViolation } from "../utils/db.util.js";
 
 // Scadenze token auth
 const ACCESS_TOKEN_EXPIRY = "15m";
@@ -65,9 +66,6 @@ const isAllowedGoogleDomain = (email) => {
     return !!domain && ALLOWED_GOOGLE_DOMAINS.includes(domain);
 }
 
-// Funzione helper per il intercettare una violazione unique su postgreSQL
-const isUniqueViolation = (error) =>
-    error?.code === "23505";
 
 
 export const authService = {

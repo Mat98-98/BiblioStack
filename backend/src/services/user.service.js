@@ -5,11 +5,10 @@ import { passwordTokenRepository } from "../repositories/passwordToken.repositor
 import { suspensionRepository } from "../repositories/suspension.repository.js";
 import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID } from "../constants.js";
-import { authService } from "./auth.service.js";
 import { db } from "../db/connection.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
-import {passwordService} from "./password.service.js";
-import {notificationRepository} from "../repositories/notification.repository.js";
+import { passwordService } from "./password.service.js";
+import { notificationRepository } from "../repositories/notification.repository.js";
 
 
 
@@ -120,6 +119,7 @@ export const userService = {
         // Controllo che l'utente sia esistente nel database
         await findUniqueOrThrow(id);
 
+        let sendEmails = [];
         await db.transaction(async (tx) => {
             // Se l'utente ha una sospensione attiva la chiudo
             const activeSuspension = await suspensionRepository.findActiveByUserId(id, tx);
@@ -128,7 +128,8 @@ export const userService = {
             }
 
             // Se l'utente ha prenotazioni attive le annullo
-            await reservationService.cancelAllActiveByUserId(id, tx);
+            const result = await reservationService.cancelAllActiveByUserId(id, tx);
+            sendEmails = result.sendEmails;
 
             // Se l'utente ha token attivi per il setup password o per il reset password li invalido
             await passwordTokenRepository.invalidateAllByUserId(id, tx);
@@ -142,6 +143,7 @@ export const userService = {
             // Eseguo la anonimizzazione dell'account
             await userRepository.softDelete(id, tx);
         })
+        await Promise.all(sendEmails.map(fn => fn()));
         return { message: "User anonymized successfully" };
     },
 

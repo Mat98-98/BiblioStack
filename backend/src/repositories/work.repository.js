@@ -6,8 +6,8 @@ import { userSelect } from "./presets/user.preset.js";
 import { RESERVATION_STATUS } from "../constants.js";
 
 // Query base condivisa per findById e findByIdForStaff
-const fetchWorkWithRelations = (id, { withLocation = false, withReservations = false } = {}) =>
-    db.query.works.findFirst({
+const fetchWorkWithRelations = (id, { withLocation = false, withReservations = false } = {}, tx = db) =>
+    tx.query.works.findFirst({
         where: { id },
         with: {
             authors: true,
@@ -48,25 +48,25 @@ export const workRepository = {
         });
     },
 
-    findById: async (id) => {
+    findById: async (id, tx = db) => {
         const [work, availableCount] = await Promise.all([
             // Richiamo la query base senza passare with locations (quindi resta false e non lo ricevo)
-            fetchWorkWithRelations(id),
+            fetchWorkWithRelations(id, {}, tx),
             // Conto il numero di copie disponibili
-            db.$count(itemAvailability, eq(itemAvailability.workId, id))
+            tx.$count(itemAvailability, eq(itemAvailability.workId, id))
         ]);
 
         if (!work) return null;
         return { ...work, availableCount };
     },
 
-    findByIdForStaff: async (id) => {
+    findByIdForStaff: async (id, tx = db) => {
         const [work, availableCount, availableIds] = await Promise.all([
             // Chiamo la query base richiedendo anche la locazione
-            fetchWorkWithRelations(id, { withLocation: true, withReservations: true }),
+            fetchWorkWithRelations(id, { withLocation: true, withReservations: true }, tx),
             // Conto le copie disponibili
-            db.$count(itemAvailability, eq(itemAvailability.workId, id)),
-            db
+            tx.$count(itemAvailability, eq(itemAvailability.workId, id)),
+            tx
                 .select({ itemId: itemAvailability.itemId })
                 .from(itemAvailability)
                 .where(eq(itemAvailability.workId, id))

@@ -16,7 +16,7 @@ import {
     date,
     numeric,
     primaryKey,
-    check
+    check, uniqueIndex
 } from 'drizzle-orm/pg-core';
 
 import { sql } from 'drizzle-orm';
@@ -217,18 +217,32 @@ export const reservations = pgTable('reservations', {
     reservationDate: timestamp('reservation_date', { withTimezone: true, mode: 'date' }).defaultNow(),
     expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }),
     status: reservationStatusEnum('status').default('pending')
-});
+}, (table) => [
+    // Indice unico che impedisce più prenotazioni attive dello stesso utente per la stessa opera
+    uniqueIndex('reservations_user_work_active_unique')
+        .on(table.userId, table.workId)
+        .where(sql`${table.status} IN ('pending', 'ready')`),
+    // Indice unico ce impedisce che la stessa copia sia assegnata a più prenotazioni ready contemporaneamente
+    uniqueIndex('reservations_item_ready_unique')
+        .on(table.assignedItemId)
+        .where(sql`${table.status} = 'ready'`)
+    ]);
 
 
 export const loans = pgTable('loans', {
-    id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
-    userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id),
-    handledBy: bigint('handled_by', { mode: 'number' }).notNull().references(() => users.id),
+    id: bigint('id', {mode: 'number'}).primaryKey().generatedAlwaysAsIdentity(),
+    userId: bigint('user_id', {mode: 'number'}).notNull().references(() => users.id),
+    handledBy: bigint('handled_by', {mode: 'number'}).notNull().references(() => users.id),
     itemId: text('item_id').notNull().references(() => items.id),
-    loanDate: timestamp('loan_date', { withTimezone: true, mode: 'date' }).defaultNow(),
-    dueDate: date('due_date', { mode: 'date' }),
-    returnDate: timestamp('return_date', { withTimezone: true, mode: 'date' }),
-});
+    loanDate: timestamp('loan_date', {withTimezone: true, mode: 'date'}).defaultNow(),
+    dueDate: date('due_date', {mode: 'date'}),
+    returnDate: timestamp('return_date', {withTimezone: true, mode: 'date'}),
+}, (table) => [
+    // Al massimo un prestito attivo per la stessa copia
+    uniqueIndex('loans_item_active_unique')
+        .on(table.itemId)
+        .where(sql`${table.returnDate} IS NULL`)
+]);
 
 
 export const notices = pgTable('notices', {

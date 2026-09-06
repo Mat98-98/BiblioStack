@@ -7,6 +7,7 @@ import { userRepository } from "../repositories/user.repository.js";
 import { notifier } from "../features/notifications/notification.notifier.js";
 import { NotificationEvent } from "../features/notifications/notification.events.js";
 import { db } from "../db/connection.js";
+import { isUniqueViolation } from "../utils/db.util.js";
 
 const findUniqueOrThrow = async (id) => {
     const loan = await loanRepository.findById(id);
@@ -42,35 +43,49 @@ export const loanService = {
             throw new AppError("User is suspended and cannot perform this action", "USER_SUSPENDED", 403);
         }
 
-        // Controllo se la copia è in prestito
-        const itemOnLoan = await loanRepository.findActiveByItemId(data.itemId);
-        if (itemOnLoan) {
-            throw new AppError("This item is still checked out", "CONFLICT", 409);
-        }
-
-        // Controllo se la copia è stata prenotata da un'altri utenti, nel caso l'id utente corrisponda con l'utente con lo la prenotazione in stato di ready procedo
-        const reservation = await reservationRepository.findReadyByItemId(data.itemId);
-        if (reservation && reservation.userId !== data.userId) {
-            throw new AppError("Item reserved by another user", "FORBIDDEN", 403);
-        }
 
         // Eseguo il prestito dentro la transazione, così da assicurarmi che anche stato della prenotazione e l'invio della notifica vengano eseguiti correttamente
         let newLoan;
-        await db.transaction(async (tx) => {
-            [newLoan] = await loanRepository.create(data, tx);
+        try {
+            await db.transaction(async (tx) => {
 
-            // Se il libro era prenotato dall'utente stesso, aggiorno lo stato della prenotazione in fullfill
-            if (reservation && reservation.userId === data.userId) {
-                await reservationRepository.fulfill(reservation.id, tx);
-            }
+                // Controllo se la copia è in prestito
+                const itemOnLoan = await loanRepository.findActiveByItemId(data.itemId, tx);
+                if (itemOnLoan) {
+                    throw new AppError("This item is still checked out", "CONFLICT", 409);
+                }
 
-            // Creo la notifica per l'utente
-            await notifier.send(NotificationEvent.LOAN_CREATED, {
-                user: { id: data.userId },
-                loan: newLoan,
-                tx
+                // Controllo se la copia è stata prenotata da un'altri utenti, nel caso l'id utente corrisponda con l'utente con lo la prenotazione in stato di ready procedo
+                const reservation = await reservationRepository.findReadyByItemId(data.itemId, tx);
+                if (reservation && reservation.userId !== data.userId) {
+                    throw new AppError("Item reserved by another user", "FORBIDDEN", 403);
+                }
+
+                // Registro il prestito
+                [newLoan] = await loanRepository.create(data, tx);
+
+                // Se la copia era prenotato dall'utente stesso, aggiorno lo stato della prenotazione in fulfill
+                if (reservation && reservation.userId === data.userId) {
+                    const fulfilled = await reservationRepository.fulfill(reservation.id, tx);
+                    if (fulfilled.length === 0) {
+                        throw new AppError("Reservation is no longer available", "CONFLICT", 409);
+                    }
+                }
+
+                // Creo la notifica per l'utente
+                await notifier.send(NotificationEvent.LOAN_CREATED, {
+                    user: { id: data.userId },
+                    loan: newLoan,
+                    tx
+                });
             });
-        });
+        } catch (error) {
+            if (isUniqueViolation(error) && error.constraint === "loans_item_active_unique") {
+                throw new AppError("This item is already checked out", "CONFLICT", 409);
+            }
+            throw error;
+        }
+
         return await loanRepository.findById(newLoan.id);
     },
 
@@ -82,13 +97,15 @@ export const loanService = {
             throw new AppError("Loan already closed", "BAD_REQUEST", 400);
         }
 
+        let sendEmail = async () => {};
         await db.transaction(async (tx) => {
             await  loanRepository.update(id, { returnDate: new Date() }, tx);
 
             // Dopo il check-in, assegna la copia alla prossima prenotazione in coda (se esiste)
-            await reservationService.handleItemCheckIn(existingLoan.itemId, tx);
+            const result = await reservationService.handleItemCheckIn(existingLoan.itemId, tx);
+            if(result?.sendEmail) sendEmail = result.sendEmail;
         });
-
+        await sendEmail();
         return await loanRepository.findById(id);
     },
 
