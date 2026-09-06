@@ -21,6 +21,11 @@ export const notificationService = {
         return newNotification;
     },
 
+    createDeduped: async (data, tx = db) => {
+        const [newNotification] = await notificationRepository.createDeduped(data, tx);
+        return newNotification ?? null;
+    },
+
     markAsRead: async (id, requestingUser) => {
         // Controllo che la notifica esista
         const notification = await findUniqueOrThrow(id);

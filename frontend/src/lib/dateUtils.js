@@ -7,6 +7,7 @@ export function safeFormat (date) {
     return format(d, "PPP", { locale: it });
 }
 
+//@todo fare questa funzione dinamica. passando un parametro noMax deve ritornare senza "Math.max(0)"
 export function daysUntil(date) {
     if (!date) return null;
 

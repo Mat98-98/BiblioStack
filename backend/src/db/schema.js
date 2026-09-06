@@ -260,6 +260,7 @@ export const notifications = pgTable('notifications', {
     userId: bigint('user_id', { mode: 'number' }).notNull().references(() => users.id,  {onDelete: 'cascade' }),
     title: text('title').notNull(),
     message: text('message').notNull(),
+    dedupeKey: text('dedupe_key'),
     createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
     readAt: timestamp('read_at', { withTimezone: true, mode: 'date' })
 }, (table) => [
@@ -268,7 +269,10 @@ export const notifications = pgTable('notifications', {
     check('notifications_message_length_check',
         sql`length(${table.message}) <= 255`),
     check('notifications_read_after_created_check',
-        sql`${table.readAt} IS NULL OR ${table.readAt} >= ${table.createdAt}`)
+        sql`${table.readAt} IS NULL OR ${table.readAt} >= ${table.createdAt}`),
+    uniqueIndex('notifications_dedupe_key_unique')
+        .on(table.dedupeKey)
+        .where(sql`${table.dedupeKey} IS NOT NULL`)
 ]);
 
 

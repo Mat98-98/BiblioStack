@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
 import { notifications } from "../db/schema.js";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 
 
 export const notificationRepository = {
@@ -11,6 +11,15 @@ export const notificationRepository = {
 
     create: async (data, tx = db) =>
         await tx.insert(notifications).values(data).returning(),
+
+    createDeduped: async (data, tx = db) =>
+        await tx
+            .insert(notifications)
+            .values(data)
+            .onConflictDoNothing({
+                target: notifications.dedupeKey,
+                targetWhere: sql`${notifications.dedupeKey} IS NOT NULL`
+            }).returning(),
 
     markAsRead: async (id, readAt) =>
         await db

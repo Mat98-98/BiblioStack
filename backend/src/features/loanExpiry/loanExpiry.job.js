@@ -19,5 +19,5 @@ export const startLoanExpiryJob = async () => {
     });
 
     const mode = process.env.NODE_ENV === "development" ? "every minute" : "daily 08:00";
-    logger.info(`Loan expiry job started (${mode}`);
+    logger.info(`Loan expiry job started (${mode})`);
 };

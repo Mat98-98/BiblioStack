@@ -46,6 +46,7 @@ export const loanService = {
 
         // Eseguo il prestito dentro la transazione, così da assicurarmi che anche stato della prenotazione e l'invio della notifica vengano eseguiti correttamente
         let newLoan;
+        let sendEmail = async () => {};
         try {
             await db.transaction(async (tx) => {
 
@@ -73,7 +74,7 @@ export const loanService = {
                 }
 
                 // Creo la notifica per l'utente
-                await notifier.send(NotificationEvent.LOAN_CREATED, {
+                 sendEmail = await notifier.send(NotificationEvent.LOAN_CREATED, {
                     user: { id: data.userId },
                     loan: newLoan,
                     tx
@@ -85,7 +86,7 @@ export const loanService = {
             }
             throw error;
         }
-
+        await sendEmail();
         return await loanRepository.findById(newLoan.id);
     },
 
@@ -99,7 +100,7 @@ export const loanService = {
 
         let sendEmail = async () => {};
         await db.transaction(async (tx) => {
-            await  loanRepository.update(id, { returnDate: new Date() }, tx);
+            await loanRepository.update(id, { returnDate: new Date() }, tx);
 
             // Dopo il check-in, assegna la copia alla prossima prenotazione in coda (se esiste)
             const result = await reservationService.handleItemCheckIn(existingLoan.itemId, tx);
@@ -129,9 +130,16 @@ export const loanService = {
         const overdueLoans = await loanRepository.findByDueDateStatus(toDateOnlyString(today), "lt");
 
         for (const loan of overdueLoans) {
+            let sendEmail = async () => {};
             await db.transaction(async (tx) => {
-                await notifier.send(NotificationEvent.LOAN_OVERDUE, { user: { id: loan.userId }, loan, tx });
-            })
+                sendEmail = await notifier.send(NotificationEvent.LOAN_OVERDUE, {
+                    user: { id: loan.userId },
+                    loan,
+                    tx,
+                    dedupeEntityKey: `loan:${loan.id}`
+                });
+            });
+            await sendEmail();
         }
         return { processed: overdueLoans.length };
     },
