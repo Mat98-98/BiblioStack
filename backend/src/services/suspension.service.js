@@ -37,29 +37,34 @@ export const suspensionService = {
         }
 
         // Se ne trovo una attiva procedo con il soft delete e mando la notifica di riabilitazione dell'account all'utente
+        let sendEmail = async () => {};
         await db.transaction(async (tx) => {
             await suspensionRepository.endById(active.id, tx);
 
-            await notifier.send(NotificationEvent.USER_REINSTATED, {
+            sendEmail = await notifier.send(NotificationEvent.USER_REINSTATED, {
                 user: { id: userId },
                 tx
             });
         });
+        // Invio email
+        await sendEmail();
         // Refetch con le relazioni popolate per la risposta completa al frontend
         return await suspensionRepository.findById(active.id);
     },
 
     create: async (data) => {
         let newSuspension;
+        let sendEmail = async () => {};
         await db.transaction(async (tx) => {
             [newSuspension] = await suspensionRepository.create(data, tx);
 
-            await notifier.send(NotificationEvent.USER_SUSPENDED, {
+            sendEmail = await notifier.send(NotificationEvent.USER_SUSPENDED, {
                 user: { id: data.userId },
                 suspension: newSuspension,
                 tx
             });
         });
+        await sendEmail();
         return newSuspension;
     },
 

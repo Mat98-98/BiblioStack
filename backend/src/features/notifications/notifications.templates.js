@@ -99,10 +99,26 @@ export const notificationTemplates = {
     },
 
     [NotificationEvent.USER_SUSPENDED]: ({ suspension }) => ({
-        inApp: { title: "Account sospeso", message: suspension.reason ?? "Il tuo account è stato sospeso. Contatta la biblioteca per maggiori informazioni." }
+        inApp: { title: "Account sospeso", message: suspension.reason ?? "Il tuo account è stato sospeso. Contatta la biblioteca per maggiori informazioni." },
+        email: {
+            subject: "Il tuo account è stato sospeso - Bibliostack",
+            html: emailTemplates.layout({
+                heading: "Account sospeso",
+                bodyHtml: `<p>Il tuo account è stato sospeso.${suspension.reason ? ` Motivo: <strong>${suspension.reason}</strong>.` : ""} Per maggiori informazioni contatta la biblioteca.</p>`,
+                accent: ACCENT.destructive,
+            })
+        }
     }),
 
     [NotificationEvent.USER_REINSTATED]: () => ({
-        inApp: { title: "Sospensione terminata", message: "La tua sospensione è terminata. Puoi tornare a utilizzare i servizi della biblioteca." }
+        inApp: { title: "Sospensione terminata", message: "La tua sospensione è terminata. Puoi tornare a utilizzare i servizi della biblioteca." },
+        email: {
+            subject: "Sospensione terminata — BiblioStack",
+            html: emailTemplates.layout({
+                heading: "Bentornato",
+                bodyHtml: `<p>La tua sospensione è terminata. Puoi tornare a utilizzare i servizi della biblioteca.</p>`,
+                accent: ACCENT.success,
+            })
+        }
     }),
 };
