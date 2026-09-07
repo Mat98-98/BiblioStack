@@ -58,7 +58,7 @@ export const notifier = {
             try {
                 await emailService.sendGeneric({ to: recipientEmail, ...content.email });
             } catch (error) {
-                logger.error("Failed to send notification email:", error);
+                logger.error({ err: error, event }, "Failed to send notification email:");
             }
         };
     }
