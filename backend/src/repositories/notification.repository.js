@@ -18,7 +18,7 @@ export const notificationRepository = {
             .values(data)
             .onConflictDoNothing({
                 target: notifications.dedupeKey,
-                targetWhere: sql`${notifications.dedupeKey} IS NOT NULL`
+                where: sql`${notifications.dedupeKey} IS NOT NULL`
             }).returning(),
 
     markAsRead: async (id, readAt) =>
