@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
 import { notifications } from "../db/schema.js";
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 
 
 export const notificationRepository = {
@@ -18,7 +18,7 @@ export const notificationRepository = {
             .values(data)
             .onConflictDoNothing({
                 target: notifications.dedupeKey,
-                where: sql`${notifications.dedupeKey} IS NOT NULL`
+                where: isNotNull(notifications.dedupeKey)
             }).returning(),
 
     markAsRead: async (id, readAt) =>
