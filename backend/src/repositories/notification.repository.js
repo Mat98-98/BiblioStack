@@ -1,13 +1,43 @@
 import { db } from "../db/connection.js";
 import { notifications } from "../db/schema.js";
-import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, gte, or } from "drizzle-orm";
 
 
 export const notificationRepository = {
-    findById: async (id) =>
+    findById: async (id, userId) =>
         await db.query.notifications.findFirst({
-            where: { id: id }
+            where: {
+                id: id,
+                userId: userId // Cerco anche per userId in modo che solo il proprietario possa vedere la notifica
+            }
         }),
+
+    findByUserId: async (userId, { page, limit }) =>
+        await db.query.notifications.findMany({
+            where: { userId: userId },
+            orderBy: { createdAt: "desc" },
+            limit: limit,
+            offset: (page - 1) * limit
+        }),
+
+    findPreview: async (userId, firstNotificationDate) => {
+        return await db.query.notifications.findMany({
+            where: (notifications, { and, eq, isNull, gte, or }) =>
+                and(
+                    eq(notifications.userId, userId),
+                    or(
+                        isNull(notifications.readAt),
+                        gte(notifications.readAt, firstNotificationDate)
+                    )
+                ),
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+    },
+
+    countByUserId: async (userId) =>
+        await db.$count(notifications, eq(notifications.userId, userId)),
 
     create: async (data, tx = db) =>
         await tx.insert(notifications).values(data).returning(),
@@ -21,6 +51,7 @@ export const notificationRepository = {
                 where: isNotNull(notifications.dedupeKey)
             }).returning(),
 
+    // Solo il proprietario può contrassegnare come letta la notifica
     markAsRead: async (id, readAt) =>
         await db
             .update(notifications)

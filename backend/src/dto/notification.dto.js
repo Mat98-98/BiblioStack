@@ -9,3 +9,13 @@ export const NotificationDTO = z.object({
 });
 
 export const NotificationListDTO = z.array(NotificationDTO);
+
+export const PaginatedNotificationListDTO = z.object({
+    data: NotificationListDTO,
+    meta: z.object({
+        page: z.number().int(),
+        limit: z.number().int(),
+        total: z.number().int(),
+        totalPages: z.number().int(),
+    })
+});
