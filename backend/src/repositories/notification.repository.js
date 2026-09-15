@@ -1,6 +1,7 @@
 import { db } from "../db/connection.js";
 import { notifications } from "../db/schema.js";
-import { and, eq, isNotNull, isNull, gte, or } from "drizzle-orm";
+import {and, eq, isNotNull, isNull, gte, or, desc} from "drizzle-orm";
+import {logger} from "../config/logger.config.js";
 
 
 export const notificationRepository = {
@@ -20,21 +21,20 @@ export const notificationRepository = {
             offset: (page - 1) * limit
         }),
 
-    findPreview: async (userId, firstNotificationDate) => {
-        return await db.query.notifications.findMany({
-            where: (notifications, { and, eq, isNull, gte, or }) =>
+    findPreview: async (userId, firstNotificationDate) =>
+        await db
+            .select()
+            .from(notifications)
+            .where(
                 and(
                     eq(notifications.userId, userId),
                     or(
                         isNull(notifications.readAt),
                         gte(notifications.readAt, firstNotificationDate)
                     )
-                ),
-            orderBy: {
-                createdAt: "desc"
-            }
-        });
-    },
+                )
+            )
+            .orderBy(desc(notifications.createdAt)),
 
     countByUserId: async (userId) =>
         await db.$count(notifications, eq(notifications.userId, userId)),
@@ -52,11 +52,14 @@ export const notificationRepository = {
             }).returning(),
 
     // Solo il proprietario può contrassegnare come letta la notifica
-    markAsRead: async (id, readAt) =>
+    markAsRead: async (id, userId, readAt) =>
         await db
             .update(notifications)
             .set({ readAt: readAt})
-            .where(and(eq(notifications.id, id), isNull(notifications.readAt))).returning(),
+            .where(and(
+                eq(notifications.id, id),
+                eq(notifications.userId, userId),
+                isNull(notifications.readAt))).returning(),
 
     deleteAllByUserId: async (userId, tx = db) =>
         await tx.delete(notifications).where(eq(notifications.userId, userId))

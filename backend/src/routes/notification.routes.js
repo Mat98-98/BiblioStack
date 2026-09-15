@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/", verifyUser, notificationController.getPreview);
 
 // GET /notifications/list?page=1&limit=20
-router.get("/list", verifyUser, paginationMiddleware, notificationController.getByUserId);
+router.get("/list", verifyUser, paginationMiddleware, notificationController.getList);
 
 // GET /notifications/:id
 router.get("/:id", verifyUser, notificationController.getById);

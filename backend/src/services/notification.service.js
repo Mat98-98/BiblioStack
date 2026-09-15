@@ -21,7 +21,7 @@ export const notificationService = {
         return await findUniqueOrThrow(numericId, user.id);
     },
 
-    getByUserId: async (user, { page, limit }) => {
+    getList: async (user, { page, limit }) => {
         const [data, total] = await Promise.all([
             notificationRepository.findByUserId(user.id, { page, limit }),
             notificationRepository.countByUserId(user.id)
@@ -67,7 +67,7 @@ export const notificationService = {
 
         // Superati i controlli la marco come letta
         const now = new Date();
-        const [updatedNotification] = await notificationRepository.markAsRead(id, now);
+        const [updatedNotification] = await notificationRepository.markAsRead(id, requestingUser.id, now);
 
         return updatedNotification;
     }

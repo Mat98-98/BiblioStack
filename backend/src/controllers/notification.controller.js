@@ -5,16 +5,16 @@ import { MarkNotificationAsReadSchema } from "../schemas/notification.schema.js"
 export const notificationController = {
     getById: async (req, res, next) => {
         try {
-            const notification = await notificationService.getById(req.params.id);
+            const notification = await notificationService.getById(req.params.id, req.user);
             res.json(NotificationDTO.parse(notification));
         } catch (error) {
             next(error);
         }
     },
 
-    getByUserId: async (req, res, next) => {
+    getList: async (req, res, next) => {
         try {
-            const result = await notificationService.getByUserId(req.user, req.pagination);
+            const result = await notificationService.getList(req.user, req.pagination);
             res.json(PaginatedNotificationListDTO.parse(result));
         } catch (error) {
             next(error);

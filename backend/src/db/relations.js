@@ -115,6 +115,10 @@ export const relations = defineRelations(schema, (r) => ({
             to: r.notices.handledBy,
             alias: "notices_handled"
         }),
+        notifications: r.many.notifications({
+            from: r.users.id,
+            to: r.notifications.userId
+        }),
         activeSuspension: r.one.activeSuspensions({
             from: r.users.id,
             to: r.activeSuspensions.userId
@@ -281,6 +285,17 @@ export const relations = defineRelations(schema, (r) => ({
     activeSuspensions: {
         user: r.one.users({
             from: r.activeSuspensions.userId,
+            to: r.users.id
+        })
+    },
+
+    /*
+        ======== Relazioni tabella Notifications (notifiche) ========
+    */
+
+    notifications: {
+        user: r.one.users({
+            from: r.notifications.userId,
             to: r.users.id
         })
     }
