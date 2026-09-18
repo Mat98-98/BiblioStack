@@ -23,8 +23,19 @@ export const loanService = {
     getAll: async ({ page, limit }) =>
         await loanRepository.findAll({ page, limit }),
 
-    getById: async (id) =>
-        await findUniqueOrThrow(id),
+    getById: async (id, requestingUser) => {
+        const loan = await findUniqueOrThrow(id);
+
+        // Verifico che l'utente a fare la richiesta sia il proprietario oppure che sia admin o bibliotecario, altrimenti blocco la richiesta
+        const isOwner = loan.userId === requestingUser.id;
+        const isStaff = ["admin", "librarian"].includes(requestingUser.role);
+
+        if (!isOwner && !isStaff) {
+            throw new AppError("Forbidden", "FORBIDDEN", 403);
+        }
+
+        return loan;
+    },
 
     search: async (params) =>
       await loanRepository.search(params),

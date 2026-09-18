@@ -16,11 +16,22 @@ export const loanController = {
 
     getById: async (req, res, next) => {
         try {
-            const loan = await loanService.getById(req.params.id);
+            const loan = await loanService.getById(req.params.id, req.user);
             res.json(LoanDetailDTO.parse(loan));
         } catch (error) {
             next(error);
         }
+    },
+
+    // .omit({ userId: true }) impedisce che userId venga passato dal client attivamente. In questo modo posso prendere direttamente l'id utente dal jwt per assicurarmi di restituire la lista dell'utente che la ha richiesta
+    getMine: async (req, res, next) => {
+      try {
+          const filters = LoanSearchSchema.omit({ userId: true }).parse(req.query);
+          const loans = await loanService.search({ ...req.pagination, ...filters, userId: req.user.id });
+          res.json(LoanBaseListDTO.parse(loans));
+      } catch (error) {
+          next(error);
+      }
     },
 
     search: async (req, res, next) => {

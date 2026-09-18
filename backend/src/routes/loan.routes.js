@@ -1,19 +1,22 @@
 import express from "express"
 import { loanController } from "../controllers/loan.controller.js";
-import {paginationMiddleware} from "../middleware/pagination.middleware.js";
-import {verifyUser} from "../middleware/auth.middleware.js";
-import {permit} from "../middleware/role.middleware.js";
+import { paginationMiddleware } from "../middleware/pagination.middleware.js";
+import { verifyUser } from "../middleware/auth.middleware.js";
+import { permit } from "../middleware/role.middleware.js";
 
 const router = express.Router()
 
 // GET /loans/search?search=...&status=all|active|overdue|returned&sortBy=loanDate|dueDate&sortOrder=asc|desc&workId=...&userId=...&page=1&limit=20
-router.get("/search", paginationMiddleware, loanController.search);
+router.get("/search", paginationMiddleware, verifyUser, permit("librarian", "admin"), loanController.search);
+
+// GET /loans/mine?search=...&status=all|active|overdue|returned&sortBy=loanDate|dueDate&sortOrder=asc|desc&workId=...&userId=...&page=1&limit=20
+router.get("/mine", paginationMiddleware, loanController.search);
 
 // GET /loans?page=1&limit=20
-router.get("/", paginationMiddleware, loanController.getAll);
+router.get("/", paginationMiddleware, verifyUser, permit("librarian", "admin"), loanController.getAll);
 
 // GET /loans/:id
-router.get("/:id", loanController.getById);
+router.get("/:id", verifyUser, loanController.getById);
 
 
 // POST /loans
