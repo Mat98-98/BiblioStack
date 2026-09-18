@@ -41,6 +41,7 @@ export default function Loans({ workId, userId }) {
                 search={search} onSearch={setSearch}
                 status={status} onStatus={setStatus}
                 sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}
+                searchPlaceholder="Cerca per titolo, codice copia o utente..."
             />
 
             <LoansTable

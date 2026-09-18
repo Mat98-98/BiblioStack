@@ -7,12 +7,14 @@ export function safeFormat (date) {
     return format(d, "PPP", { locale: it });
 }
 
-//@todo fare questa funzione dinamica. passando un parametro noMax deve ritornare senza "Math.max(0)"
-export function daysUntil(date) {
+// Se si passa noMax = true il return restituisce anche risultati negativi (-5, -6 ecc.). Comodo per sapere ad esempio quanti giorni fa è scaduto un prestito
+export function daysUntil(date, { noMax = false }) {
     if (!date) return null;
 
-    return Math.max(0, Math.ceil(
+    const days = Math.ceil(
         (new Date(date) - new Date()) /
         (1000 * 60 * 60 * 24)
-    ));
+    );
+
+    return noMax ? days : Math.max(0, days);
 }

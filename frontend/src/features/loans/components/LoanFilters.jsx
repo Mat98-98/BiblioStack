@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input.jsx";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
+import { Field, FieldLabel } from "@/components/ui/field.jsx";
 
 const STATUS_TABS = [
     { value: "all", label: "Tutti" },
@@ -13,6 +14,7 @@ export default function LoansFilters({
                                          search, onSearch,
                                          status, onStatus,
                                          sortBy, sortOrder, onSort,
+                                         searchPlaceholder,
                                      }) {
     const toggleSort = (field) => {
         if (sortBy === field) {
@@ -26,11 +28,16 @@ export default function LoansFilters({
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             {/* Barra di ricerca e Filtri di Stato */}
             <div className="flex flex-wrap items-center gap-3 flex-1">
+                <Field classname="max-w xs">
+                    <FieldLabel htmlFor="loanSearch" className="sr-only">
+                        Cerca prestiti
+                    </FieldLabel>
+                </Field>
                 <Input
+                    id="loanSearch"
                     value={search}
                     onChange={(e) => onSearch(e.target.value)}
-                    placeholder="Cerca per opera, utente o codice copia..."
-                    className="max-w-xs"
+                    placeholder={searchPlaceholder}
                 />
 
                 {/* Gruppo di filtri stile "Pill" / Tab */}

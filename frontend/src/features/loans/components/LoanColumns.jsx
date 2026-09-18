@@ -19,7 +19,7 @@ function LoanStatusBadge({ loan }) {
             : <Badge variant="outline" className="text-muted-foreground">Restituito</Badge>;
     }
 
-    const days = daysUntil(loan.dueDate);
+    const days = daysUntil(loan.dueDate, { noMax: true });
     if (days !== null && days < 0) {
         return <Badge variant="destructive">Scaduto da {Math.abs(days)}g</Badge>;
     }
@@ -34,8 +34,9 @@ function LoanStatusBadge({ loan }) {
     return <Badge variant="outline" className="border-primary text-primary">In corso</Badge>;
 }
 
-// showPatron: false quando la tabella è già scoped a un singolo utente (es. dashboard admin utente) 
-export const getLoansColumns = ({ onEdit, onDelete, onNotify, showPatron = true }) => [
+// showPatron: false quando la tabella è già scoped a un singolo utente (es. dashboard admin utente)
+// Se si passa isStaff = false non compaiono le colonne relative a: copia, utente, bibliotecario e l'hamburger filtri
+export const getLoansColumns = ({ onEdit, onNotify, showAllColumns = true, showPatron = true }) => [
     {
         id: "status",
         header: "Stato",
@@ -48,12 +49,12 @@ export const getLoansColumns = ({ onEdit, onDelete, onNotify, showPatron = true 
         header: "Opera",
         cell: ({ getValue }) => <span className="text-sm max-w-55 truncate block">{getValue()}</span>,
     },
-    {
+    ...(showAllColumns ? [{
         accessorKey: "item.id",
         header: "Copia",
         cell: ({ getValue }) => <span className="font-mono text-sm">{getValue()}</span>,
-    },
-    ...(showPatron ? [{
+    }] : []),
+    ...(showAllColumns && showPatron ? [{
         accessorKey: "patron",
         header: "Utente",
         cell: ({ getValue }) => {
@@ -64,15 +65,15 @@ export const getLoansColumns = ({ onEdit, onDelete, onNotify, showPatron = true 
             return <span className="text-sm">{patron.firstName} {patron.lastName}</span>;
         },
     }] : []),
-    {
+    ...(showAllColumns ? [{
         accessorKey: "librarian",
         header: "Bibliotecario",
         cell: ({ getValue }) => {
             const librarian = getValue();
             if (!librarian) return <span className="text-sm text-muted-foreground">—</span>;
             return <span className="text-sm text-muted-foreground">{librarian.firstName} {librarian.lastName}</span>;
-        },
-    },
+        }
+    }] : []),
     {
         accessorKey: "loanDate",
         header: "Data prestito",
@@ -91,12 +92,12 @@ export const getLoansColumns = ({ onEdit, onDelete, onNotify, showPatron = true 
         cell: ({ getValue }) => <span className="text-sm text-muted-foreground">{safeFormat(getValue()) ?? "—"}</span>,
         sortingFn: "datetime",
     },
-    {
+    ...(showAllColumns ? [{
         id: "actions",
         header: "",
         enableSorting: false,
         cell: ({ row }) => (
-            <LoanTableActions loan={row.original} onEdit={onEdit} onDelete={onDelete} onNotify={onNotify} />
-        ),
-    }
+            <LoanTableActions loan={row.original} onEdit={onEdit} onNotify={onNotify} />
+        )
+    }] : [])
 ];

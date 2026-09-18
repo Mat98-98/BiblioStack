@@ -1,10 +1,13 @@
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { getLoansColumns } from "@/features/loans/components/LoanColumns.jsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.jsx";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
+import { PackageX } from "lucide-react";
 import LoansTableSkeleton from "@/features/loans/components/LoanTableSkeleton.jsx";
 
-export default function LoansTable({ loans, loading, onEdit, onDelete, onNotify, showPatron = true }) {
-    const columns = getLoansColumns({ onEdit, onDelete, onNotify, showPatron });
+
+export default function LoansTable({ loans, loading, onEdit, onDelete, onNotify, showAllColumns = true, showPatron = true }) {
+    const columns = getLoansColumns({ onEdit, onDelete, onNotify, showAllColumns, showPatron });
 
     const table = useReactTable({
         data: loans,
@@ -31,8 +34,15 @@ export default function LoansTable({ loans, loading, onEdit, onDelete, onNotify,
                 <TableBody>
                     {table.getRowModel().rows.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={columns.length} className="text-center py-12 text-muted-foreground text-sm">
-                                Nessun prestito trovato
+                            <TableCell colSpan={columns.length} className="py 12">
+                                <Empty>
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <PackageX />
+                                        </EmptyMedia>
+                                        <EmptyTitle>Nessun prestito trovato</EmptyTitle>
+                                    </EmptyHeader>
+                                </Empty>
                             </TableCell>
                         </TableRow>
                     ) : (

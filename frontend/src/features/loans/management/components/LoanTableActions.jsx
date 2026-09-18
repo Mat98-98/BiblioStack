@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { AlertTriangle, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { AlertTriangle, Pencil, RotateCcw } from "lucide-react";
 import { ActionsMenu } from "@/components/common/dialogs/ActionsMenu.jsx";
-import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu.jsx";
-import { DeleteConfirmDialog } from "@/components/common/dialogs/DeleteConfirmDialog.jsx";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu.jsx";
 import EditLoanDialog from "@/features/loans/management/components/EditLoanDialog.jsx";
 import CheckInDialog from "@/features/loans/management/components/CheckInDialog.jsx";
 import NoticeDialog from "@/features/notices/dialogs/NoticeDialog.jsx";
 
 
-export function LoanTableActions({ loan, onEdit, onDelete, onNotify }) {
-    const [deleteOpen, setDeleteOpen] = useState(false);
+export function LoanTableActions({ loan, onEdit, onNotify }) {
     const [editOpen, setEditOpen] = useState(false);
     const [checkInOpen, setCheckInOpen] = useState(false);
     const [noticeOpen, setNoticeOpen] = useState(false);
@@ -35,14 +33,6 @@ export function LoanTableActions({ loan, onEdit, onDelete, onNotify }) {
                     <AlertTriangle className="mr-2 h-4 w-4" />
                     Segnala
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                    onClick={() => setDeleteOpen(true)}
-                    className="text-destructive focus:text-destructive"
-                >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Elimina
-                </DropdownMenuItem>
             </ActionsMenu>
 
             <CheckInDialog
@@ -58,14 +48,6 @@ export function LoanTableActions({ loan, onEdit, onDelete, onNotify }) {
                 open={noticeOpen}
                 onClose={() => setNoticeOpen(false)}
                 onConfirm={onNotify}
-            />
-
-            <DeleteConfirmDialog
-                open={deleteOpen}
-                onOpenChange={setDeleteOpen}
-                title="Elimina prestito"
-                description={`Sei sicuro di voler eliminare il prestito della copia ${loan.item.id}? L'operazione è irreversibile.`}
-                onConfirm={() => onDelete(loan.id)}
             />
 
             <EditLoanDialog loan={loan} open={editOpen} onClose={() => setEditOpen(false)} onConfirm={onEdit} />
