@@ -24,13 +24,22 @@ export const loanService = {
         await loanRepository.findAll({ page, limit }),
 
     getById: async (id, requestingUser) => {
-        const loan = await findUniqueOrThrow(id);
+        // Recupero i dati del prestito dal db
+        const loan = await loanRepository.findById(id);
 
-        // Verifico che l'utente a fare la richiesta sia il proprietario oppure che sia admin o bibliotecario, altrimenti blocco la richiesta
-        const isOwner = loan.userId === requestingUser.id;
         const isStaff = ["admin", "librarian"].includes(requestingUser.role);
 
-        if (!isOwner && !isStaff) {
+        if (isStaff) {
+            // Se l'utente è staff e il prestito non esiste do 404
+            if (!loan) {
+                throw new AppError("Loan not found", "NOT_FOUND", 404);
+            }
+            // Se il prestito esiste invio i dati (gli utenti staff possono visualizzare i prestiti altrui)
+            return loan;
+        }
+
+        // Se l'utente non esiste o l'utente non è staff e richiede i dati di un prestito non suo do 403, in modo da non dare alcuna informazione sull'esistenza del record
+        if (!loan || loan.userId !== requestingUser.id) {
             throw new AppError("Forbidden", "FORBIDDEN", 403);
         }
 
