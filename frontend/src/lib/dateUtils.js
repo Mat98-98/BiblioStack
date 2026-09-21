@@ -1,10 +1,22 @@
 import { format, parseISO } from "date-fns";
 import { it } from "date-fns/locale";
 
-export function safeFormat (date) {
+export function safeFormat(date) {
     if (!date) return null;
     const d = date instanceof Date ? date : parseISO(date);
     return format(d, "PPP", { locale: it });
+}
+
+export function formatDateShort(date){
+    if (!date) return null;
+    const d = date instanceof Date ? date : parseISO(date);
+    return format(d, "d MMM yyyy", { locale: it });
+}
+
+export function formatDateNumeric(date){
+    if (!date) return null;
+    const d = date instanceof Date ? date : parseISO(date);
+    return format(d, "dd/MM/yyyy");
 }
 
 // Se si passa noMax = true il return restituisce anche risultati negativi (-5, -6 ecc.). Comodo per sapere ad esempio quanti giorni fa è scaduto un prestito

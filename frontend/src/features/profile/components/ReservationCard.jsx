@@ -3,17 +3,15 @@ import { BookMarked, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 import ReservationStatusBadge from "@/features/reservations/components/ReservationStatusBadge.jsx";
+import {formatAuthors} from "@/lib/authorUtils.js";
+import {safeFormat} from "@/lib/dateUtils.js";
 
 export default function ReservationCard({ reservation, onCancel, loading }) {
     const [cancelOpen, setCancelOpen] = useState(false);
 
-    const reservationDate = new Date(
-        reservation.reservationDate
-    ).toLocaleDateString("it-IT", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
+    const authors = formatAuthors(reservation.work?.authors);
+
+    const reservationDate = safeFormat(reservation.reservationDate);
 
     const handleConfirmCancel = async () => {
         const success = await onCancel(reservation.id);
@@ -32,6 +30,7 @@ export default function ReservationCard({ reservation, onCancel, loading }) {
                 <div className="flex flex-col gap-1 flex-1 min-w-0">
                     <span className="font-medium truncate">
                         {reservation.work?.title ?? "Titolo non disponibile"}
+                        {authors && ` - ${authors}`}
                     </span>
                     <span className="text-xs text-muted-foreground">
                         Prenotato il {reservationDate}

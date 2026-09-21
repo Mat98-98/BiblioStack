@@ -1,18 +1,12 @@
 import { BookCheck, BookX } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
-
-function formatDate(date) {
-    if (!date) return "—";
-    return new Date(date).toLocaleDateString("it-IT", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-    });
-}
+import { formatAuthors } from "@/lib/authorUtils.js";
+import { formatDateShort } from "@/lib/dateUtils.js";
 
 function HistoryCard({ loan }) {
     const returned = !!loan.returnDate
     const late = loan.returnDate && loan.dueDate && new Date(loan.returnDate) > new Date(loan.dueDate)
+    const authors = formatAuthors(loan.item?.work?.authors);
 
     return (
         <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-secondary/30">
@@ -26,14 +20,15 @@ function HistoryCard({ loan }) {
             <div className="flex flex-col gap-1 flex-1 min-w-0">
                 <span className="font-medium truncate">
                     {loan.item?.work?.title ?? "Titolo non disponibile"}
+                    {authors && ` - ${authors}`}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                    {formatDate(loan.loanDate)} → {formatDate(loan.returnDate)}
+                    {formatDateShort(loan.loanDate)} → {formatDateShort(loan.returnDate)}
                 </span>
             </div>
 
             {late && (
-                <Badge variant="outline" className="border-orange-500 text-orange-500 shrink-0">
+                <Badge variant="outline" className="border-warning text-warning shrink-0">
                     In ritardo
                 </Badge>
             )}

@@ -1,7 +1,7 @@
 import { BookOpen, Clock, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
-import { daysUntil } from "@/lib/dateUtils.js";
-
+import { daysUntil, safeFormat } from "@/lib/dateUtils.js";
+import {formatAuthors} from "@/lib/authorUtils.js";
 
 function DueBadge({ dueDate }) {
     const days = daysUntil(dueDate)
@@ -41,11 +41,8 @@ function DueBadge({ dueDate }) {
 }
 
 function LoanCard({ loan }) {
-    const loanDate = new Date(loan.loanDate).toLocaleDateString("it-IT", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    })
+    const loanDate = safeFormat(loan.loanDate)
+    const authors = formatAuthors(loan.item?.work?.authors);
 
     return (
         <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors">
@@ -56,6 +53,7 @@ function LoanCard({ loan }) {
             <div className="flex flex-col gap-1 flex-1 min-w-0">
                 <span className="font-medium truncate">
                     {loan.item?.work?.title ?? "Titolo non disponibile"}
+                    {authors && ` - ${authors}`}
                 </span>
                 <span className="text-xs text-muted-foreground">
                     Preso in prestito il {loanDate}
