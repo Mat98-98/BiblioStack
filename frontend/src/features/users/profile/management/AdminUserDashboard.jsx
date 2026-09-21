@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { BookOpen, BookMarked, AlertTriangle } from "lucide-react";
-import { useAdminUserDashboard } from "@/features/profile/management/hooks/useAdminUserDashboard.js";
-import { noticesColumns } from "@/features/profile/management/components/NoticesColumns.jsx";
+import { useAdminUserDashboard } from "@/features/users/profile/management/hooks/useAdminUserDashboard.js";
+import { noticesColumns } from "@/features/users/profile/management/components/NoticesColumns.jsx";
 import { getReservationColumns } from "@/features/reservations/components/ReservationColumns.jsx";
 import { getLoansColumns } from "@/features/loans/components/LoanColumns.jsx";
 import ChangeRoleDialog from "@/features/users/management/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 import SuspendUserDialog from "@/features/users/management/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
-import AdminUserActions from "@/features/profile/management/components/AdminUserActions.jsx";
-import AdminProfileHeader from "@/features/profile/management/components/AdminProfileHeader.jsx";
-import SuspensionCard from "@/features/profile/management/components/SuspensionCard.jsx";
-import DataTable from "@/features/profile/management/components/DataTable.jsx";
+import AdminUserActions from "@/features/users/profile/management/components/AdminUserActions.jsx";
+import AdminProfileHeader from "@/features/users/profile/management/components/AdminProfileHeader.jsx";
+import SuspensionCard from "@/features/users/profile/management/components/SuspensionCard.jsx";
+import DataTable from "@/features/users/profile/management/components/DataTable.jsx";
 
 function AdminDashboardSkeleton() {
     return (

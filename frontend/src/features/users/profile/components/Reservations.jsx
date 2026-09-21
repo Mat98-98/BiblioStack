@@ -1,8 +1,7 @@
-import {BookMarked, PackageX} from "lucide-react";
-import ReservationCard from "@/features/profile/components/ReservationCard.jsx";
-import { useReservations } from "@/features/profile/hooks/useReservations.js";
-import {Empty, EmptyHeader, EmptyMedia, EmptyTitle} from "@/components/ui/empty.jsx";
-
+import { PackageX } from "lucide-react";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
+import ReservationCard from "@/features/users/profile/components/ReservationCard.jsx";
+import { useReservations } from "@/features/users/profile/hooks/useReservations.js";
 
 export default function Reservations({ reservations: initial }) {
     const { reservations, loadingId, cancelReservation } = useReservations(initial);

@@ -1,8 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton.jsx";
-import ProfileHero from "@/features/profile/components/ProfileHero.jsx";
-import ActiveLoans from "@/features/profile/components/ActiveLoans.jsx";
-import Reservations from "@/features/profile/components/Reservations.jsx";
-import LoanHistory from "@/features/profile/components/LoanHistory.jsx";
+import ProfileHero from "@/features/users/profile/components/ProfileHero.jsx";
+import ActiveLoans from "@/features/users/profile/components/ActiveLoans.jsx";
+import Reservations from "@/features/users/profile/components/Reservations.jsx";
+import LoanHistory from "@/features/users/profile/components/LoanHistory.jsx";
 
 function ProfileSkeleton() {
     return (

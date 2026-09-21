@@ -1,7 +1,6 @@
-
-import { useUserDashboard } from "@/features/profile/hooks/useDashboard.js";
+import { useUserDashboard } from "@/features/users/profile/hooks/useDashboard.js";
 import Navbar from "@/components/layout/navbar/Navbar.jsx";
-import Profile from "@/features/profile/ProfileFeature.jsx";
+import Profile from "@/features/users/profile/ProfileFeature.jsx";
 
 export default function ProfilePage() {
     const { user, loading, error } = useUserDashboard();
