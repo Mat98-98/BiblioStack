@@ -1,38 +1,53 @@
-import { BookCheck, BookX } from "lucide-react";
+import { ArrowRight, BookCheck, BookX, PackageX } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
 import { formatAuthors } from "@/lib/authorUtils.js";
 import { formatDateShort } from "@/lib/dateUtils.js";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item.jsx";
 
 function HistoryCard({ loan }) {
-    const returned = !!loan.returnDate
     const late = loan.returnDate && loan.dueDate && new Date(loan.returnDate) > new Date(loan.dueDate)
     const authors = formatAuthors(loan.item?.work?.authors);
 
     return (
-        <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-secondary/30">
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${returned ? "bg-green-500/10" : "bg-destructive/10"}`}>
-                {returned
-                    ? <BookCheck className="h-5 w-5 text-green-500" />
-                    : <BookX className="h-5 w-5 text-destructive" />
-                }
-            </div>
+        <Item
+            variant="outline"
+            className="grid grid-cols-[auto_minmax(0,1fr)_max-content] items-center gap-4 rounded-xl bg-secondary/30"
+        >
+            <ItemMedia
+                variant="icon"
+                className={`h-10 w-10 shrink-0 rounded-xl ${
+                    late ? "bg-warning/10" : "bg-success/10"
+                }`}
+            >
+                {late ? (
+                    <BookX className="h-5 w-5 text-warning" />
+                ) : (
+                    <BookCheck className="h-5 w-5 text-success" />
+                )}
+            </ItemMedia>
 
-            <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="font-medium truncate">
+            <ItemContent className="min-w-0 gap-1">
+                <ItemTitle className="w-full min-w-0 truncate">
                     {loan.item?.work?.title ?? "Titolo non disponibile"}
                     {authors && ` - ${authors}`}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                    {formatDateShort(loan.loanDate)} → {formatDateShort(loan.returnDate)}
-                </span>
-            </div>
+                </ItemTitle>
+
+                <ItemDescription className="flex items-center gap-2 truncate">
+                    <span>{formatDateShort(loan.loanDate)}</span>
+                    <ArrowRight className="h-3 w-3 shrink-0" />
+                    <span>{formatDateShort(loan.returnDate)}</span>
+                </ItemDescription>
+            </ItemContent>
 
             {late && (
-                <Badge variant="outline" className="border-warning text-warning shrink-0">
-                    In ritardo
-                </Badge>
+                <div className="shrink-0">
+                    <Badge variant="outline" className="border-warning text-warning">
+                        In ritardo
+                    </Badge>
+                </div>
             )}
-        </div>
+        </Item>
     )
 }
 
@@ -47,10 +62,14 @@ export default function LoanHistory({ loans }) {
             </div>
 
             {history.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground rounded-2xl border border-dashed border-border">
-                    <BookCheck className="h-8 w-8 mb-2 opacity-40" />
-                    <span className="text-sm">Nessun prestito passato</span>
-                </div>
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                            <PackageX />
+                        </EmptyMedia>
+                        <EmptyTitle>Nessun prestito passato</EmptyTitle>
+                    </EmptyHeader>
+                </Empty>
             ) : (
                 <div className="flex flex-col gap-2">
                     {history.map((loan) => (

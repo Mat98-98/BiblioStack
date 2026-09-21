@@ -1,7 +1,9 @@
-import { BookOpen, Clock, AlertTriangle } from "lucide-react";
+import { BookOpen, Clock, AlertTriangle, PackageX } from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
 import { daysUntil, safeFormat } from "@/lib/dateUtils.js";
-import {formatAuthors} from "@/lib/authorUtils.js";
+import { formatAuthors } from "@/lib/authorUtils.js";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item.jsx";
 
 function DueBadge({ dueDate }) {
     const days = daysUntil(dueDate)
@@ -45,24 +47,33 @@ function LoanCard({ loan }) {
     const authors = formatAuthors(loan.item?.work?.authors);
 
     return (
-        <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/50 transition-colors">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+        <Item
+            variant="outline"
+            className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-4 rounded-xl bg-secondary/30 p-4 hover:bg-secondary/50 transition-colors"
+        >
+            <ItemMedia
+                variant="icon"
+                className="h-10 w-10 shrink-0 rounded-xl bg-primary/10"
+            >
                 <BookOpen className="h-5 w-5 text-primary" />
-            </div>
+            </ItemMedia>
 
-            <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <span className="font-medium truncate">
+            <ItemContent className="min-w-0">
+                <ItemTitle className="w-full min-w-0 truncate">
                     {loan.item?.work?.title ?? "Titolo non disponibile"}
                     {authors && ` - ${authors}`}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                    Preso in prestito il {loanDate}
-                </span>
-            </div>
+                </ItemTitle>
 
-            <DueBadge dueDate={loan.dueDate} />
-        </div>
-    )
+                <ItemDescription className="min-w-0 truncate">
+                    Preso in prestito il {loanDate}
+                </ItemDescription>
+            </ItemContent>
+
+            <ItemActions className="shrink-0">
+                <DueBadge dueDate={loan.dueDate} />
+            </ItemActions>
+        </Item>
+    );
 }
 
 export default function ActiveLoans({ loans }) {
@@ -76,10 +87,14 @@ export default function ActiveLoans({ loans }) {
             </div>
 
             {active.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground rounded-2xl border border-dashed border-border">
-                    <BookOpen className="h-8 w-8 mb-2 opacity-40" />
-                    <span className="text-sm">Nessun prestito attivo</span>
-                </div>
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                            <PackageX />
+                        </EmptyMedia>
+                        <EmptyTitle>Nessun prestito attivo</EmptyTitle>
+                    </EmptyHeader>
+                </Empty>
             ) : (
                 <div className="flex flex-col gap-2">
                     {active.map((loan) => (

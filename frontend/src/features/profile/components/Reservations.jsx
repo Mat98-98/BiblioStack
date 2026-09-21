@@ -1,6 +1,7 @@
-import { BookMarked } from "lucide-react";
+import {BookMarked, PackageX} from "lucide-react";
 import ReservationCard from "@/features/profile/components/ReservationCard.jsx";
 import { useReservations } from "@/features/profile/hooks/useReservations.js";
+import {Empty, EmptyHeader, EmptyMedia, EmptyTitle} from "@/components/ui/empty.jsx";
 
 
 export default function Reservations({ reservations: initial }) {
@@ -18,12 +19,14 @@ export default function Reservations({ reservations: initial }) {
             </div>
 
             {reservations.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground rounded-2xl border border-dashed border-border">
-                    <BookMarked className="h-8 w-8 mb-2 opacity-40" />
-                    <span className="text-sm">
-                        Nessuna prenotazione attiva
-                    </span>
-                </div>
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                            <PackageX />
+                        </EmptyMedia>
+                        <EmptyTitle>Nessuna prenotazione attiva</EmptyTitle>
+                    </EmptyHeader>
+                </Empty>
             ) : (
                 <div className="flex flex-col gap-2">
                     {reservations.map((reservation) => (
