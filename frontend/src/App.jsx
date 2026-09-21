@@ -20,6 +20,7 @@ import CardPage from "@/pages/public/CardPage.jsx";
 import AdminLoansPage from "@/pages/admin/AdminLoansPage.jsx";
 import AdminUserDashboardPage from "@/pages/admin/AdminUserDashboardPage.jsx";
 import LoanHistoryPage from "@/pages/public/LoanHistoryPage.jsx";
+import ReservationHistoryPage from "@/pages/public/ReservationHistoryPage.jsx";
 
 function App() {
     return (
@@ -39,6 +40,7 @@ function App() {
                     <Route path="/profile"   element={<ProfilePage />} />
                     <Route path="/card"    element={<CardPage />} />
                     <Route path="/loans" element={<LoanHistoryPage />} />
+                    <Route path="/reservations" element={<ReservationHistoryPage />} />
 
                     {/* Admin */}
                     <Route element={<AdminGuard />}>

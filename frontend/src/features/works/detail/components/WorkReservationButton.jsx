@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { BookMarked } from "lucide-react";
-import { useReservation } from "../hooks/useReservations.js";
+import { useCreateReservation } from "../hooks/useCreateReservation.js";
 import { Button } from "@/components/ui/button.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 
 
 export default function WorkReservationButton({ work }) {
-    const { reserve } = useReservation();
+    const { reserve } = useCreateReservation();
     const [confirmOpen, setConfirmOpen] = useState(false);
 
     return (

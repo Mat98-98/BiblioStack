@@ -41,10 +41,16 @@ export const itemRepository = {
 
         if (!available) return null;
 
-        // Recupera l'item completo con i dati dell'opera
+
+        // Recupera l'item completo con i dati dell'opera e la locazione della copia @Todo: togliere almeno descriptions dalle colonne restituite di works
         return tx.query.items.findFirst({
             where: { id: available.itemId },
-            with: { work: true }
+            with: {
+                work: true,
+                location: {
+                    with: { school: true }
+                }
+            }
         });
     },
 

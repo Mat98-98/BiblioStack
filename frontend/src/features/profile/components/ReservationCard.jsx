@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BookMarked, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
-import StatusBadge from "@/features/profile/components/StatusBadge.jsx";
+import ReservationStatusBadge from "@/features/reservations/components/ReservationStatusBadge.jsx";
 
 export default function ReservationCard({ reservation, onCancel, loading }) {
     const [cancelOpen, setCancelOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function ReservationCard({ reservation, onCancel, loading }) {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    <StatusBadge
+                    <ReservationStatusBadge
                         status={reservation.status}
                         expiresAt={reservation.expiresAt}
                     />

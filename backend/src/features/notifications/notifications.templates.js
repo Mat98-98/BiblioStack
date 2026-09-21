@@ -9,15 +9,16 @@ export const notificationTemplates = {
         inApp: { title: "Prenotazione registrata", message: `Sei in coda per "${reservation.work?.title ?? "l'opera richiesta"}". Ti avviseremo quando sarà pronta.` }
     }),
 
-    [NotificationEvent.RESERVATION_READY]: ({ reservation }) => {
+    [NotificationEvent.RESERVATION_READY]: ({ reservation, workTitle, pickupLocation }) => {
         const dueStr = reservation.expiresAt.toLocaleDateString("it-IT");
         return {
-            inApp: { title: "Prenotazione pronta", message: `La copia è pronta al ritiro. Hai tempo fino al ${dueStr}.` },
+            inApp: { title: "Prenotazione pronta", message: `La copia di "${workTitle}" è pronta al ritiro presso ${pickupLocation}. Hai tempo fino al ${dueStr} per ritirarla.` },
             email: {
                 subject: "La tua prenotazione è pronta — BiblioStack",
                 html: emailTemplates.layout({
-                    heading: "La tua copia ti aspetta",
-                    bodyHtml: `<p>La copia prenotata è pronta per il ritiro. Hai tempo fino al <strong>${dueStr}</strong>, dopodiché la prenotazione scadrà automaticamente.</p>`,
+                    heading: "La tua prenotazione è pronta",
+                    bodyHtml: `<p>La copia di <strong>${workTitle}</strong> è pronta per il ritiro presso <strong>${pickupLocation}</strong>.</p> 
+                               <p>Hai tempo per ritirala fino al <strong>${dueStr}</strong>, dopodiché la prenotazione scadrà automaticamente.</p>`,
                     ctaText: "Vai alle tue prenotazioni",
                     ctaLink: `${BASE_URL}/reservations`,
                     accent: ACCENT.success,

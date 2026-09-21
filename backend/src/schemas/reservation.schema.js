@@ -13,3 +13,11 @@ export const UpdateReservationSchema = z.object({
     status: ReservationStatusEnum.optional(),
     expiresAt: z.coerce.date().optional()
 });
+
+// Schema di validazione filtri di ricerca pagina admin
+export const ReservationSearchSchema = z.object({
+    search: z.string().optional(),
+    status: z.enum(["all", "pending", "ready", "fulfilled", "expired", "cancelled"]).default("all"),
+    sortOrder: z.enum(["asc", "desc"]).default("desc"),
+    userId: z.coerce.number().int().positive().optional()
+});

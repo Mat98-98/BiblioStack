@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton.jsx";
 import { BookOpen, BookMarked, AlertTriangle } from "lucide-react";
 import { useAdminUserDashboard } from "@/features/profile/management/hooks/useAdminUserDashboard.js";
 import { noticesColumns } from "@/features/profile/management/components/NoticesColumns.jsx";
-import { buildReservationsColumns } from "@/features/profile/management/components/ReservationsColumn.jsx";
+import { getReservationColumns } from "@/features/reservations/components/ReservationColumns.jsx";
 import { getLoansColumns } from "@/features/loans/components/LoanColumns.jsx";
 import ChangeRoleDialog from "@/features/users/management/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 import SuspendUserDialog from "@/features/users/management/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
@@ -38,7 +38,7 @@ export default function AdminUserDashboard({ userId }) {
         () => getLoansColumns({ onEdit: refetch, onDelete: deleteLoan, onNotify: createNotice, showPatron: false }),
         [refetch, deleteLoan, createNotice]
     );
-    const reservationsColumns = useMemo(() => buildReservationsColumns(cancelReservation), [cancelReservation]);
+    const reservationsColumns = useMemo(() => getReservationColumns(cancelReservation), [cancelReservation]);
 
     if (loading) return <AdminDashboardSkeleton />;
 

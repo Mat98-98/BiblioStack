@@ -7,12 +7,12 @@ import {
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import {
     Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table.jsx";
 import { Input } from "@/components/ui/input.jsx";
-import { Button } from "@/components/ui/button.jsx";
+import TablePagination from "@/components/common/TablePagination.jsx";
 
 export default function DataTable({
                                       columns,
@@ -108,31 +108,12 @@ export default function DataTable({
             </div>
 
             {table.getPageCount() > 1 && (
-                <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                        Pagina {table.getState().pagination.pageIndex + 1} di {table.getPageCount()}
-                    </span>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => table.previousPage()}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => table.nextPage()}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
+                <TablePagination
+                    page={table.getState().pagination.pageIndex + 1}
+                    hasMore={table.getCanNextPage()}
+                    onPage={(p) => table.setPageIndex(p-1)}
+                    loading={false}
+                />
             )}
         </div>
     );

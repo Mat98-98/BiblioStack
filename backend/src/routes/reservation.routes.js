@@ -1,17 +1,22 @@
 import express from "express"
 import { reservationController } from "../controllers/reservation.controller.js";
 import { paginationMiddleware } from "../middleware/pagination.middleware.js";
-import {verifyUser} from "../middleware/auth.middleware.js";
-import {permit} from "../middleware/role.middleware.js";
+import { verifyUser } from "../middleware/auth.middleware.js";
+import { permit } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
+// GET /reservations/search?search=
+router.get("/search", paginationMiddleware, verifyUser, permit("librarian", "admin"), reservationController.search);
+
+// GET /reservations/mine?search=
+router.get("/mine", paginationMiddleware, verifyUser, reservationController.getMine);
 
 // GET /reservations?page=1&limit=20
-router.get("/", paginationMiddleware, reservationController.getAll);
+router.get("/", verifyUser, permit("librarian", "admin"), paginationMiddleware, reservationController.getAll);
 
 // GET /reservations/:id
-router.get("/:id", reservationController.getById);
+router.get("/:id", verifyUser, reservationController.getById);
 
 
 // POST /reservations

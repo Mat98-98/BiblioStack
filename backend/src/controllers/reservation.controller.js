@@ -1,6 +1,15 @@
 import { reservationService } from "../services/reservation.service.js";
-import { ReservationBaseListDTO, ReservationDetailDTO } from "../dto/reservation.dto.js";
-import { CreateReservationSchema, UpdateReservationSchema } from "../schemas/reservation.schema.js";
+import {
+    ReservationBaseListDTO,
+    ReservationDetailDTO,
+    ReservationMineListDTO,
+    ReservationSearchListDTO
+} from "../dto/reservation.dto.js";
+import {
+    CreateReservationSchema,
+    ReservationSearchSchema,
+    UpdateReservationSchema
+} from "../schemas/reservation.schema.js";
 
 export const reservationController = {
     getAll: async (req, res, next) => {
@@ -15,8 +24,30 @@ export const reservationController = {
 
     getById: async (req, res, next) => {
         try {
-            const reservation = await reservationService.getById(req.params.id);
+            const reservation = await reservationService.getById(req.params.id, req.user);
             res.json(ReservationDetailDTO.parse(reservation));
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    getMine: async (req, res, next) => {
+        try {
+            const filters = ReservationSearchSchema.omit({ userId: true }).parse(req.query);
+            const reservations = await reservationService.search({ ...req.pagination, ...filters, userId: req.user.id });
+            res.json(ReservationMineListDTO.parse(reservations));
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    search: async (req, res, next) => {
+        try {
+            // Validazione dei filtri passati nell'url
+            const filters = ReservationSearchSchema.parse(req.query);
+
+            const reservations = await reservationService.search( {...req.pagination, ...filters});
+            res.json(ReservationSearchListDTO.parse(reservations));
         } catch (error) {
             next(error);
         }

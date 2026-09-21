@@ -7,8 +7,8 @@ import { RESERVATION_STATUS, EXPIRY_MS } from "../constants.js";
 import { assertNotSuspended } from "../utils/suspension.util.js";
 import { NotificationEvent } from "../features/notifications/notification.events.js";
 import { notifier } from "../features/notifications/notification.notifier.js";
-import {isUniqueViolation} from "../utils/db.util.js";
-import {workRepository} from "../repositories/work.repository.js";
+import { isUniqueViolation } from "../utils/db.util.js";
+import { workRepository } from "../repositories/work.repository.js";
 
 const findUniqueOrThrow = async (id) => {
     const reservation = await reservationRepository.findById(id);
@@ -21,26 +21,42 @@ const findUniqueOrThrow = async (id) => {
 
 const noop = async () => {};
 
-// Assegna una copia liberata alla prenotazione data in input e notifica l'utente
+// Assegna una copia liberata alla prenotazione data in input e prepara la notifica
 const assignItemAndNotify = async (nextReservation, itemId, tx) => {
-    const expiresAt = new Date (Date.now() + EXPIRY_MS);
+    const expiresAt = new Date(Date.now() + EXPIRY_MS);
     const result = await reservationRepository.assignItemToReservation(
         nextReservation.id,
         itemId,
         expiresAt,
-        tx);
+        tx
+    );
 
     // Se il risultato è 0 (non è stata fatta alcuna modifica) un altro processo ha già modificato la prenotazione nel frattempo, quindi non ci sono notifiche da mandare
     if (result.length === 0) return null;
 
     const [updatedReservation] = result;
+    const item = await itemRepository.findById(itemId, tx);
+    const sendEmail = await notifyReservationReady(
+        {
+            ...updatedReservation,
+            user: nextReservation.user
+        },
+        item,
+        tx
+    );
+    return { reservation: updatedReservation, sendEmail };
+};
 
-    const sendEmail = await notifier.send(NotificationEvent.RESERVATION_READY, {
-        user: nextReservation.user ?? { id: nextReservation.userId },
-        reservation: updatedReservation,
+
+// Helper per inviare
+const notifyReservationReady = async (reservation, item, tx) => {
+    return await notifier.send(NotificationEvent.RESERVATION_READY, {
+        user: reservation.user ?? { id: reservation.userId },
+        reservation,
+        workTitle: item?.work.title,
+        pickupLocation:  item?.location?.school?.name,
         tx
     });
-    return { reservation: updatedReservation, sendEmail };
 };
 
 // Cerca il prossimo in coda (pending) per un'opera, se esiste gli assegna la copia appena liberata, altrimenti ritorna null
@@ -74,11 +90,33 @@ const closeReservation = async (reservation, closeFn, tx = db) => {
 
 export const reservationService = {
 
-    getAll: ({ page, limit }) =>
-        reservationRepository.findAll({ page, limit }),
+    getAll: async ({ page, limit }) =>
+        await reservationRepository.findAll({ page, limit }),
 
-    getById: (id) =>
-        findUniqueOrThrow(id),
+    getById: async (id, requestingUser) => {
+        const reservation = await reservationRepository.findById(id);
+
+        const isStaff = ["admin", "librarian"].includes(requestingUser.role);
+
+        if (isStaff) {
+            // Se l'utente è staff e la prenotazione non esiste do 404
+            if (!reservation) {
+                throw new AppError("Reservation not found", "NOT_FOUND", 404);
+            }
+            // Se la prenotazione esiste invio i dati (gli utenti staff possono visualizzare le prenotazioni altrui)
+            return reservation;
+        }
+
+        // Se l'utente non esiste o l'utente non è staff e richiede i dati di una prenotazione non sua restituisco 403, in modo da non dare alcuna informazione sull'esistenza del record
+        if (!reservation || reservation.userId !== requestingUser.id) {
+            throw new AppError("Forbidden", "FORBIDDEN", 403);
+        }
+
+        return reservation;
+    },
+
+    search: async (params) =>
+    await reservationRepository.search(params),
 
     // Crea una nuova prenotazione, ready se c'è una copia libera altrimenti pending
     create: async (data) => {
@@ -132,16 +170,22 @@ export const reservationService = {
 
                 [newReservation] = await reservationRepository.create(reservationData, tx);
 
-                const eventType = status === RESERVATION_STATUS.READY
-                    ? NotificationEvent.RESERVATION_READY
-                    : NotificationEvent.RESERVATION_CREATED;
-
-                // La notifica in-app viene salvata nella stessa transazione, mentre l'email viene preparata per essere inviata dopo il commit
-                sendEmail = await notifier.send(eventType, {
-                    user: { id: data.userId },
-                    reservation: newReservation,
-                    tx
-                });
+                if (status === RESERVATION_STATUS.READY) {
+                    sendEmail = await notifyReservationReady(
+                        newReservation,
+                        availableItem,
+                        tx
+                    );
+                } else {
+                    sendEmail = await notifier.send(
+                        NotificationEvent.RESERVATION_CREATED,
+                        {
+                            user: { id: data.userId },
+                            reservation: newReservation,
+                            tx
+                        }
+                    );
+                }
             });
         } catch (error) {
             if (isUniqueViolation(error) && error.constraint === "reservations_user_work_active_unique") {

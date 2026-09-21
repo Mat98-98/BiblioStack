@@ -8,7 +8,7 @@ export function safeFormat (date) {
 }
 
 // Se si passa noMax = true il return restituisce anche risultati negativi (-5, -6 ecc.). Comodo per sapere ad esempio quanti giorni fa è scaduto un prestito
-export function daysUntil(date, { noMax = false }) {
+export function daysUntil(date, { noMax = false } = {}) {
     if (!date) return null;
 
     const days = Math.ceil(

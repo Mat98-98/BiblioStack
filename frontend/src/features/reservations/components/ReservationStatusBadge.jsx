@@ -1,8 +1,8 @@
-import { CheckCircle, Clock, AlertTriangle, BookX } from "lucide-react";
+import {CheckCircle, Clock, AlertTriangle, BookX, PackageCheck} from "lucide-react";
 import { Badge } from "@/components/ui/badge.jsx";
 import { daysUntil } from "@/lib/dateUtils.js";
 
-export default function StatusBadge({ status, expiresAt }) {
+export default function ReservationStatusBadge({ status, expiresAt }) {
     const days = daysUntil(expiresAt);
 
     if (status === "ready") {
@@ -24,7 +24,19 @@ export default function StatusBadge({ status, expiresAt }) {
                 className="gap-1 border-success text-success"
             >
                 <CheckCircle className="h-4 w-4" />
-                Pronto al ritiro
+                Disponibile per il ritiro
+            </Badge>
+        );
+    }
+
+    if (status === "fulfilled") {
+        return (
+            <Badge
+                variant="outline"
+                className="gap-1 text-success border-success"
+            >
+                <PackageCheck className="h-4 w-4" />
+                Ritirata
             </Badge>
         );
     }

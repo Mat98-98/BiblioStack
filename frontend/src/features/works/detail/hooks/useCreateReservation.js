@@ -4,7 +4,7 @@ import { notify } from "@/lib/notify.js";
 import { handleApiError } from "@/lib/handleApiError.js";
 import api from "@/api/axios.js";
 
-export function useReservation() {
+export function useCreateReservation() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 

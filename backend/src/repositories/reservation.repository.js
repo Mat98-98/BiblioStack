@@ -1,8 +1,9 @@
 import { db } from "../db/connection.js";
-import { reservations } from "../db/schema.js";
-import { eq, and, inArray, gte, lte } from "drizzle-orm";
+import {reservations, works} from "../db/schema.js";
+import {eq, and, inArray, gte, lte, ilike, asc, desc} from "drizzle-orm";
 import { RESERVATION_STATUS } from "../constants.js";
 import { userSelect } from "./presets/user.preset.js";
+import { normalizeSearch } from "../utils/search.util.js";
 
 const ACTIVE_STATUSES = [RESERVATION_STATUS.PENDING, RESERVATION_STATUS.READY];
 
@@ -147,5 +148,72 @@ export const reservationRepository = {
                     RESERVATION_STATUS.PENDING,
                     RESERVATION_STATUS.READY,
                 ])
-            )).returning()
+            )).returning(),
+
+    search: async ({ page, limit, search, status, sortOrder, userId }) => {
+        const offset = (page - 1) * limit;
+
+        // Parsing della stringa in ingresso
+        const { pattern, isEmpty } = normalizeSearch(search ?? "");
+
+        const base = db
+            .select({ id: reservations.id })
+            .from(reservations)
+            .leftJoin(works, eq(works.id, reservations.workId))
+            .$dynamic();
+
+        const conditions = [];
+
+        if (!isEmpty) {
+            conditions.push(ilike(works.title, pattern));
+        }
+
+        if (status && status !== "all") {
+            conditions.push(eq(reservations.status, status));
+        }
+
+        if (userId) {
+            conditions.push(eq(reservations.userId, userId));
+        }
+
+        if (conditions.length > 0) {
+            base.where(and(...conditions));
+        }
+
+        // Ordinamento dati (la whitelist dei parametri è stata fatta nello schema zod per evitare injections)
+        const orderFn = sortOrder === "asc" ? asc : desc;
+
+        base.orderBy(
+            orderFn(reservations.reservationDate),
+            asc(reservations.id)
+        );
+
+        const paged = await base.limit(limit).offset(offset);
+
+        if (paged.length === 0) return [];
+
+        const ids = paged.map(r => r.id);
+
+        // Fetch completo con relazioni
+        const full = await db.query.reservations.findMany({
+            where: { id: { in: ids } },
+            with: {
+                user: { columns: userSelect.mini },
+                work: { columns: { id: true, title:true }},
+                assignedItem: {
+                    columns: { id: true },
+                    with: {
+                        location: {
+                            with: {
+                                school: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const map = new Map(full.map(r => [r.id, r]));
+        return ids.map(id => map.get(id)).filter(Boolean);
+    }
 };
