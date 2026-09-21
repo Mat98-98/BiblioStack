@@ -10,7 +10,7 @@ export const itemRepository = {
             limit,
             offset,
             columns: { price: false },
-            with: { work: true }
+            with: { work: { columns: { id: true, title: true }}}
         });
     },
 
@@ -18,7 +18,7 @@ export const itemRepository = {
         await tx.query.items.findFirst({
             where: { id },
             with: {
-                work: true,
+                work: { columns: { id: true, title: true }},
                 location: {
                     with: { school: true }
                 },
@@ -42,11 +42,11 @@ export const itemRepository = {
         if (!available) return null;
 
 
-        // Recupera l'item completo con i dati dell'opera e la locazione della copia @Todo: togliere almeno descriptions dalle colonne restituite di works
+        // Recupera l'item completo con i dati dell'opera e la locazione della copia
         return tx.query.items.findFirst({
             where: { id: available.itemId },
             with: {
-                work: true,
+                work: { columns: { id: true, title: true }},
                 location: {
                     with: { school: true }
                 }

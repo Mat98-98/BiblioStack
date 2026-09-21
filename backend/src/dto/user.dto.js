@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import {ItemMiniDTO, UserMiniDTO, WorkMiniDTO} from "./shared.dto.js";
+import {AuthorDTO, ItemMiniDTO, UserMiniDTO, WorkMiniDTO} from "./shared.dto.js";
 import { ReservationStatusEnum } from "./shared.dto.js";
 
 // ======== DTO di supporto ========
@@ -22,7 +22,9 @@ const ReservationSchema = z.object({
     reservationDate: z.date(),
     expiresAt: z.date().optional().nullable(),
     status: ReservationStatusEnum,
-    work: WorkMiniDTO
+    work: WorkMiniDTO.extend({
+        authors: z.array(AuthorDTO)
+    })
 });
 
 const RoleSchema = z.object({
@@ -36,7 +38,9 @@ const LoanSchema = z.object({
     dueDate: z.date().optional().nullable(),
     returnDate: z.date().optional().nullable(),
     item: ItemMiniDTO.extend({
-        work: WorkMiniDTO
+        work: WorkMiniDTO.extend({
+            authors: z.array(AuthorDTO)
+        })
     })
 });
 

@@ -26,7 +26,7 @@ export const reservationRepository = {
         return await db.query.reservations.findMany({
             limit,
             offset,
-            with: { user: userSelect.safe, work: true },
+            with: { user: userSelect.safe, work: { columns: { id: true, title:true }}},
             orderBy: { reservationDate: "desc" }
         });
     },
@@ -34,7 +34,7 @@ export const reservationRepository = {
     findById: async (id, tx = db) =>
         await tx.query.reservations.findFirst({
             where: { id },
-            with: { user: userSelect.safe, work: true }
+            with: { user: userSelect.safe, work: { columns: { id: true, title:true }}}
         }),
 
 
@@ -43,7 +43,7 @@ export const reservationRepository = {
         await tx.query.reservations[onlyFirst ? "findFirst" : "findMany"]({ // Se si vuole solo il primo risultato passare onlyFirst = true
             where: { workId, status: RESERVATION_STATUS.PENDING },
             orderBy: { reservationDate: "asc" },
-            with: { user: userSelect.safe, work: true }
+            with: { user: userSelect.safe, work: { columns: { id: true, title:true }}}
         }),
 
     findActiveByUserAndWork: async (userId, workId, tx = db) =>

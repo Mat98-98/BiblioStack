@@ -44,14 +44,14 @@ export const userRepository = {
                     with: {
                         item: {
                             with: {
-                                work: true
+                                work: { columns: { id: true, title: true }}
                             }
                         }
                     }
                 },
                 reservations: {
                     with: {
-                        work: true
+                        work: { columns: { id: true, title: true }}
                     }
                 }
             }
@@ -82,14 +82,25 @@ export const userRepository = {
                     with:
                         {
                             item: {
-                                with: { work: true }
+                                with: {
+                                    work: { columns: { id: true, title: true },
+                                        with: {
+                                            authors: { columns: {id: true, firstName: true, lastName: true }}
+                                        }
+                                    }
+                                }
                             },
                             librarian: { columns: userSelect.safe }
                         }
                 },
                 reservations: {
                     with: {
-                        work: true,
+                        work: {
+                            columns: { id: true, title: true },
+                            with: {
+                                authors: { columns: {id: true, firstName: true, lastName: true }}
+                            }
+                        },
                         assignedItem: true
                     }
                 },
