@@ -10,7 +10,7 @@ const router = express.Router()
 router.get("/search", paginationMiddleware, verifyUser, permit("librarian", "admin"), loanController.search);
 
 // GET /loans/mine?search=...&status=all|active|overdue|returned&sortBy=loanDate|dueDate&sortOrder=asc|desc&workId=...&userId=...&page=1&limit=20
-router.get("/mine", paginationMiddleware, loanController.getMine);
+router.get("/mine", paginationMiddleware, verifyUser, loanController.getMine);
 
 // GET /loans?page=1&limit=20
 router.get("/", paginationMiddleware, verifyUser, permit("librarian", "admin"), loanController.getAll);
