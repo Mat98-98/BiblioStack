@@ -2,6 +2,7 @@ import { PackageX } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import ReservationCard from "@/features/users/profile/components/ReservationCard.jsx";
 import { useReservations } from "@/features/users/profile/hooks/useReservations.js";
+import { Link } from "react-router-dom";
 
 export default function Reservations({ reservations: initial }) {
     const { reservations, loadingId, cancelReservation } = useReservations(initial);
@@ -15,6 +16,7 @@ export default function Reservations({ reservations: initial }) {
                 <span className="text-sm text-muted-foreground">
                     {reservations.length} attive
                 </span>
+                <Link to="/reservations" className="text-sm font-medium text-primary hover:underline">Vedi tutte</Link>
             </div>
 
             {reservations.length === 0 ? (

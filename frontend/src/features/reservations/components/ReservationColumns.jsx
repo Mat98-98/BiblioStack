@@ -84,17 +84,17 @@ export const getReservationColumns = ({
         },
     }] : []),
 
-    ...(showAllColumns ? [{
+    {
         id: "school",
         accessorFn: (row) =>
             row.assignedItem?.location?.school?.name ?? "—",
         header: "Scuola",
-        cell: ({ getValue }) => (
+        cell: ({getValue}) => (
             <span className="text-sm">
                 {getValue()}
             </span>
         ),
-    }] : []),
+    },
 
     ...(showAllColumns ? [{
         id: "shelfCode",
