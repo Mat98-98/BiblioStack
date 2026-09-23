@@ -4,10 +4,10 @@ import { daysUntil, safeFormat } from "@/lib/dateUtils.js";
 import { formatAuthors } from "@/lib/authorUtils.js";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item.jsx";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function DueBadge({ dueDate }) {
-    const days = daysUntil(dueDate)
+    const days = daysUntil(dueDate, { noMax: true })
 
     if (days === null) return null
 
@@ -21,7 +21,7 @@ function DueBadge({ dueDate }) {
 
     if (days === 0)
         return (
-            <Badge variant="outline" className="gap-1 border-warning text-warning-foreground">
+            <Badge variant="outline" className="gap-1 border-warning text-warning">
                 <Clock className="h-3 w-3" />
                 Scade oggi
             </Badge>
