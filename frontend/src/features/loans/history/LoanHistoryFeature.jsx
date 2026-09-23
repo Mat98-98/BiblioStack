@@ -8,14 +8,9 @@ export default function LoanHistoryFeature() {
         loans, loading,
         search, setSearch,
         status, setStatus,
-        sortBy, sortOrder, setSortBy, setSortOrder,
+        sortBy, sortOrder, setSort,
         page, setPage, hasMore
     } = useMyLoans();
-
-    const handleSort = (field, order) => {
-        setSortBy(field);
-        setSortOrder(order);
-    };
 
     return (
         <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
@@ -27,10 +22,14 @@ export default function LoanHistoryFeature() {
             </div>
 
             <LoansFilters
-                search={search} onSearch={setSearch}
-                status={status} onStatus={setStatus}
-                sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}
-                searchPlaceholder="Cerca per titolo"
+                search={search}
+                onSearch={setSearch}
+                status={status}
+                onStatus={setStatus}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={setSort}
+                searchPlaceholder="Cerca per titolo..."
             />
 
             {/* showAllColumns: false -> niente colonne Copia/Bibliotecario/Azioni, solo lettura */}

@@ -13,7 +13,7 @@ export default function Loans({ workId, userId }) {
     const {
         loans, loading, page, setPage, limit, setLimit, hasMore, refetch,
         search, setSearch, status, setStatus,
-        sortBy, sortOrder, setSortBy, setSortOrder,
+        sortBy, sortOrder, setSort,
         createNotice
     } = useLoan( { workId, userId });
 
@@ -28,19 +28,18 @@ export default function Loans({ workId, userId }) {
         }
     }
 
-    const handleSort = (field, order) => {
-        setSortBy(field);
-        setSortOrder(order);
-    }
-
     return (
         <div className="space-y-6">
             <LoansHeader onLoanAdded={refetch} onNotify={createNotice} />
 
             <LoansFilters
-                search={search} onSearch={setSearch}
-                status={status} onStatus={setStatus}
-                sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort}
+                search={search}
+                onSearch={setSearch}
+                status={status}
+                onStatus={setStatus}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={setSort}
                 searchPlaceholder="Cerca per titolo, codice copia o utente..."
             />
 

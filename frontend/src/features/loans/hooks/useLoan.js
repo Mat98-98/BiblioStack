@@ -60,8 +60,9 @@ export function useLoan({ workId, userId }) {
     const setLimit      = (l) => updateParams({ limit: l }, true);
     const setSearch     = (s) => updateParams({ search: s }, true);
     const setStatus     = (st) => updateParams({ status: st }, true);
-    const setSortBy     = (sb) => updateParams({ sortBy: sb }, true);
-    const setSortOrder  = (so) => updateParams({ sortOrder: so }, true);
+    const setSort = (sortBy, sortOrder) =>
+        updateParams({ sortBy, sortOrder }, true);
+
 
     // Hook per creare una segnalazione utente associata al prestito
     const createNotice = async (payload) => {
@@ -79,7 +80,7 @@ export function useLoan({ workId, userId }) {
         loans, loading, error, refetch,
         page, setPage, limit, setLimit, hasMore,
         search, setSearch, status, setStatus,
-        sortBy, setSortBy, sortOrder, setSortOrder,
+        sortBy, sortOrder, setSort,
         createNotice
     };
 }

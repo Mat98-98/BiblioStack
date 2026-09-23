@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input.jsx";
 import TablePagination from "@/components/common/TablePagination.jsx";
 
 
-export default function DataTable({
+export default function DataTableClientSide({
                                       columns,
                                       data,
                                       searchPlaceholder = "Cerca...",
