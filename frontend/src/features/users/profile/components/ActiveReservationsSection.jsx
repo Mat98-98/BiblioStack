@@ -4,7 +4,7 @@ import ReservationCard from "@/features/users/profile/components/ReservationCard
 import { useReservations } from "@/features/users/profile/hooks/useReservations.js";
 import { Link } from "react-router-dom";
 
-export default function Reservations({ reservations: initial }) {
+export default function ActiveReservationsSection({ reservations: initial }) {
     const { reservations, loadingId, cancelReservation } = useReservations(initial);
 
     return (

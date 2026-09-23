@@ -1,8 +1,8 @@
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import ProfileHero from "@/features/users/profile/components/ProfileHero.jsx";
-import ActiveLoans from "@/features/users/profile/components/ActiveLoans.jsx";
-import Reservations from "@/features/users/profile/components/Reservations.jsx";
-import LoanHistory from "@/features/users/profile/components/LoanHistory.jsx";
+import ActiveLoansSection from "@/features/users/profile/components/ActiveLoansSection.jsx";
+import ActiveReservationsSection from "@/features/users/profile/components/ActiveReservationsSection.jsx";
+import ReturnedLoansSection from "@/features/users/profile/components/ReturnedLoansSection.jsx";
 
 function ProfileSkeleton() {
     return (
@@ -30,11 +30,11 @@ export default function Profile({ dashboard, loading, error }) {
             <ProfileHero user={dashboard.user} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <ActiveLoans loans={dashboard.activeLoans} />
-                <Reservations reservations={dashboard.activeReservations} />
+                <ActiveLoansSection loans={dashboard.activeLoans} />
+                <ActiveReservationsSection reservations={dashboard.activeReservations} />
             </div>
 
-            <LoanHistory loans={dashboard.returnedLoans} />
+            <ReturnedLoansSection loans={dashboard.returnedLoans} />
         </div>
     );
 }

@@ -77,7 +77,7 @@ function LoanCard({ loan }) {
     );
 }
 
-export default function ActiveLoans({ loans }) {
+export default function ActiveLoansSection({ loans }) {
 
     return (
         <section className="space-y-4">

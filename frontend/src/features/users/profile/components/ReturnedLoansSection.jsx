@@ -6,7 +6,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empt
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item.jsx";
 import { Link } from "react-router-dom";
 
-function HistoryCard({ loan }) {
+function ReturnedLoanCard({ loan }) {
     const late = loan.returnDate && loan.dueDate && new Date(loan.returnDate) > new Date(loan.dueDate)
     const authors = formatAuthors(loan.item?.work?.authors);
 
@@ -52,11 +52,11 @@ function HistoryCard({ loan }) {
     )
 }
 
-export default function LoanHistory({ loans }) {
+export default function ReturnedLoansSection({ loans }) {
    return (
         <section className="space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Storico prestiti</h2>
+                <h2 className="text-lg font-semibold">Prestiti restituiti</h2>
                 <Link to="/loans?status=returned&page=1" className="text-sm font-medium text-primary hover:underline">Vedi tutti</Link>
             </div>
 
@@ -72,7 +72,7 @@ export default function LoanHistory({ loans }) {
             ) : (
                 <div className="flex flex-col gap-2">
                     {loans.map((loan) => (
-                        <HistoryCard key={loan.id} loan={loan} />
+                        <ReturnedLoanCard key={loan.id} loan={loan} />
                     ))}
                 </div>
             )}

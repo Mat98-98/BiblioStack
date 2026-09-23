@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge.jsx";
 import { Button } from "@/components/ui/button.jsx";
 import { useChangePassword } from "@/features/users/profile/hooks/useChangePassword.js";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
-import {SuspensionAlert} from "@/features/users/profile/components/SuspensionAlert.jsx";
+import SuspensionAlert from "@/features/users/profile/components/SuspensionAlert.jsx";
 
 export default function ProfileHero({ user }) {
     const [confirmOpen, setConfirmOpen] = useState(false);

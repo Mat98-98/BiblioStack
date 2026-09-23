@@ -2,7 +2,7 @@ import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/comp
 import { CircleAlert } from "lucide-react";
 import {formatDateNumeric} from "@/lib/dateUtils.js";
 
-export function SuspensionAlert({ suspension }) {
+export default function SuspensionAlert({ suspension }) {
     if (!suspension) return null;
 
     const endDate = formatDateNumeric(suspension.endDate);
