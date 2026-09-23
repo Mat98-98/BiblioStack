@@ -17,7 +17,7 @@ export const CreateLoanSchema = z.object({
 export const UpdateLoanSchema = z.object({
     dueDate: z.coerce.date(),
     returnDate: z.coerce.date().nullable().optional(),
-})
+});
 
 // Schema di validazione filtri di ricerca pagina admin
 export const LoanSearchSchema = z.object({
@@ -27,4 +27,4 @@ export const LoanSearchSchema = z.object({
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
     workId: z.string().optional(),
     userId: z.coerce.number().int().positive().optional()
-})
+});
