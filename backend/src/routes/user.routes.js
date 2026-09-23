@@ -12,7 +12,7 @@ const router = express.Router();
 router.get("/search", paginationMiddleware, verifyUser, permit( "admin"), userController.search);
 
 // GET /users/me/dashboard -> Serve per visualizzare la dashboard personale
-router.get("/me/dashboard", verifyUser, userController.getUserProfileData);
+router.get("/me/dashboard", verifyUser, userController.getMyDashboard);
 
 // GET /users/:id/dashboard -> Serve per visualizzare la dashboard di un utente da admin @todo Da fixare
 router.get("/:id/dashboard", verifyUser, permit("admin"), validateIdParam, userController.getUserProfileData);

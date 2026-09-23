@@ -1,6 +1,6 @@
 import { db } from "../db/connection.js";
-import {reservations, works} from "../db/schema.js";
-import {eq, and, inArray, gte, lte, ilike, asc, desc} from "drizzle-orm";
+import { reservations, works } from "../db/schema.js";
+import { eq, and, inArray, gte, lte, ilike, asc, desc, sql } from "drizzle-orm";
 import { RESERVATION_STATUS } from "../constants.js";
 import { userSelect } from "./presets/user.preset.js";
 import { normalizeSearch } from "../utils/search.util.js";
@@ -81,6 +81,67 @@ export const reservationRepository = {
                 status: RESERVATION_STATUS.READY, expiresAt: { gte: startDate, lte: endDate },
             }
         }),
+
+    // Recupera le prenotazioni attive da mostrare nella dashboard. Restituisce prima tutte le ready con data di scadenza ascendente, poi le prenotazioni pending
+    findActiveForDashboardByUserId: async (userId, tx = db) => {
+        // Seleziono i primi 5 ID secondo l'ordine di priorità
+        const rows = await tx
+            .select({ id: reservations.id })
+            .from(reservations)
+            .where(
+                and(
+                    eq(reservations.userId, userId),
+                    inArray(reservations.status, ACTIVE_STATUSES)
+                )
+            )
+            // Ordino in modo che ready abbia priorità rispetto a pending
+            .orderBy(
+                sql`CASE
+                WHEN ${reservations.status} = 'ready' THEN 0
+                WHEN ${reservations.status} = 'pending' THEN 1
+            END`,
+                asc(reservations.expiresAt),
+                asc(reservations.reservationDate),
+                asc(reservations.id)
+            )
+            .limit(5);
+
+        if (rows.length === 0) return [];
+
+        const ids = rows.map(row => row.id);
+
+        // Recupero i record completi con le relazioni necessarie alla dashboard
+        const full = await tx.query.reservations.findMany({
+            where: {
+                id: { in: ids }
+            },
+            with: {
+                work: {
+                    columns: {
+                        id: true,
+                        title: true
+                    },
+                    with: { authors: true }
+                },
+                assignedItem: {
+                    columns: { id: true },
+                    with: {
+                        location: {
+                            with: {
+                                school: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const map = new Map(full.map(reservation => [reservation.id, reservation]));
+
+        return ids
+            .map(id => map.get(id))
+            .filter(Boolean);
+    },
 
     create: async (data, tx = db) =>
         await tx.insert(reservations).values(data).returning(),

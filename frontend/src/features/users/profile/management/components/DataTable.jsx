@@ -11,8 +11,10 @@ import { ArrowUpDown } from "lucide-react";
 import {
     Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table.jsx";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import TablePagination from "@/components/common/TablePagination.jsx";
+
 
 export default function DataTable({
                                       columns,
@@ -21,7 +23,7 @@ export default function DataTable({
                                       searchColumnId,
                                       emptyIcon: EmptyIcon,
                                       emptyMessage = "Nessun risultato",
-                                      pageSize = 5,
+                                      pageSize = 15,
                                       initialSorting = []
                                   }) {
     const [sorting, setSorting] = useState(initialSorting);
@@ -85,11 +87,17 @@ export default function DataTable({
                     <TableBody>
                         {table.getRowModel().rows.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-32 text-center">
-                                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                        {EmptyIcon && <EmptyIcon className="h-6 w-6 mb-2 opacity-40" />}
-                                        <span className="text-sm">{emptyMessage}</span>
-                                    </div>
+                                <TableCell colSpan={columns.length} className="py-12">
+                                    <Empty>
+                                        <EmptyHeader>
+                                            {EmptyIcon && (
+                                                <EmptyMedia variant="icon">
+                                                    <EmptyIcon />
+                                            </EmptyMedia>
+                                            )}
+                                            <EmptyTitle>{emptyMessage}</EmptyTitle>
+                                        </EmptyHeader>
+                                    </Empty>
                                 </TableCell>
                             </TableRow>
                         ) : (

@@ -4,7 +4,7 @@ import api from "@/api/axios.js";
 import { handleApiError } from "@/lib/handleApiError.js";
 
 export function useUserDashboard() {
-    const [user, setUser] = useState(null);
+    const [dashboard, setDashboard] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -14,7 +14,7 @@ export function useUserDashboard() {
         const fetchDashboard = async () => {
             try {
                 const res = await api.get("/users/me/dashboard");
-                setUser(res.data);
+                setDashboard(res.data);
             } catch (err) {
                 setError(err);
                 handleApiError(err, navigate);
@@ -26,5 +26,5 @@ export function useUserDashboard() {
         fetchDashboard();
     }, []);
 
-    return { user, loading, error };
+    return { dashboard, loading, error };
 }

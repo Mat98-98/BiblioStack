@@ -14,10 +14,10 @@ function ProfileSkeleton() {
     );
 }
 
-export default function Profile({ user, loading, error }) {
+export default function Profile({ dashboard, loading, error }) {
     if (loading) return <ProfileSkeleton />;
 
-    if (error || !user) {
+    if (error || !dashboard) {
         return (
             <div className="text-center text-muted-foreground py-12">
                 Errore nel caricamento del profilo.
@@ -27,14 +27,14 @@ export default function Profile({ user, loading, error }) {
 
     return (
         <div className="space-y-8">
-            <ProfileHero user={user} />
+            <ProfileHero user={dashboard.user} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <ActiveLoans loans={user.loansAsPatron} />
-                <Reservations reservations={user.reservations} />
+                <ActiveLoans loans={dashboard.activeLoans} />
+                <Reservations reservations={dashboard.activeReservations} />
             </div>
 
-            <LoanHistory loans={user.loansAsPatron} />
+            <LoanHistory loans={dashboard.returnedLoans} />
         </div>
     );
 }

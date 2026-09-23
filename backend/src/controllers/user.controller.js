@@ -1,5 +1,5 @@
 import { userService } from "../services/user.service.js";
-import {UserDashboardDTO, AdminDashboardDTO, UserBaseListDTO, UserSafeDTO, UserBaseDTO} from "../dto/user.dto.js";
+import { UserDashboardDTO, AdminDashboardDTO, UserBaseListDTO, UserSafeDTO, UserBaseDTO } from "../dto/user.dto.js";
 import { UpdateUserSchema, CreateUserSchema, UserSearchSchema } from "../schemas/user.schema.js";
 import { AppError } from "../utils/appError.js";
 import { ROLE_IDS } from "../constants.js";
@@ -36,10 +36,10 @@ export const userController = {
         }
     },
 
-    getByEmail: async (req, res, next) => {
+    getMyDashboard: async (req, res, next) => {
         try {
-            const user = await userService.getByEmail(req.query.email);
-            res.json(user);
+            const userDashboardData = await userService.getMyDashboard(req.user.id);
+            res.json(UserDashboardDTO.parse(userDashboardData));
         } catch (error) {
             next(error);
         }

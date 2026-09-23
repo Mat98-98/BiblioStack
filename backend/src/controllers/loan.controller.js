@@ -1,9 +1,8 @@
 import { loanService } from "../services/loan.service.js";
 import { LoanBaseDTO, LoanBaseListDTO, LoanDetailDTO } from "../dto/loan.dto.js";
-import {CreateLoanSchema, LoanSearchSchema, UpdateLoanSchema} from "../schemas/loan.schema.js";
+import { CreateLoanSchema, LoanSearchSchema, UpdateLoanSchema } from "../schemas/loan.schema.js";
 
 export const loanController = {
-
     getAll: async (req, res, next) => {
         try {
             const loans = await loanService.getAll(req.pagination);

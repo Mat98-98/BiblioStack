@@ -4,6 +4,7 @@ import { formatAuthors } from "@/lib/authorUtils.js";
 import { formatDateShort } from "@/lib/dateUtils.js";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item.jsx";
+import { Link } from "react-router-dom";
 
 function HistoryCard({ loan }) {
     const late = loan.returnDate && loan.dueDate && new Date(loan.returnDate) > new Date(loan.dueDate)
@@ -52,16 +53,14 @@ function HistoryCard({ loan }) {
 }
 
 export default function LoanHistory({ loans }) {
-    const history = loans.filter((l) => l.returnDate)
-
-    return (
+   return (
         <section className="space-y-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Storico prestiti</h2>
-                <span className="text-sm text-muted-foreground">{history.length} totali</span>
+                <Link to="/loans?status=returned&page=1" className="text-sm font-medium text-primary hover:underline">Vedi tutti</Link>
             </div>
 
-            {history.length === 0 ? (
+            {loans.length === 0 ? (
                 <Empty>
                     <EmptyHeader>
                         <EmptyMedia variant="icon">
@@ -72,7 +71,7 @@ export default function LoanHistory({ loans }) {
                 </Empty>
             ) : (
                 <div className="flex flex-col gap-2">
-                    {history.map((loan) => (
+                    {loans.map((loan) => (
                         <HistoryCard key={loan.id} loan={loan} />
                     ))}
                 </div>

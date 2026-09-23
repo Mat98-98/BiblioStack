@@ -10,12 +10,7 @@ export default function Reservations({ reservations: initial }) {
     return (
         <section className="space-y-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">
-                    Prenotazioni
-                </h2>
-                <span className="text-sm text-muted-foreground">
-                    {reservations.length} attive
-                </span>
+                <h2 className="text-lg font-semibold">Prenotazioni</h2>
                 <Link to="/reservations" className="text-sm font-medium text-primary hover:underline">Vedi tutte</Link>
             </div>
 

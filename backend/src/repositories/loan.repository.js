@@ -42,18 +42,27 @@ export const loanRepository = {
             }
         }),
 
-    /*
-    findActiveByUserAndWork: async (userId, workId, tx = db) => {
-        const loan = await tx.query.loans.findFirst({
+    findLatestByUserId: async ( userId, { returned = false } = {}, tx = db) =>
+        tx.query.loans.findMany({
             where: {
-                userId,
-                returnDate: { isNull: true }
+                userId: userId,
+                returnDate: returned ? { isNotNull: true } : { isNull: true },
             },
-            with: { item: true }
-        });
-        return loan?.item?.workId === workId ? loan : null;
-    },
-     */
+            with: {
+                item: {
+                    with: {
+                        work: {
+                            columns: { id: true, title: true },
+                            with: {
+                                authors: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: returned ? { returnDate: "desc" } : { loanDate: "desc" },
+            limit: 5
+        }),
 
     findActiveByUserAndWork: async (userId, workId, tx = db) => {
         const loan = await tx.query.loans.findFirst({

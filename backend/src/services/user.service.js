@@ -9,6 +9,8 @@ import { db } from "../db/connection.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import { passwordService } from "./password.service.js";
 import { notificationRepository } from "../repositories/notification.repository.js";
+import { loanRepository } from "../repositories/loan.repository.js";
+import { reservationRepository } from "../repositories/reservation.repository.js";
 
 
 
@@ -57,6 +59,25 @@ export const userService = {
         if (!user) throw new AppError("Users not found", "NOT_FOUND", 404);
 
         return user;
+    },
+
+    getMyDashboard: async (userId) => {
+        // Recupero i dati dell'utente controllando che esista
+        const user = await findUniqueOrThrow(userId);
+
+        // Se esiste recupero gli ultimi 5 prestiti attivi, gli ultimi 5 prestiti consegnati e le 5 prenotazioni attive più rilevanti (da quella ready con scadenza più vicina a quelle pending)
+        const [activeLoans, returnedLoans, activeReservations] = await Promise.all([
+            loanRepository.findLatestByUserId(userId),
+            loanRepository.findLatestByUserId(userId, { returned: true }),
+            reservationRepository.findActiveForDashboardByUserId(userId)
+        ]);
+
+        return {
+            user,
+            activeLoans,
+            returnedLoans,
+            activeReservations,
+        };
     },
 
     getUserProfileData: async (id) => {
@@ -110,8 +131,7 @@ export const userService = {
     update: async (id, data) => {
         await findUniqueOrThrow(id);
 
-        const updatedUser = await userRepository.update(id, data);
-        return updatedUser;
+        return await userRepository.update(id, data);
         },
 
     // Funzione che permette di anonimizzare l'account dell'utente al posto di cancellarlo definitivamente dal sistema, in modo da tenere lo storico e rispettare il diritto all'oblio

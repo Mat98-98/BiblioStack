@@ -19,7 +19,6 @@ const findUniqueOrThrow = async (id) => {
 const toDateOnlyString = (date) => date.toISOString().split("T")[0];
 
 export const loanService = {
-
     getAll: async ({ page, limit }) =>
         await loanRepository.findAll({ page, limit }),
 

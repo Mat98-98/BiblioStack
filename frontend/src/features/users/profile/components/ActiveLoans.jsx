@@ -4,6 +4,7 @@ import { daysUntil, safeFormat } from "@/lib/dateUtils.js";
 import { formatAuthors } from "@/lib/authorUtils.js";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item.jsx";
+import {Link} from "react-router-dom";
 
 function DueBadge({ dueDate }) {
     const days = daysUntil(dueDate)
@@ -77,16 +78,15 @@ function LoanCard({ loan }) {
 }
 
 export default function ActiveLoans({ loans }) {
-    const active = loans.filter((l) => !l.returnDate)
 
     return (
         <section className="space-y-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Prestiti attivi</h2>
-                <span className="text-sm text-muted-foreground">{active.length} in corso</span>
+                <Link to="/loans?status=active&page=1" className="text-sm font-medium text-primary hover:underline">Vedi tutti</Link>
             </div>
 
-            {active.length === 0 ? (
+            {loans.length === 0 ? (
                 <Empty>
                     <EmptyHeader>
                         <EmptyMedia variant="icon">
@@ -97,7 +97,7 @@ export default function ActiveLoans({ loans }) {
                 </Empty>
             ) : (
                 <div className="flex flex-col gap-2">
-                    {active.map((loan) => (
+                    {loans.map((loan) => (
                         <LoanCard key={loan.id} loan={loan} />
                     ))}
                 </div>

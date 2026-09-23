@@ -27,6 +27,23 @@ const ReservationSchema = z.object({
     })
 });
 
+const ReservationDashboardSchema = z.object({
+    id: z.number(),
+    reservationDate: z.date(),
+    expiresAt: z.date().optional().nullable(),
+    status: ReservationStatusEnum,
+    work: WorkMiniDTO.extend({
+        authors: z.array(AuthorDTO)
+    }),
+    assignedItem: ItemMiniDTO.extend({
+        location: z.object({
+            school:z.object({
+                name: z.string().nullable()
+            })
+        }).nullable()
+    }).optional().nullable()
+});
+
 const RoleSchema = z.object({
     id: z.number(),
     name: z.string()
@@ -61,15 +78,18 @@ export const UserBaseDTO = UserCore.extend({
 export const UserBaseListDTO = z.array(UserBaseDTO);
 
 // ======== DTO dettagliati ========
-// Dati visibili nella pagina del profilo dell'utente standard (student)
-export const UserDashboardDTO = UserCore.extend({
-    email: z.email(),
-    phone: z.string().optional().nullable(),
-    role: RoleSchema,
-    suspension: ActiveSuspensionSchema.default(null),
-    loansAsPatron: z.array(LoanSchema).default([]),
-    reservations: z.array(ReservationSchema).default([])
-})
+// Dati visibili nella pagina del profilo dell'utente standard
+export const UserDashboardDTO = z.object({
+    user: UserCore.extend({
+        email: z.email(),
+        phone: z.string().optional().nullable(),
+        role: RoleSchema,
+        suspension: ActiveSuspensionSchema.default(null),
+    }),
+    activeLoans: z.array(LoanSchema).default([]),
+    returnedLoans: z.array(LoanSchema).default([]),
+    activeReservations: z.array(ReservationDashboardSchema).default([]),
+});
 
 // Dati visibili nella pagina del profilo dell'utente amministratore (admin/librarian)
 export const AdminDashboardDTO = UserCore.extend({
