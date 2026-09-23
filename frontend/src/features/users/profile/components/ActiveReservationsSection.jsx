@@ -1,20 +1,29 @@
 import { PackageX } from "lucide-react";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import ReservationCard from "@/features/users/profile/components/ReservationCard.jsx";
-import { useReservations } from "@/features/users/profile/hooks/useReservations.js";
+import { useActiveReservations } from "@/features/users/profile/hooks/useActiveReservations.js";
 import { Link } from "react-router-dom";
 
-export default function ActiveReservationsSection({ reservations: initial }) {
-    const { reservations, loadingId, cancelReservation } = useReservations(initial);
+export default function ActiveReservationsSection({ reservations }) {
+    const {
+        reservations: activeReservations,
+        loadingId,
+        cancelReservation
+    } = useActiveReservations(reservations);
 
     return (
         <section className="space-y-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Prenotazioni</h2>
-                <Link to="/reservations" className="text-sm font-medium text-primary hover:underline">Vedi tutte</Link>
+                <Link
+                    to="/reservations"
+                    className="text-sm font-medium text-primary hover:underline"
+                >
+                    Vedi tutte
+                </Link>
             </div>
 
-            {reservations.length === 0 ? (
+            {activeReservations.length === 0 ? (
                 <Empty>
                     <EmptyHeader>
                         <EmptyMedia variant="icon">
@@ -25,7 +34,7 @@ export default function ActiveReservationsSection({ reservations: initial }) {
                 </Empty>
             ) : (
                 <div className="flex flex-col gap-2">
-                    {reservations.map((reservation) => (
+                    {activeReservations.map((reservation) => (
                         <ReservationCard
                             key={reservation.id}
                             reservation={reservation}

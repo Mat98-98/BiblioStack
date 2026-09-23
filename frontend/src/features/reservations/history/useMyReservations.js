@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { handleApiError } from "@/lib/handleApiError.js";
 import api from "@/api/axios.js";
+import { useCancelReservation } from "@/features/reservations/hooks/useCancelReservation.js";
 
 // Specchio di useMyLoans: nessun parametro userId (lo decide sempre il backend dal token),
 // chiama /reservations/mine — endpoint ANCORA DA COSTRUIRE lato backend, stesso schema
@@ -48,20 +49,16 @@ export function useMyReservations() {
 
     const refetch = useCallback(() => fetchReservations(), [fetchReservations]);
 
-    // Aggiornamento ottimistico dopo un annullamento, come cancelReservation altrove
-    const cancelReservationLocally = useCallback((id) => {
-        setReservations((prev) => prev.filter((r) => r.id !== id));
-    }, []);
+    const { cancelReservation: cancel } = useCancelReservation();
 
     const cancelReservation = async (id) => {
-        try {
-            await api.patch(`/reservations/${id}`, { status: "cancelled" });
-            cancelReservationLocally(id);
-            return true;
-        } catch (err) {
-            handleApiError(err, navigate);
-            return false;
+        const success = await cancel(id);
+
+        if (success) {
+            setReservations((prev) => prev.filter((r) => r.id !== id));
         }
+
+        return success;
     };
 
     const hasMore = reservations.length === limit;

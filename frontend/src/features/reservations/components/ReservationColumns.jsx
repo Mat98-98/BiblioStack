@@ -30,6 +30,8 @@ function ReservationRowActions({ reservation, onCancel }) {
                 title="Annulla prenotazione"
                 description={`Sei sicuro di voler annullare la prenotazione per "${reservation.work?.title ?? "questa opera"}"?`}
                 onConfirm={() => onCancel(reservation.id)}
+                confirmLabel="Annulla prenotazione"
+                loadingLabel="Annullamento"
             />
         </>
     );
