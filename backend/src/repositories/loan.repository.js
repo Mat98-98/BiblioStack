@@ -9,27 +9,27 @@ const patron = users;
 
 export const loanRepository = {
 
-    findAll: async ({ page, limit }) => {
+    findAll: async ({page, limit}) => {
         const offset = (page - 1) * limit;
         return await db.query.loans.findMany({
             limit,
             offset,
             with: {
-                item: { with: { work: {columns: { title: true }}}},
-                patron: { columns: userSelect.safe },
-                librarian: { columns: userSelect.safe }
+                item: {with: {work: {columns: {title: true}}}},
+                patron: {columns: userSelect.safe},
+                librarian: {columns: userSelect.safe}
             },
-            orderBy: { loanDate: "desc" }
+            orderBy: {loanDate: "desc"}
         });
     },
 
     findById: async (id, tx = db) =>
         await tx.query.loans.findFirst({
-            where: { id },
+            where: {id},
             with: {
-                item: { with: { work: {columns: { title: true }}}},
-                patron: { columns: userSelect.safe },
-                librarian: { columns: userSelect.safe },
+                item: {with: {work: {columns: {title: true}}}},
+                patron: {columns: userSelect.safe},
+                librarian: {columns: userSelect.safe},
                 notices: true
             }
         }),
@@ -38,21 +38,21 @@ export const loanRepository = {
         await tx.query.loans.findFirst({
             where: {
                 itemId,
-                returnDate: { isNull: true }
+                returnDate: {isNull: true}
             }
         }),
 
-    findLatestByUserId: async ( userId, { returned = false } = {}, tx = db) =>
+    findLatestByUserId: async (userId, {returned = false} = {}, tx = db) =>
         tx.query.loans.findMany({
             where: {
                 userId: userId,
-                returnDate: returned ? { isNotNull: true } : { isNull: true },
+                returnDate: returned ? {isNotNull: true} : {isNull: true},
             },
             with: {
                 item: {
                     with: {
                         work: {
-                            columns: { id: true, title: true },
+                            columns: {id: true, title: true},
                             with: {
                                 authors: true
                             }
@@ -60,7 +60,7 @@ export const loanRepository = {
                     }
                 }
             },
-            orderBy: returned ? { returnDate: "desc" } : { loanDate: "desc" },
+            orderBy: returned ? {returnDate: "desc"} : {loanDate: "desc"},
             limit: 5
         }),
 
@@ -68,10 +68,10 @@ export const loanRepository = {
         const loan = await tx.query.loans.findFirst({
             where: {
                 userId,
-                returnDate: { isNull: true },
-                item: { workId }
+                returnDate: {isNull: true},
+                item: {workId}
             },
-            with: { item: true }
+            with: {item: true}
         });
         return loan?.item?.workId === workId ? loan : null;
     },
@@ -79,7 +79,7 @@ export const loanRepository = {
     // Query per prelevare i prestiti non restituiti in base alla data di scadenza. Il parametro è mandato dal service e di default è eq.
     findByDueDateStatus: async (dateStr, comparator = "eq") => {
         return await db.query.loans.findMany({
-            where: { returnDate: { isNull: true }, dueDate: { [comparator]: dateStr } },
+            where: {returnDate: {isNull: true}, dueDate: {[comparator]: dateStr}},
         })
     },
 
@@ -93,78 +93,145 @@ export const loanRepository = {
     delete: async (id, tx = db) =>
         await tx.delete(loans).where(eq(loans.id, id)).returning(),
 
-    search: async ({ page, limit, search, status, sortBy, sortOrder, workId, userId }) => {
+    search: async ({page, limit, search, status, sortBy, sortOrder, workId, userId}) => {
         const offset = (page - 1) * limit;
 
         // Parsing della stringa in input
-        const { pattern, isEmpty } = normalizeSearch(search ?? "");
+        const {pattern, isEmpty} = normalizeSearch(search ?? "");
 
         // Determino qui la colonna di ordinamento, perché serve sia nel SELECT che nell'ORDER BY (per SELECT DISTINCT, ogni colonna dell'ORDER BY deve comparire nel SELECT)
-        const sortColumn = sortBy === "dueDate" ? loans.dueDate : loans.loanDate;
-        // .as() forza l'alias SQL esplicito (AS sort_value), non solo la chiave nell'oggetto JS
-        const sortExpr = sql`${sortColumn}`.as("sort_value");
 
-        // Query base con join necessari per filtrare su titolo opera e nome utente
+        const sortColumn =
+            sortBy === "dueDate"
+                ? loans.dueDate
+                : loans.loanDate;
+
+        // Query base con join necessari per filtrare su titolo opera e nome utente.
         const base =
-            db.selectDistinct({ id: loans.id, sortValue: sortExpr }).from(loans)
+            db.selectDistinct({
+                id: loans.id,
+                sortValue: sortColumn, // sortValue è incluso nel SELECT perché usiamo SELECT DISTINCT e PostgreSQL richiede che la colonna usata per l'ORDER BY sia presente.
+            })
+                .from(loans)
                 .leftJoin(items, eq(items.id, loans.itemId))
                 .leftJoin(works, eq(works.id, items.workId))
                 .leftJoin(patron, eq(patron.id, loans.userId))
                 .$dynamic();
 
-        // Creo un'array vuoto su cui verranno pushate le condizioni che costituiranno i filtri
+        // Creo un array vuoto su cui verranno pushate le condizioni che costituiranno i filtri
         const conditions = [];
 
         // Filtro testuale: opera, nome/cognome utente (in entrambi gli ordini) o codice inventario copia
         if (!isEmpty) {
-            conditions.push(or(
-                ilike(works.title, pattern),
-                ilike(patron.firstName, pattern),
-                ilike(patron.lastName, pattern),
-                sql`(${patron.firstName} || ' ' || ${patron.lastName}) ILIKE ${pattern}`,
-                ilike(loans.itemId, pattern)
-            ));
+            conditions.push(
+                or(
+                    ilike(works.title, pattern),
+                    ilike(patron.firstName, pattern),
+                    ilike(patron.lastName, pattern),
+                    sql`(${patron.firstName} || ' ' || ${patron.lastName})
+                        ILIKE
+                        ${pattern}`,
+                    ilike(loans.itemId, pattern)
+                )
+            );
         }
 
-        // Filtro per stato del prestito (per all non serve alcun filtro) @todo: spostare le date e passarle dal service
+        // Filtro per stato del prestito (per all non serve alcun filtro)
+        // @todo: spostare le date e passarle dal service
         if (status === "returned") {
-            conditions.push(isNotNull(loans.returnDate));
+            conditions.push(
+                isNotNull(loans.returnDate)
+            );
         } else if (status === "overdue") {
-            conditions.push(and(isNull(loans.returnDate), lt(loans.dueDate, new Date().toISOString().split('T')[0])));
+            conditions.push(
+                and(
+                    isNull(loans.returnDate),
+                    lt(
+                        loans.dueDate,
+                        new Date().toISOString().split("T")[0]
+                    )
+                )
+            );
         } else if (status === "active") {
-            conditions.push(and(isNull(loans.returnDate), or(isNull(loans.dueDate), gte(loans.dueDate, new Date().toISOString().split('T')[0]))));
+            conditions.push(
+                and(
+                    isNull(loans.returnDate),
+                    or(
+                        isNull(loans.dueDate),
+                        gte(
+                            loans.dueDate,
+                            new Date().toISOString().split("T")[0]
+                        )
+                    )
+                )
+            );
         }
 
         // Filtri di contesto: prestiti di una specifica opera o di uno specifico utente
-        if (workId) conditions.push(eq(works.id, workId));
-        if (userId) conditions.push(eq(loans.userId, userId));
+        if (workId) {
+            conditions.push(eq(works.id, workId));
+        }
+
+        if (userId) {
+            conditions.push(eq(loans.userId, userId));
+        }
 
         if (conditions.length > 0) {
             base.where(and(...conditions));
         }
 
         // Ordinamento dati (la whitelist dei parametri è stata fatta nello schema zod per evitare injections)
-        const orderFn = sortOrder === "asc" ? asc : desc;
+        const orderFn =
+            sortOrder === "asc"
+                ? asc
+                : desc;
+
         // asc(loans.id) come tie-breaker: evita un ordine instabile tra righe con data identica
-        base.orderBy(orderFn(sql`sort_value`), asc(loans.id));
+        base.orderBy(
+            orderFn(sortColumn),
+            asc(loans.id)
+        );
 
-        const paged = await base.limit(limit).offset(offset);
+        console.log({
+            sortBy,
+            sortOrder,
+            sortColumn,
+        });
 
-        if (paged.length === 0) return [];
+        // Paginazione
+        const paged = await base
+            .limit(limit)
+            .offset(offset);
+
+        if (paged.length === 0) {
+            return [];
+        }
 
         // Fetch completo con relazioni (item, patron, librarian), partendo dagli id già filtrati/ordinati
-        const ids = paged.map(r => r.id);
+        const ids = paged.map((row) => row.id);
+
         const fullLoans = await db.query.loans.findMany({
-            where: { id: { in: ids } },
+            where: {
+                id: {in: ids}
+            },
             with: {
-                item: { with: { work: {columns: { title: true }}}},
-                patron: { columns: userSelect.safe },
-                librarian: { columns: userSelect.safe }
+                item: {
+                    with: {
+                        work: {columns: {title: true}}
+                    }
+                },
+                patron: {columns: userSelect.safe},
+                librarian: {columns: userSelect.safe}
             }
         });
 
         // Riordino secondo l'ordinamento/ranking calcolato sopra, perso da findMany
-        const loanMap = new Map(fullLoans.map(l => [l.id, l]));
-        return ids.map(id => loanMap.get(id)).filter(Boolean);
+        const loanMap = new Map(
+            fullLoans.map((loan) => [loan.id, loan])
+        );
+
+        return ids
+            .map((id) => loanMap.get(id))
+            .filter(Boolean);
     }
 }
