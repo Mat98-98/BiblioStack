@@ -22,8 +22,8 @@ export default function ReservationFilters({
     const toggleSort = () => onSort(sortOrder === "asc" ? "desc" : "asc");
 
     const searchPlaceholder = isStaff
-        ? "Cerca per opera o utente..."
-        : "Cerca per titolo del libro...";
+        ? "Cerca per titolo..."
+        : "Cerca per titolo...";
 
     return (
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

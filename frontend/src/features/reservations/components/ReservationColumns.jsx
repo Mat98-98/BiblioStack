@@ -39,7 +39,8 @@ function ReservationRowActions({ reservation, onCancel }) {
 
 export const getReservationColumns = ({
                                           onCancel,
-                                          showAllColumns = true
+                                          showAllColumns = true,
+                                          showUserColumn = true
                                       }) => [
     {
         id: "workTitle",
@@ -54,8 +55,8 @@ export const getReservationColumns = ({
 
     {
         id: "assignedItem",
-        accessorFn: (row) => row.assignedItem?.id ?? "Nessuna copia assegnata",
-        header: "Copia",
+        accessorFn: (row) => row.assignedItem?.id ?? "-",
+        header: "Copia assegnata",
         cell: ({ getValue }) => (
             <span className="font-mono text-sm">
                 {getValue()}
@@ -63,7 +64,7 @@ export const getReservationColumns = ({
         ),
     },
 
-    ...(showAllColumns ? [{
+    ...(showAllColumns && showUserColumn ? [{
         id: "user",
         accessorKey: "user",
         header: "Utente",

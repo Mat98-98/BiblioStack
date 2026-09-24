@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
-import { BookMarked, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 import { useAdminUserDashboard } from "@/features/users/profile/management/hooks/useAdminUserDashboard.js";
 import { useAdminUserLoans } from "@/features/users/profile/management/hooks/useAdminUsersLoans.js";
 
 import { noticesColumns } from "@/features/users/profile/management/components/NoticesColumns.jsx";
-import { getReservationColumns } from "@/features/reservations/components/ReservationColumns.jsx";
 
 import ChangeRoleDialog from "@/features/users/management/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 import SuspendUserDialog from "@/features/users/management/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
@@ -17,6 +16,10 @@ import SuspensionCard from "@/features/users/profile/management/components/Suspe
 import DataTableClientSide from "@/features/users/profile/management/components/DataTableClientSide.jsx";
 import LoansFilters from "@/features/loans/components/LoanFilters.jsx";
 import LoansTable from "@/features/loans/components/LoanTable.jsx";
+
+import { useAdminUserReservations } from "@/features/users/profile/management/hooks/useAdminUserReservations.js";
+import ReservationFilters from "@/features/reservations/components/ReservationFilters.jsx";
+import ReservationsTable from "@/features/reservations/components/ReservationTable.jsx";
 
 function AdminDashboardSkeleton() {
     return (
@@ -57,13 +60,24 @@ export default function AdminUserDashboard({ userId }) {
         refetch: refetchLoans,
     } = useAdminUserLoans(userId);
 
+    const {
+        reservations,
+        loading: reservationsLoading,
+        page: reservationsPage,
+        setPage: setReservationsPage,
+        hasMore: reservationsHasMore,
+        search: reservationsSearch,
+        setSearch: setReservationsSearch,
+        status: reservationsStatus,
+        setStatus: setReservationsStatus,
+        sortOrder: reservationsSortOrder,
+        setSortOrder: setReservationsSortOrder,
+        refetch: refetchReservations,
+    } = useAdminUserReservations(userId);
+
     const [suspendOpen, setSuspendOpen] = useState(false);
     const [changeRoleOpen, setChangeRoleOpen] = useState(false);
 
-    const reservationsColumns = getReservationColumns({
-        onCancel: cancelReservation,
-        showAllColumns: true,
-    });
 
     if (loading) return <AdminDashboardSkeleton />;
 
@@ -128,24 +142,44 @@ export default function AdminUserDashboard({ userId }) {
                 />
             </section>
 
-            {/* Prenotazioni - per ora invariato */}
+            {/* Prenotazioni */}
             <section className="space-y-3">
                 <h2 className="text-base font-semibold">Prenotazioni</h2>
 
-                <DataTableClientSide
-                    columns={reservationsColumns}
-                    data={user.reservations}
-                    searchColumnId="workTitle"
-                    searchPlaceholder="Cerca per titolo..."
-                    emptyIcon={BookMarked}
-                    emptyMessage="Nessuna prenotazione"
-                    initialSorting={[
-                        { id: "reservationDate", desc: true }
-                    ]}
+                <ReservationFilters
+                    search={reservationsSearch}
+                    onSearch={setReservationsSearch}
+                    status={reservationsStatus}
+                    onStatus={setReservationsStatus}
+                    sortOrder={reservationsSortOrder}
+                    onSort={setReservationsSortOrder}
+                    isStaff
+                />
+
+                <ReservationsTable
+                    reservations={reservations}
+                    loading={reservationsLoading}
+                    onCancel={async (reservationId) => {
+                        const success = await cancelReservation(reservationId);
+
+                        if (success) {
+                            await refetchReservations();
+                        }
+
+                        return success;
+                    }}
+                    showAllColumns
+                    showUserColumn={false}
+                    pagination={{
+                        page: reservationsPage,
+                        hasMore: reservationsHasMore,
+                        onPage: setReservationsPage,
+                        loading: reservationsLoading,
+                    }}
                 />
             </section>
 
-            {/* Segnalazioni - per ora invariato */}
+            {/* Segnalazioni */}
             <section className="space-y-3">
                 <h2 className="text-base font-semibold">
                     Segnalazioni ricevute
