@@ -1,9 +1,5 @@
 import { Calendar, Globe, BookMarked, Tag, Building2, Hash } from "lucide-react";
-
-function formatDate(date) {
-    if (!date) return "—";
-    return new Date(date).toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
-}
+import {safeFormat} from "@/lib/dateUtils.js";
 
 function InfoRow({ icon: Icon, label, value }) {
     if (!value) return null;
@@ -24,7 +20,7 @@ export default function DetailWorkInfoGrid({ work }) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border">
             <InfoRow icon={Building2} label="Editore" value={work.publisher?.name} />
-            <InfoRow icon={Calendar} label="Pubblicazione" value={formatDate(work.publicationDate)} />
+            <InfoRow icon={Calendar} label="Pubblicazione" value={safeFormat(work.publicationDate)} />
             <InfoRow icon={Globe} label="Lingua" value={work.language?.name} />
             <InfoRow
                 icon={Hash}

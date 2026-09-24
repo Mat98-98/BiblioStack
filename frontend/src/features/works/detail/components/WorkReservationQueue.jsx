@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge.jsx"
 import { Clock, PackageCheck } from "lucide-react";
 import { safeFormat } from "@/lib/dateUtils.js";
-import {Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle} from "@/components/ui/item.jsx";
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from "@/components/ui/item.jsx";
 
 export default function WorkReservationQueue({ reservations }) {
     if (!reservations || reservations.length === 0) return null;
