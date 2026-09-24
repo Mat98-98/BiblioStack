@@ -1,25 +1,18 @@
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
-import { AlertTriangle } from "lucide-react";
-
 import { useAdminUserDashboard } from "@/features/users/profile/management/hooks/useAdminUserDashboard.js";
 import { useAdminUserLoans } from "@/features/users/profile/management/hooks/useAdminUsersLoans.js";
-
-import { noticesColumns } from "@/features/users/profile/management/components/NoticesColumns.jsx";
-
+import { useAdminUserReservations } from "@/features/users/profile/management/hooks/useAdminUserReservations.js";
 import ChangeRoleDialog from "@/features/users/management/dialogs/changeRoleDialog/ChangeRoleDialog.jsx";
 import SuspendUserDialog from "@/features/users/management/dialogs/suspendUserDialog/SuspendUserDialog.jsx";
 import AdminUserActions from "@/features/users/profile/management/components/AdminUserActions.jsx";
 import AdminProfileHeader from "@/features/users/profile/management/components/AdminProfileHeader.jsx";
 import SuspensionCard from "@/features/users/profile/management/components/SuspensionCard.jsx";
-
-import DataTableClientSide from "@/features/users/profile/management/components/DataTableClientSide.jsx";
 import LoansFilters from "@/features/loans/components/LoanFilters.jsx";
 import LoansTable from "@/features/loans/components/LoanTable.jsx";
-
-import { useAdminUserReservations } from "@/features/users/profile/management/hooks/useAdminUserReservations.js";
 import ReservationFilters from "@/features/reservations/components/ReservationFilters.jsx";
 import ReservationsTable from "@/features/reservations/components/ReservationTable.jsx";
+import NoticesTable from "@/features/notices/components/NoticesTable.jsx";
 
 function AdminDashboardSkeleton() {
     return (
@@ -36,7 +29,6 @@ export default function AdminUserDashboard({ userId }) {
         user,
         loading,
         error,
-        refetch,
         cancelReservation,
         suspendUser,
         unsuspendUser,
@@ -185,15 +177,8 @@ export default function AdminUserDashboard({ userId }) {
                     Segnalazioni ricevute
                 </h2>
 
-                <DataTableClientSide
-                    columns={noticesColumns}
-                    data={user.noticesReceived}
-                    emptyIcon={AlertTriangle}
-                    emptyMessage="Nessuna segnalazione"
-                    initialSorting={[
-                        { id: "issuedAt", desc: true }
-                    ]}
-                />
+                <NoticesTable notices={user.noticesReceived} />
+
             </section>
 
             <SuspendUserDialog

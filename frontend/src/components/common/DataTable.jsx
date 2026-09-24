@@ -1,25 +1,6 @@
-import {
-    flexRender,
-    getCoreRowModel,
-    useReactTable,
-} from "@tanstack/react-table";
-
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table.jsx";
-
-import {
-    Empty,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-} from "@/components/ui/empty.jsx";
-
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.jsx";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty.jsx";
 import { Skeleton } from "@/components/ui/skeleton.jsx";
 import TablePagination from "@/components/common/TablePagination.jsx";
 
