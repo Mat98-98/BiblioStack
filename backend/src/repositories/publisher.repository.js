@@ -19,6 +19,29 @@ export const publisherRepository = {
             where: { id: id }
         }),
 
+    search: async ({ page, limit, search }) => {
+        const offset = (page - 1) * limit;
+
+        // Filtro opzionale per nome
+        const filters = search
+        ? { name: { ilike: `%${search}%` }} : undefined;
+
+        // Carico un record in più per controllare se c'è un'altra pagina da mandare
+        const list = await db.query.publishers.findMany({
+            where: filters,
+            offset: offset,
+            limit: limit + 1,
+            orderBy: { name: "asc" }
+        });
+
+        const hasMore = list.length > limit;
+
+        return {
+            data: list.slice(0, limit),
+            hasMore
+        };
+    },
+
     create: async (data) =>
         await db.insert(publishers).values(data).returning(),
 

@@ -7,3 +7,9 @@ export const PublisherBaseDTO = z.object({
 });
 
 export const PublisherBaseListDTO = z.array(PublisherBaseDTO);
+
+// DTO riservato alla ricerca delle case editrici
+export const PublisherSearchListDTO = z.object({
+    data: z.array(PublisherBaseDTO),
+    hasMore: z.boolean()
+});

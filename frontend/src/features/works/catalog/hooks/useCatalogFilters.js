@@ -1,41 +1,40 @@
+import { useCallback, useRef, useState } from "react";
 import api from "@/api/axios.js";
-import {useEffect, useState } from "react";
+import {usePaginatedSearch} from "@/hooks/usePaginatedSearch.js";
 
-// Hook per i filtri del catalogo
+// Genere e lingua sono liste piccole e stabili: le carichiamo insieme,
+// lazy, alla prima apertura di uno qualsiasi dei due filtri.
 export function useCatalogFilters() {
-    const [filters, setFilters] = useState({
-        genres: [],
-        languages: [],
-        publishers: []
-    })
+    const [genres, setGenres] = useState([]);
+    const [languages, setLanguages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [loaded, setLoaded] = useState(false);
 
-    const [loading, setLoading] = useState(true)
+    const loadingRef = useRef(false);
 
-    useEffect(() => {
-        const loadFilters = async () => {
-            try {
-                // Fetch parallelo
-                const [g, l, p] = await Promise.all([
-                    api.get("/genres?limit=100"),
-                    api.get("/languages"),
-                    api.get("/publishers?limit=100"),
-                ])
+    const open = useCallback(() => {
+        if (loaded || loadingRef.current) return;
 
-                setFilters({
-                    genres: g.data,
-                    languages: l.data,
-                    publishers: p.data
-                })
+        loadingRef.current = true;
+        setLoading(true);
 
-            } catch (err) {
-                console.error("Failed to load filters", err)
-            } finally {
-                setLoading(false)
-            }
-        }
+        Promise.all([
+            api.get("/genres?limit=50"),
+            api.get("/languages"),
+        ])
+            .then(([g, l]) => {
+                setGenres(g.data);
+                setLanguages(l.data);
+                setLoaded(true);
+            })
+            .catch((err) => console.error("Failed to load filters", err))
+            .finally(() => {
+                loadingRef.current = false;
+                setLoading(false);
+            });
+    }, [loaded]);
 
-        loadFilters()
-    }, [])
+    const publishers = usePaginatedSearch("/publishers/search");
 
-    return { ...filters, loading }
+    return { genres, languages, publishers, loading, open };
 }

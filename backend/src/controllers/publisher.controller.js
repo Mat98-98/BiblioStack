@@ -1,6 +1,6 @@
 import { publisherService } from "../services/publisher.service.js";
-import { PublisherBaseDTO, PublisherBaseListDTO } from "../dto/publisher.dto.js";
-import { UpdatePublisherSchema } from "../schemas/publisher.schema.js";
+import {PublisherBaseDTO, PublisherBaseListDTO, PublisherSearchListDTO} from "../dto/publisher.dto.js";
+import {PublisherSearchSchema, UpdatePublisherSchema} from "../schemas/publisher.schema.js";
 
 export const publisherController = {
     getAll: async (req, res, next) => {
@@ -27,6 +27,16 @@ export const publisherController = {
             const validatedData = await CreatePublisherSchema.parse(req.body);
             const newPublisher = await publisherService.create(validatedData);
             res.status(200).json(newPublisher);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    search: async (req, res, next) => {
+        try {
+            const filters = PublisherSearchSchema.parse(req.query);
+            const result = await publisherService.search({ ...req.pagination, ...filters});
+            res.json(PublisherSearchListDTO.parse(result));
         } catch (error) {
             next(error);
         }

@@ -31,6 +31,9 @@ export const publisherService = {
         return newPublisher;
     },
 
+    search: async (params) =>
+        await publisherRepository.search(params),
+
     update: async (id, data) => {
         await findUniqueOrThrow(id);
         const [updatedPublisher] = await publisherRepository.update(id, data);

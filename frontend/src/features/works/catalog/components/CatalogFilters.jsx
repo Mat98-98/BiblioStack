@@ -1,13 +1,15 @@
-import { X } from "lucide-react"
-import { Button } from "@/components/ui/button.jsx"
-import { Badge } from "@/components/ui/badge.jsx"
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button.jsx";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select.jsx"
+} from "@/components/ui/select.jsx";
+import {useCatalogFilters} from "@/features/works/catalog/hooks/useCatalogFilters.js";
+import AppCombobox from "@/components/common/AppCombobox.jsx";
+
 
 function FilterSection({ label, children }) {
     return (
@@ -17,10 +19,12 @@ function FilterSection({ label, children }) {
             </span>
             {children}
         </div>
-    )
+    );
 }
 
-export default function CatalogFilters({ filters, genres, languages, publishers, onFilter, onClear, activeCount }) {
+export default function CatalogFilters({ filters, onFilter, onClear, activeCount }) {
+    const { genres, languages, publishers, loading: filtersLoading, open: openFilters } = useCatalogFilters();
+
     return (
         <aside className="space-y-6">
 
@@ -35,27 +39,23 @@ export default function CatalogFilters({ filters, genres, languages, publishers,
             </div>
 
             <FilterSection label="Genere">
-                <Select
+                <AppCombobox
                     value={filters.genreId}
-                    onValueChange={v => onFilter("genreId", v === "all" ? "" : v)}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Tutti i generi" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Tutti i generi</SelectItem>
-                        {genres.map(g => (
-                            <SelectItem key={g.id} value={String(g.id)}>
-                                {g.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                    onChange={(v) => onFilter("genreId", v)}
+                    items={genres}
+                    loading={filtersLoading}
+                    onOpen={openFilters}
+                    placeholder="Tutti i generi"
+                    searchPlaceholder="Cerca genere..."
+                    getOptionValue={(g) => String(g.id)}
+                    renderLabel={(g) => g.name}
+                />
             </FilterSection>
 
             <FilterSection label="Lingua">
                 <Select
                     value={filters.languageCode}
+                    onOpenChange={(open) => { if (open) openFilters(); }}
                     onValueChange={v => onFilter("languageCode", v === "all" ? "" : v)}
                 >
                     <SelectTrigger className="w-full">
@@ -73,22 +73,20 @@ export default function CatalogFilters({ filters, genres, languages, publishers,
             </FilterSection>
 
             <FilterSection label="Editore">
-                <Select
+                <AppCombobox
                     value={filters.publisherId}
-                    onValueChange={v => onFilter("publisherId", v === "all" ? "" : v)}
-                >
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Tutti gli editori" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Tutti gli editori</SelectItem>
-                        {publishers.map(p => (
-                            <SelectItem key={p.id} value={String(p.id)}>
-                                {p.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                    onChange={(v) => onFilter("publisherId", v)}
+                    items={publishers.items}
+                    loading={publishers.loading}
+                    hasMore={publishers.hasMore}
+                    onOpen={publishers.open}
+                    onLoadMore={publishers.loadMore}
+                    onSearch={publishers.updateSearch}
+                    placeholder="Tutti gli editori"
+                    searchPlaceholder="Cerca editore..."
+                    getOptionValue={(p) => String(p.id)}
+                    renderLabel={(p) => p.name}
+                />
             </FilterSection>
 
         </aside>

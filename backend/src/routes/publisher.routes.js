@@ -7,6 +7,8 @@ import {permit} from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
+// GET /publishers/search?search=mondadori&page=1&limit=20
+router.get("/search", paginationMiddleware, publisherController.search);
 
 // GET /publishers?page=1&limit=20
 router.get("/", paginationMiddleware, publisherController.getAll);

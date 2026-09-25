@@ -7,3 +7,8 @@ export const CreatePublisherSchema = z.object({
 
 // Schema di validazione dei dati per la modifica di una casa editrice
 export const UpdatePublisherSchema = CreatePublisherSchema.partial();
+
+// Schema di validazione filtri di ricerca
+export const PublisherSearchSchema = z.object({
+    search: z.string().optional()
+});

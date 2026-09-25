@@ -27,11 +27,11 @@ export default function CatalogSidebar({ filterProps, activeFiltersCount }) {
             </Sheet>
 
             {/* Desktop */}
-            <aside className="hidden lg:block w-56 shrink-0 pl-3.5">
+            <div className="hidden lg:block w-56 shrink-0 pl-3.5">
                 <div className="sticky top-24">
                     <CatalogFilters {...filterProps} />
                 </div>
-            </aside>
+            </div>
         </>
     )
 }
