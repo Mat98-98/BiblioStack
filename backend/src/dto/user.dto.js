@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import {AuthorDTO, ItemMiniDTO, UserMiniDTO, WorkMiniDTO} from "./shared.dto.js";
+import {AuthorDTO, ItemMiniDTO, WorkMiniDTO} from "./shared.dto.js";
 import { ReservationStatusEnum } from "./shared.dto.js";
 
 // ======== DTO di supporto ========
@@ -14,16 +14,6 @@ const NoticeMiniSchema = z.object({
     type: z.object({
         id: z.number(),
         name: z.string(),
-    })
-});
-
-const ReservationSchema = z.object({
-    id: z.number(),
-    reservationDate: z.date(),
-    expiresAt: z.date().optional().nullable(),
-    status: ReservationStatusEnum,
-    work: WorkMiniDTO.extend({
-        authors: z.array(AuthorDTO)
     })
 });
 
@@ -97,12 +87,6 @@ export const AdminDashboardDTO = UserCore.extend({
     phone: z.string().optional().nullable(),
     role: RoleSchema,
     suspension: ActiveSuspensionSchema.default(null),
-    loansAsPatron: z.array(LoanSchema.extend({
-        librarian: UserMiniDTO.optional().nullable()
-    })).default([]),
-    reservations: z.array(ReservationSchema.extend({
-        assignedItem: ItemMiniDTO.optional().nullable()
-    })).default([]),
     noticesReceived: z.array(NoticeMiniSchema).default([])
 });
 
