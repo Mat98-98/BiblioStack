@@ -26,15 +26,35 @@ export default function AppCombobox({
                                         getOptionValue,             // Funzione per estrarre l'ID/chiave univoca dall'item (es. item => item.id)
                                         renderLabel,                // Funzione per mostrare il testo nell'elenco (es. item => item.name)
                                         renderSelected,             // Funzione opzionale per mostrare il testo sul bottone quando selezionato
-                                        className = ""
+                                        className = "",
+
+                                        // --- Nuove prop, tutte opzionali: attivano la modalità "async" ---
+                                        onOpen,                     // Chiamata alla prima apertura del popover (lazy load)
+                                        onSearch,                   // Se presente, la ricerca è delegata al server invece che al filtro locale di cmdk
+                                        onLoadMore,                 // Chiamata quando si scrolla vicino al fondo della lista
+                                        hasMore = false,             // Se true, abilita lo scroll infinito verso onLoadMore
                                     }) {
     const [open, setOpen] = useState(false);
+    const isAsync = typeof onSearch === "function";
 
     // Trova l'elemento attualmente selezionato
     const selectedItem = items.find(item => getOptionValue(item) === value);
 
+    const handleScroll = (event) => {
+        if (!onLoadMore) return;
+        const el = event.currentTarget;
+        const isNearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 20;
+        if (isNearBottom && hasMore && !loading) onLoadMore();
+    };
+
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover
+            open={open}
+            onOpenChange={(isOpen) => {
+                setOpen(isOpen);
+                if (isOpen) onOpen?.();
+            }}
+        >
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
@@ -54,10 +74,14 @@ export default function AppCombobox({
             </PopoverTrigger>
 
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command>
-                    <CommandInput placeholder={searchPlaceholder} />
-                    <CommandList>
-                        {loading && (
+                {/* shouldFilter disattivato in modalità async: il filtro lo fa il server, non cmdk in locale */}
+                <Command shouldFilter={!isAsync}>
+                    <CommandInput
+                        placeholder={searchPlaceholder}
+                        {...(isAsync && { onValueChange: onSearch })}
+                    />
+                    <CommandList onScroll={isAsync ? handleScroll : undefined}>
+                        {loading && items.length === 0 && (
                             <div className="flex items-center justify-center py-4">
                                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             </div>
@@ -67,7 +91,7 @@ export default function AppCombobox({
                             <CommandEmpty>Nessun risultato.</CommandEmpty>
                         )}
 
-                        {!loading && items.length > 0 && (
+                        {items.length > 0 && (
                             <CommandGroup>
                                 {items.map(item => {
                                     const itemId = getOptionValue(item);
@@ -77,6 +101,7 @@ export default function AppCombobox({
                                         <CommandItem
                                             key={itemId}
                                             value={renderLabel(item)}
+                                            className="cursor-pointer"
                                             onSelect={() => {
                                                 onChange(isSelected ? "" : itemId);
                                                 setOpen(false);
@@ -91,6 +116,12 @@ export default function AppCombobox({
                                     );
                                 })}
                             </CommandGroup>
+                        )}
+
+                        {isAsync && loading && items.length > 0 && (
+                            <div className="flex items-center justify-center py-2">
+                                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                            </div>
                         )}
                     </CommandList>
                 </Command>
