@@ -5,7 +5,10 @@ import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { startReservationExpiryJob } from "./features/reservationExpiry/reservationExpiry.job.js";
 import { pinoHttp } from "pino-http";
+import { startReservationReminderJob } from "./features/reservationExpiry/reservationReminder.job.js";
+import { startLoanExpiryJob } from "./features/loanExpiry/loanExpiry.job.js";
 import { logger } from "./config/logger.config.js";
+import { redis } from "./redis/connection.js";
 import authorRoutes from "./routes/author.routes.js";
 import itemRoutes from './routes/item.routes.js';
 import reservationRoutes from "./routes/reservation.routes.js";
@@ -30,8 +33,7 @@ import publicationCountriesRoutes from "./routes/publication.countries.routes.js
 import noticeTypesRoutes from "./routes/notice.types.routes.js";
 import operatorDashboardRoutes from "./features/operatorDashboard/operator.dashboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
-import {startReservationReminderJob} from "./features/reservationExpiry/reservationReminder.job.js";
-import {startLoanExpiryJob} from "./features/loanExpiry/loanExpiry.job.js";
+
 
 
 const app = express()
@@ -110,18 +112,32 @@ app.use(errorMiddleware);
 
 
 
-// Lancio il job per verificare la scadenza delle prenotazioni
-startReservationExpiryJob();
+// Avvio backend
+const PORT = process.env.PORT || 5001;
+const startServer = async () => {
+    try {
+        // Connessione a Redis
+        await redis.connect();
+        logger.info({ ready: redis.isReady }, "Redis connected successfully");
 
-// Lancio il job per processare e inviare le notifiche automatiche sulle prenotazioni in scadenza
-startReservationReminderJob();
+        // Lancio il job per verificare la scadenza delle prenotazioni
+        startReservationExpiryJob();
 
-// Lancio il job per processare i prestiti scaduti o in scadenza
-startLoanExpiryJob();
+        // Lancio il job per processare e inviare le notifiche automatiche sulle prenotazioni in scadenza
+        startReservationReminderJob();
 
-// Avvio del server
-const PORT = process.env.PORT || 5001
-app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
-})
+        // Lancio il job per processare i prestiti scaduti o in scadenza
+        startLoanExpiryJob();
+
+        // Avvio del server
+        app.listen(PORT, () => {
+            logger.info({ port: PORT }, "Server is running");
+        });
+    } catch (error) {
+        logger.fatal({ err: error }, "Failed to start server");
+        process.exit(1);
+    }
+};
+
+startServer();
 
