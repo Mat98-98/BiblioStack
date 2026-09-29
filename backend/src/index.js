@@ -38,17 +38,24 @@ import notificationRoutes from "./routes/notification.routes.js";
 
 const app = express()
 
+// Configura il numero di reverse proxy fidati per permettere a Express di determinare correttamente l'IP reale del client tramite gli header X-Forwarded-For. Deve corrispomdere alla reale topologia di rete
+const trustProxyHops = process.env.NODE_ENV === "production"
+    ? Number(process.env.TRUST_PROXY_HOPS ?? 0)
+    : 1;
+app.set("trust proxy", trustProxyHops);
+
+// Origini autorizzate a effettuare richieste cross-origin
 const allowedOrigins = process.env.NODE_ENV === 'production'
     ? ['https://urlreale'] // da cambiare in produzione
     : [process.env.FRONTEND_URL]; // frontend locale
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin) return callback(null, true); // richieste da Postman o server-to-server
-        if (allowedOrigins.includes(origin)) return callback(null, true);
+        if (!origin) return callback(null, true); // Consente richieste da Postman o server-to-server
+        if (allowedOrigins.includes(origin)) return callback(null, true); // Consente esclusivamente le origini presenti nella allowList
         return callback(null, false);
     },
-    credentials: true, // necessario per i cookie
+    credentials: true, // necessario per permettere al browser di inviare cookie nelle richieste cross-origin
 }));
 
 app.use(pinoHttp({ logger }));
