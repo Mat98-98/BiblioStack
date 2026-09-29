@@ -10,10 +10,18 @@ import { DEFAULT_USER_ROLE_ID, TOKEN_TYPES } from "../constants.js";
 import { logger } from "../config/logger.config.js";
 import { OAuth2Client } from "google-auth-library";
 import { isUniqueViolation } from "../utils/db.util.js";
+import {loginRateLimitService} from "./loginRateLimit.service.js";
 
 // Scadenze token auth
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 giorni
+
+// Costo factor di bcript
+const BCRIPT_COST = 12;
+
+// Hash di una password casuale, in odo da fare sempre bcrypt compare anche quando l'utente non esiste o non ha password (previene raccolta di informazioni per gli attaccanti)
+const DUMMY_HASH = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), BCRIPT_COST);
+
 
 // Lista di domini consentiti per il login google. Determina i domini che possono registrarsi attraverso google login automaticamente
 const ALLOWED_GOOGLE_DOMAINS = [
@@ -64,8 +72,18 @@ const isAllowedGoogleDomain = (email) => {
     const domain = email.split("@")[1]?.toLowerCase();
 
     return !!domain && ALLOWED_GOOGLE_DOMAINS.includes(domain);
-}
+};
 
+// Funzione helper per aggiornare l'hash della password
+const rehashPassword = async (user, password) => {
+    try {
+        const newHash = await bcrypt.hash(password, BCRIPT_COST);
+
+        await userRepository.updatePasswordHashIfUnchanged(user.id, user.passwordHash, newHash);
+    } catch (err) {
+        logger.error({ err, userId: user.id }, "Password rehash failed");
+    }
+};
 
 
 export const authService = {
@@ -77,7 +95,7 @@ export const authService = {
             throw new AppError("Email already exists", "EMAIL_ALREADY_EXISTS", 409);
         }
 
-        const passwordHash = await bcrypt.hash(password, 12);
+        const passwordHash = await bcrypt.hash(password, BCRIPT_COST);
 
         const [user] = await userRepository.create({
             email, firstName, lastName, phone, passwordHash,
@@ -88,18 +106,29 @@ export const authService = {
         return userRepository.findById(user.id);
     },
 
-    login: async ({ email, password }) => {
+    login: async ({ email, password, ip }) => {
+        // Controllo che non abbia raggiunto il limite di richieste login
+        if (await loginRateLimitService.isLoginBlocked(email, ip)) {
+            throw new AppError("Too many login attempts. Please try again later.", "TOO_MANY_REQUESTS", 429);
+        }
+
         const user = await userRepository.findByEmail(email);
 
-        if (!user) {
-            logger.warn({ email }, "Login attempt with non-existent email");
+        // Bcrypt sempre eseguito per evitare fuga di informazioni (stesso costo se passwordHash e utente esistono o meno)
+        const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+
+        // Se l'utente, l'hash della password a db o le password non corrispondono aggiungo una failure al loginRateLimiter
+        if (!user || !user.passwordHash || !passwordOk) {
+            const failures = await loginRateLimitService.recordFailure(email, ip);
+            logger.warn({ userId: user?.id, ip, failures }, "Failed login attempt");
             throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
         }
 
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) {
-            logger.warn({ userId: user.id }, "Login attempt with wrong password");
-            throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
+        await loginRateLimitService.resetPair(email, ip);
+
+        // Se l'hash salvato a db ha meno cicli del dovuto, aggiorno l'hash a db
+        if (bcrypt.getRounds(user.passwordHash) < BCRIPT_COST) {
+            void rehashPassword(user, password);
         }
 
         const { accessToken, refreshToken } = await issueTokens(user);

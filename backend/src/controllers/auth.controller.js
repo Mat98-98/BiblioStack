@@ -23,7 +23,10 @@ export const authController = {
     login: async (req, res, next) => {
         try {
             const validatedData = LoginSchema.parse(req.body);
-            const { accessToken, refreshToken, user } = await authService.login(validatedData);
+            const { accessToken, refreshToken, user } = await authService.login({
+                ...validatedData,
+                ip: req.ip
+            });
 
             setAuthCookies(res, accessToken, refreshToken);
 

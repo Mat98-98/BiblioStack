@@ -8,17 +8,20 @@ export const RegisterSchema = z.object({
     email:     z.email("Invalid email format").trim().toLowerCase(),
     password:  z.string()
         .min(8,  "Password must be at least 8 characters")
-        .max(64, "Password must be at most 64 characters")
+        .max(128, "Password must be at most 128 characters")
         .regex(/[a-z]/,                    "Password must contain a lowercase letter")
         .regex(/[A-Z]/,                    "Password must contain an uppercase letter")
         .regex(/[0-9]/,                    "Password must contain a number")
         .regex(/[^a-zA-Z0-9]/,  "Password must contain a special character")
 });
 
+
+// Normalizzazione e limitazione lunghezza email con seguente validazione del formato (pipe controlla dopo la normalizzazione)
+const loginEmailField = z.string().trim().toLowerCase().max(254).pipe(z.email("Invalid email format"));
 // Schema di validazione dei dati inviati dal form di login
 export const LoginSchema = z.object({
-    email:    z.email("Invalid email format").toLowerCase(),
-    password: z.string().min(1, "Password is required")
+    email:    loginEmailField,
+    password: z.string().min(1, "Password is required").max(128),
 });
 
 // Schema di validazione per il login Google
