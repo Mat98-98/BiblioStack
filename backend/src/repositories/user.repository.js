@@ -1,8 +1,8 @@
 import { db } from "../db/connection.js";
 import { users } from "../db/schema.js";
 import { normalizeSearch } from "../utils/search.util.js";
-import {eq, ilike, or, sql, desc, and} from "drizzle-orm";
-import {userSelect} from "./presets/user.preset.js";
+import { eq, ilike, or, sql, desc, and, isNull } from "drizzle-orm";
+import { userSelect } from "./presets/user.preset.js";
 
 // Helper per mappare gli utenti con sospensioni attive
 function mapUserWithSuspension(user) {
@@ -134,6 +134,16 @@ export const userRepository = {
     // Aggiorna l'hash solo se è ancora quello letto al login.
     updatePasswordHashIfUnchanged: async (id, oldHash, newHash, tx = db) => {
         const updated = await tx.update(users).set({ passwordHash: newHash }).where(and(eq(users.id, id), eq(users.passwordHash, oldHash))).returning({ id: users.id });
+
+        return updated.length === 1;
+    },
+
+    updatePasswordHashIfActive: async (id, passwordHash, tx = db) => {
+        const updated = await tx
+            .update(users)
+            .set({ passwordHash })
+            .where(and(eq(users.id, id), isNull(users.deletedAt)))
+            .returning({ id: users.id });
 
         return updated.length === 1;
     },

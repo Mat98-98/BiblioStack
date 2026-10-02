@@ -34,8 +34,6 @@ import noticeTypesRoutes from "./routes/notice.types.routes.js";
 import operatorDashboardRoutes from "./features/operatorDashboard/operator.dashboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 
-
-
 const app = express()
 
 // Configura il numero di reverse proxy fidati per permettere a Express di determinare correttamente l'IP reale del client tramite gli header X-Forwarded-For. Deve corrispomdere alla reale topologia di rete

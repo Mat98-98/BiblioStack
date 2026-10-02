@@ -30,11 +30,6 @@ export const reservationStatusEnum = pgEnum("reservation_status", [
     "expired"
 ]);
 
-export const tokenTypeEnum = pgEnum("token_type", [
-    'reset',
-    'setup'
-])
-
 // --- TABELLE DI SUPPORTO E ANAGRAFICHE ---
 
 export const authors = pgTable('authors', {
@@ -92,15 +87,6 @@ export const locations = pgTable('locations', {
 export const roles = pgTable('roles', {
     id: smallint('id').primaryKey().generatedAlwaysAsIdentity(),
     name: text('name').notNull().unique(),
-});
-
-export const passwordTokens = pgTable('password_tokens', {
-    token: text('token').primaryKey(),
-    userId: bigint('user_id', {mode: "number"}).notNull().references(() => users.id, {onDelete: "cascade"}),
-    type: tokenTypeEnum('type').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).defaultNow(),
-    expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
-    usedAt: timestamp('used_at', { withTimezone: true, mode: 'date' })
 });
 
 export const refreshTokens = pgTable("refresh_tokens", {

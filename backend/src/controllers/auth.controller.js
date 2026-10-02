@@ -89,7 +89,7 @@ export const authController = {
     forgotPassword: async (req, res, next) => {
         try {
             const { email } = ForgotPasswordSchema.parse(req.body)
-            await passwordService.forgotPassword({ email })
+            await passwordService.forgotPassword({ email, ip: req.ip })
 
             res.json({ message: "Password reset instructions sent"})
         } catch (err) {
@@ -101,17 +101,18 @@ export const authController = {
         try {
             const { token, password } = ResetPasswordSchema.parse(req.body)
             await passwordService.resetPassword({ token, password })
-            res.json({ message: "Account setup completed" })
+            res.json({ message: "Password reset completed" })
         } catch (err) {
             next(err)
         }
     },
 
+    // Per setup password. Un utente creato da un amministratore non ha alcuna password, verrà scelta direttamente dall'utente finale tramite il link inviato per email.
     setupAccount: async (req, res, next) => {
         try {
             const { token, password } = ResetPasswordSchema.parse(req.body)
             await passwordService.setupAccount({ token, password })
-            res.json({ message: "Password reset successful" })
+            res.json({ message: "Password setup successful" })
         } catch (err) {
             next(err)
         }

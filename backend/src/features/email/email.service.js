@@ -9,7 +9,7 @@ if (isProduction && !resendApiKey) {
     logger.error("RESEND_API_KEY is missing in production environment")
 }
 
-const resend = isProduction && resendApiKey
+const resend = resendApiKey//isProduction && resendApiKey
     ? new Resend(resendApiKey)
     : null
 

@@ -1,7 +1,6 @@
 import { userRepository } from "../repositories/user.repository.js";
 import { roleRepository } from "../repositories/role.repository.js";
 import { reservationService } from "./reservation.service.js";
-import { passwordTokenRepository } from "../repositories/passwordToken.repository.js";
 import { suspensionRepository } from "../repositories/suspension.repository.js";
 import { AppError } from "../utils/appError.js";
 import { DEFAULT_USER_ROLE_ID } from "../constants.js";
@@ -11,6 +10,8 @@ import { passwordService } from "./password.service.js";
 import { notificationRepository } from "../repositories/notification.repository.js";
 import { loanRepository } from "../repositories/loan.repository.js";
 import { reservationRepository } from "../repositories/reservation.repository.js";
+import { invalidateUserPasswordTokens } from "../utils/passwordToken.util.js";
+import { logger } from "../config/logger.config.js";
 
 
 
@@ -34,7 +35,16 @@ const findRoleOrThrow = async (name) => {
     const role = await roleRepository.findByName(name)
     if (!role) throw new AppError("Role not found", "NOT_FOUND", 404)
     return role
-}
+};
+
+// Funzione per invalidare i token di setup/reset password in Redis
+const invalidatePasswordTokensSafely = async (userId) => {
+    try {
+        await invalidateUserPasswordTokens(userId);
+    } catch (err) {
+        logger.error({ err, userId }, "Failed to invalidate password tokens");
+    }
+};
 
 export const userService = {
 
@@ -137,7 +147,7 @@ export const userService = {
     // Funzione che permette di anonimizzare l'account dell'utente al posto di cancellarlo definitivamente dal sistema, in modo da tenere lo storico e rispettare il diritto all'oblio
     softDelete: async (id) => {
         // Controllo che l'utente sia esistente nel database
-        await findUniqueOrThrow(id);
+        const user = await findUniqueOrThrow(id);
 
         let sendEmails = [];
         await db.transaction(async (tx) => {
@@ -151,9 +161,6 @@ export const userService = {
             const result = await reservationService.cancelAllActiveByUserId(id, tx);
             sendEmails = result.sendEmails;
 
-            // Se l'utente ha token attivi per il setup password o per il reset password li invalido
-            await passwordTokenRepository.invalidateAllByUserId(id, tx);
-
             // Se l'utente ha notifiche le elimino
             await notificationRepository.deleteAllByUserId(id, tx);
 
@@ -163,15 +170,22 @@ export const userService = {
             // Eseguo la anonimizzazione dell'account
             await userRepository.softDelete(id, tx);
         })
+        // Se l'utente ha token attivi per il setup password o per il reset password li invalido
+        await invalidatePasswordTokensSafely(user.id);
+
         await Promise.all(sendEmails.map(fn => fn()));
         return { message: "User anonymized successfully" };
     },
 
     // Eliminazione totale del profilo utente
     delete: async (id) => {
-        await findUniqueOrThrow(id);
+        const user = await findUniqueOrThrow(id);
 
         await userRepository.delete(Number(id));
+
+        // Elimino anche i token di setup e reset password
+        await invalidatePasswordTokensSafely(user.id);
+
         return { message: "User deleted successfully" };
     }
 };

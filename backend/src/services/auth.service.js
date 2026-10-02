@@ -1,27 +1,27 @@
 // @TODO Verificare una volta buildato il frontend il log con access token a 1m e refresh token a 2/3 m. Provare ad abbassare anche il maxAge dei cookie per test
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import { db } from "../db/connection.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import { AppError } from "../utils/appError.js";
-import { DEFAULT_USER_ROLE_ID, TOKEN_TYPES } from "../constants.js";
+import { DEFAULT_USER_ROLE_ID } from "../constants.js";
 import { logger } from "../config/logger.config.js";
 import { OAuth2Client } from "google-auth-library";
 import { isUniqueViolation } from "../utils/db.util.js";
-import {loginRateLimitService} from "./loginRateLimit.service.js";
+import { loginRateLimitService } from "./loginRateLimit.service.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+
 
 // Scadenze token auth
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 giorni
 
-// Costo factor di bcript
-const BCRIPT_COST = 12;
+// Costo factor di bcrypt
+const BCRYPT_COST = Number(process.env.BCRYPT_COST ?? 12);
 
 // Hash di una password casuale, in odo da fare sempre bcrypt compare anche quando l'utente non esiste o non ha password (previene raccolta di informazioni per gli attaccanti)
-const DUMMY_HASH = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), BCRIPT_COST);
-
+const DUMMY_HASH = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), BCRYPT_COST);
 
 // Lista di domini consentiti per il login google. Determina i domini che possono registrarsi attraverso google login automaticamente
 const ALLOWED_GOOGLE_DOMAINS = [
@@ -34,7 +34,6 @@ const generateRefreshToken = () => crypto.randomBytes(48).toString("hex");
 // Hashing del refresh token dato che verrà salvato a db per le refresh rotation
 const hashRefreshToken = (token) =>
     crypto.createHash("sha256").update(token).digest("hex");
-
 
 // Emette access token (JWT stateless) + refresh token (persistito come hash). Punto unico riusato da login, Google login e refresh.
 const issueTokens = async (user, tx = db) => {
@@ -77,7 +76,7 @@ const isAllowedGoogleDomain = (email) => {
 // Funzione helper per aggiornare l'hash della password
 const rehashPassword = async (user, password) => {
     try {
-        const newHash = await bcrypt.hash(password, BCRIPT_COST);
+        const newHash = await bcrypt.hash(password, BCRYPT_COST);
 
         await userRepository.updatePasswordHashIfUnchanged(user.id, user.passwordHash, newHash);
     } catch (err) {
@@ -95,7 +94,7 @@ export const authService = {
             throw new AppError("Email already exists", "EMAIL_ALREADY_EXISTS", 409);
         }
 
-        const passwordHash = await bcrypt.hash(password, BCRIPT_COST);
+        const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
 
         const [user] = await userRepository.create({
             email, firstName, lastName, phone, passwordHash,
@@ -127,7 +126,7 @@ export const authService = {
         await loginRateLimitService.resetPair(email, ip);
 
         // Se l'hash salvato a db ha meno cicli del dovuto, aggiorno l'hash a db
-        if (bcrypt.getRounds(user.passwordHash) < BCRIPT_COST) {
+        if (bcrypt.getRounds(user.passwordHash) < BCRYPT_COST) {
             void rehashPassword(user, password);
         }
 
