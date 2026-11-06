@@ -14,7 +14,7 @@ import crypto from "crypto";
 
 
 // Scadenze token auth
-const ACCESS_TOKEN_EXPIRY = "15m";
+const ACCESS_TOKEN_EXPIRY = "15m"; //15 minuti
 const REFRESH_TOKEN_EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 giorni
 
 // Costo factor di bcrypt
@@ -24,9 +24,14 @@ const BCRYPT_COST = Number(process.env.BCRYPT_COST ?? 12);
 const DUMMY_HASH = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), BCRYPT_COST);
 
 // Lista di domini consentiti per il login google. Determina i domini che possono registrarsi attraverso google login automaticamente
-const ALLOWED_GOOGLE_DOMAINS = [
-    "buonarroti.tn.it"
-];
+const ALLOWED_GOOGLE_DOMAINS = process.env.ALLOWED_GOOGLE_DOMAINS
+    ?.split(",")
+    .map(d => d.trim().toLowerCase())
+    .filter(Boolean);
+
+if (!ALLOWED_GOOGLE_DOMAINS?.length) {
+    throw new Error("ALLOWED_GOOGLE_DOMAINS must be configured");
+}
 
 // Generazione opaque refresh token
 const generateRefreshToken = () => crypto.randomBytes(48).toString("hex");
