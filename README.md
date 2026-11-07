@@ -1,105 +1,250 @@
-# BiblioStack — Library Management System
+# BiblioStack
 
-## Introduzione
+## Descrizione del progetto
 
-BiblioStack è una web application full-stack per la gestione di una biblioteca digitale.
+BiblioStack è un sistema web full-stack per la gestione di una biblioteca.
+L’applicazione offre un catalogo pubblico delle opere e un’area autenticata
+per utenti, bibliotecari e amministratori.
 
-Il sistema permette la gestione di utenti, ruoli e contenuti bibliografici attraverso una dashboard amministrativa.
+Il progetto permette di:
 
-Include funzionalità di ricerca e arricchimento dei dati delle opere tramite integrazione con API esterne.
+- Consultare e cercare le opere presenti nel catalogo;
+- Visualizzare i dettagli di un’opera e prenotare le copie disponibili;
+- Gestire prestiti, restituzioni, prenotazioni e storico delle attività;
+- Gestire utenti, ruoli, sospensioni, opere e copie dalla dashboard
+  amministrativa;
+- Usare tessere e codici QR per l’identificazione degli utenti;
+- Inviare notifiche e promemoria automatici per prestiti e prenotazioni;
+- Arricchire i dati bibliografici tramite Google Books API e Open Library API.
 
-L’obiettivo è fornire una piattaforma scalabile per la gestione di una biblioteca digitale con validazione rigorosa dei dati e architettura backend modulare.
+Il repository è organizzato in due applicazioni:
 
----
+- `frontend/`: interfaccia React eseguita con Vite;
+- `backend/`: API REST basate su Node.js ed Express;
+- `docker/`: servizi PostgreSQL e Redis utilizzati dall’applicazione.
 
-## Stack tecnologico
+### Stack tecnologico
 
-### Frontend
+- **Frontend:** React, React Router, Vite, Tailwind CSS, shadcn/ui,
+  React Hook Form, Zod, TanStack Table e Axios.
+- **Backend:** Node.js, Express, Drizzle ORM, Zod, JWT, Argon2 e Pino.
+- **Database e servizi:** PostgreSQL e Redis, avviati tramite Docker Compose.
 
-- React (Vite) & React Router: Per la costruzione dell'interfaccia utente in modalità SPA (Single Page Application) con un ambiente di sviluppo estremamente rapido e la gestione del routing dinamico.
+## Istruzioni di installazione
 
-- Tailwind CSS & shadcn/ui: Per un design system responsivo, pulito e accessibile (utilizzando componenti UI headless come Dialog, Table e Dropdown).
+### Prerequisiti
 
-- React Hook Form & Zod: Per la gestione performante dello stato dei form e la validazione rigorosa dei dati lato client.
+Installare i seguenti strumenti:
 
-- TanStack Table: Libreria avanzata per la gestione flessibile delle tabelle dati amministrative.
+- Node.js e npm;
+- Docker Desktop con Docker Compose;
+- Git.
 
-- Axios: Client HTTP per l'interazione semplificata e protetta con le API.
+### 1. Clonare il repository
 
----
+```bash
+git clone https://github.com/Mat98-98/BiblioStack.git
+cd BiblioStack
+```
 
-### Backend
+### 2. Configurare PostgreSQL e Redis
 
-- Node.js & Express: Infrastruttura server per l'esposizione sicura delle API RESTful.
+Creare il file di configurazione Docker:
 
-- Drizzle ORM: ORM moderno, leggero e type-safe, utilizzato per interagire con il database mantenendo alte prestazioni e una sintassi vicina a SQL puro.
+```bash
+cp docker/.env.example docker/.env
+```
 
-- Zod (Schema & DTO): Utilizzato per validare in modo stretto i payload in ingresso e filtrare i dati in uscita (Data Transfer Object), prevenendo esposizioni involontarie di dati sensibili.
+Modificare `docker/.env` impostando almeno valori validi per:
 
-- JWT Authentication: Autenticazione stateless sicura per la gestione degli accessi e dei permessi.
+```dotenv
+POSTGRES_USER=bibliostack
+POSTGRES_PASSWORD=una-password-sicura
+POSTGRES_DB=bibliostack
+POSTGRES_VERSION=18.3
+POSTGRES_PORT=5432
+POSTGRES_EXTERNAL_PORT=5433
+REDIS_VERSION=8.10.2-alpine
+REDIS_PORT=6379
+REDIS_EXTERNAL_PORT=6379
+REDIS_PASSWORD=una-password-sicura
+```
 
-- Bcrypt: Per l'hashing sicuro delle credenziali degli utenti prima del salvataggio.
+Su macOS è consigliabile usare una porta diversa da 5432 come porta PostgreSQL per evitare
+conflitti con altri servizi locali.
 
----
+Avviare i container dalla cartella `docker/`:
 
-### Database
+```bash
+cd docker
+docker compose up -d
+cd ..
+```
 
-- PostgreSQL: RDBMS relazionale potente e affidabile, utilizzato per la persistenza sicura e strutturata dei dati (utenti, anagrafiche, catalogo opere, ruoli e storici).
+Gli script presenti in `docker/postgres/init/` inizializzano automaticamente
+lo schema, i trigger, le viste e gli indici del database al primo avvio del
+volume PostgreSQL.
 
----
+### 3. Configurare il backend
 
-### Architettura
+Creare il file `backend/.env`:
 
-Il backend è strutturato secondo un’architettura a strati con separazione delle responsabilità:
+```bash
+cp backend/.env.example backend/.env
+```
 
-- Gestione delle richieste HTTP
+Impostare almeno le variabili necessarie all’avvio locale:
 
-- Logica di business separata
+```dotenv
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+DATABASE_URL=postgresql://bibliostack:una-password-sicura@localhost:5433/bibliostack
+PORT=5001
 
-- Accesso ai dati tramite repository
+JWT_SECRET=una-chiave-jwt-locale
+JWT_REFRESH=una-seconda-chiave-jwt-locale
+CARD_SECRET=una-chiave-per-le-tessere
 
-- Validazione tramite schema Zod
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=una-password-sicura
+```
 
-- Trasformazione delle risposte tramite DTO
+Le variabili per Google OAuth, Google Books, Resend e i domini autorizzati
+sono necessarie solo per usare le rispettive integrazioni. Per un ambiente
+locale, usare valori fittizi soltanto per i servizi che non si intendono
+utilizzare.
 
----
+Installare le dipendenze ed eseguire, se necessario, il seed:
 
-## Integrazioni esterne
+```bash
+cd backend
+npm install
+node src/db/seed.js
+```
 
-Il sistema si integra con:
+Il seed inserisce dati iniziali di esempio per ruoli, lingue, paesi,
+editori, generi e altri dati di catalogo.
 
-- Google Books API
+### 4. Configurare il frontend
 
-- Open Library API
+Creare il file `frontend/.env`:
 
-per recuperare e arricchire automaticamente le informazioni delle opere (titolo, autore, descrizione, copertina...).
+```bash
+cp frontend/.env.example frontend/.env
+```
 
----
+Impostare l’URL delle API:
 
-## Sicurezza
+```dotenv
+VITE_API_URL=http://localhost:5001/api
+VITE_GOOGLE_CLIENT_ID=il-tuo-client-id-google
+```
 
-- Autenticazione tramite JWT
+Installare le dipendenze:
 
-- Middleware di autorizzazione basato su ruoli
+```bash
+cd frontend
+npm install
+```
 
-- Validazione server-side di tutti i payload
+## Utilizzo
 
-- Protezione delle rotte sensibili (admin only)
+### Avviare l’applicazione in sviluppo
 
----
+Avviare il backend dalla cartella `backend/`:
 
-## Obiettivo del progetto
+```bash
+npm run dev
+```
 
-Il progetto nasce come esercizio di software engineering full-stack, con focus su:
+Il server sarà disponibile su `http://localhost:5001`. L’endpoint
+`http://localhost:5001/` può essere usato per verificare che il server sia
+attivo.
 
-- Architettura scalabile
+In un secondo terminale, avviare il frontend dalla cartella `frontend/`:
 
-- Separazione delle responsabilità
+```bash
+npm run dev
+```
 
-- Consistenza tra frontend e backend
+L’interfaccia sarà disponibile, normalmente, su
+`http://localhost:5173`.
 
-- Integrazione di servizi esterni
+### Comandi disponibili
 
-- Validazione forte dei dati
+#### Backend
 
----
+| Comando | Descrizione |
+| --- | --- |
+| `npm run dev` | Avvia il backend con Nodemon. |
+| `npm start` | Avvia il backend senza Nodemon. |
+| `npm run drizzle:generate` | Genera le migrazioni Drizzle. |
+| `npm run drizzle:push` | Sincronizza lo schema tramite Drizzle. |
+
+#### Frontend
+
+| Comando | Descrizione |
+| --- | --- |
+| `npm run dev` | Avvia il server di sviluppo Vite. |
+| `npm run build` | Crea la build di produzione. |
+| `npm run preview` | Serve localmente la build di produzione. |
+| `npm run lint` | Esegue ESLint. |
+
+### Principali sezioni dell’applicazione
+
+- `/`: home page pubblica;
+- `/catalog`: catalogo e ricerca delle opere;
+- `/works/:id`: dettaglio di un’opera;
+- `/profile`: profilo dell’utente autenticato;
+- `/card`: tessera personale e codice QR;
+- `/loans`: storico dei prestiti;
+- `/reservations`: storico delle prenotazioni;
+- `/admin`: dashboard amministrativa;
+- `/admin/users`: gestione degli utenti;
+- `/admin/works`: gestione delle opere;
+- `/admin/loans`: gestione dei prestiti.
+
+Le rotte amministrative richiedono autenticazione e autorizzazioni adeguate.
+
+## Esempi / Demo
+
+### Consultare il catalogo
+
+1. Aprire `http://localhost:5173/catalog`.
+2. Cercare un’opera usando la barra di ricerca.
+3. Aprire una scheda per visualizzare dettagli e disponibilità.
+4. Effettuare l’accesso per creare una prenotazione.
+
+<!-- INSERISCI QUI LO SCREENSHOT DEL CATALOGO -->
+![Catalog](docs/images/catalog.png)
+
+### Gestire opere e copie
+
+1. Accedere con un account autorizzato.
+2. Aprire `http://localhost:5173/admin/works`.
+3. Creare o modificare un’opera.
+4. Aggiungere e gestire le copie associate.
+
+<!-- INSERISCI QUI LO SCREENSHOT DELLA DASHBOARD AMMINISTRATIVA -->
+<!-- Esempio: ![Dashboard amministrativa](docs/images/dashboard-admin.png) -->
+
+### Gestire prestiti e prenotazioni
+
+1. Aprire la sezione prestiti dalla dashboard.
+2. Registrare un nuovo prestito o una restituzione.
+3. Consultare le prenotazioni pronte per il ritiro.
+4. Verificare notifiche e scadenze generate dal sistema.
+
+<!-- INSERISCI QUI LO SCREENSHOT DELLA GESTIONE DI PRESTITI E PRENOTAZIONI -->
+<!-- Esempio: ![Gestione prestiti](docs/images/prestiti.png) -->
+
+### Tessera e codice QR
+
+1. Accedere alla pagina `/card`.
+2. Visualizzare la tessera personale.
+3. Usare il codice QR nelle operazioni che richiedono la verifica dell’utente.
+![QR Code](docs/images/qr_code.png)
+
+> Gli screenshot non sono inclusi nel repository: sostituire i commenti
+> `INSERISCI QUI` con i percorsi delle immagini dopo averle aggiunte.
