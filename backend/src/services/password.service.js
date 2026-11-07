@@ -3,6 +3,7 @@ import { refreshTokenRepository } from "../repositories/refreshToken.repository.
 import { AppError } from "../utils/appError.js";
 import { emailService } from "../features/email/email.service.js";
 import { logger } from "../config/logger.config.js";
+import { hashPassword } from "../utils/password.util.js";
 import {
     issuePasswordResetToken,
     issuePasswordSetupToken,
@@ -12,9 +13,6 @@ import {
     acquirePasswordResetCooldown,
     isPasswordResetIpLimited
 } from "../utils/passwordToken.util.js";
-import bcrypt from "bcrypt";
-
-const BCRYPT_COST = Number(process.env.BCRYPT_COST ?? 12);
 
 export const passwordService = {
     // La email arriva già normalizzata (trim + lowercase) da ForgotPasswordSchema
@@ -47,7 +45,7 @@ export const passwordService = {
 
     resetPassword: async ({ token, password }) => {
         const userId = await consumePasswordResetToken(token);
-        const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+        const passwordHash = await hashPassword(password);
 
         const updated = await userRepository.updatePasswordHashIfActive(userId, passwordHash);
         if (!updated) {
@@ -57,9 +55,8 @@ export const passwordService = {
         // Invalido eventuali altri token di reset/setup ancora attivi
         await invalidateUserPasswordTokens(userId);
 
-        // Revoco tutte le sessioni esistenti. Volutamente SENZA try/catch: se Redis fallisce l'errore
-        // deve emergere (500) e va loggato, perché qui non c'è altra rete di sicurezza e le vecchie
-        // sessioni resterebbero valide.
+        // Revoco tutte le sessioni esistenti.
+        // Volutamente SENZA try/catch: se Redis fallisce l'errore deve emergere (500)
         await refreshTokenRepository.revokeAllByUserId(userId);
 
         logger.info({ userId }, "Password reset completed");
@@ -77,7 +74,7 @@ export const passwordService = {
 
     setupAccount: async ({ token, password }) => {
         const userId = await consumePasswordSetupToken(token);
-        const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+        const passwordHash = await hashPassword(password);
 
         const updated = await userRepository.updatePasswordHashIfActive(userId, passwordHash);
         if (!updated) {

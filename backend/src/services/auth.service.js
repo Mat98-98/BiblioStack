@@ -7,20 +7,13 @@ import { logger } from "../config/logger.config.js";
 import { OAuth2Client } from "google-auth-library";
 import { isUniqueViolation } from "../utils/db.util.js";
 import { loginRateLimitService } from "./loginRateLimit.service.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-
+import { hashPassword, verifyPassword, needsRehash } from "../utils/password.util.js";
 
 // Scadenze token auth
 const ACCESS_TOKEN_EXPIRY = "15m"; //15 minuti
 const REFRESH_TOKEN_TTL_SECONDS = 14 * 24 * 60 * 60; // 14 giorni
-
-// Costo factor di bcrypt
-const BCRYPT_COST = Number(process.env.BCRYPT_COST ?? 12);
-
-// Hash di una password casuale, in odo da fare sempre bcrypt compare anche quando l'utente non esiste o non ha password (previene raccolta di informazioni per gli attaccanti)
-const DUMMY_HASH = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), BCRYPT_COST);
 
 // Lista di domini consentiti per il login google. Determina i domini che possono registrarsi attraverso google login automaticamente
 const ALLOWED_GOOGLE_DOMAINS = process.env.ALLOWED_GOOGLE_DOMAINS
@@ -83,7 +76,7 @@ const isAllowedGoogleDomain = (email) => {
 // Funzione helper per aggiornare l'hash della password
 const rehashPassword = async (user, password) => {
     try {
-        const newHash = await bcrypt.hash(password, BCRYPT_COST);
+        const newHash = await hashPassword(password);
 
         await userRepository.updatePasswordHashIfUnchanged(user.id, user.passwordHash, newHash);
     } catch (err) {
@@ -101,7 +94,7 @@ export const authService = {
             throw new AppError("Email already exists", "EMAIL_ALREADY_EXISTS", 409);
         }
 
-        const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+        const passwordHash = await hashPassword(password);
 
         const [user] = await userRepository.create({
             email, firstName, lastName, phone, passwordHash,
@@ -120,8 +113,8 @@ export const authService = {
 
         const user = await userRepository.findByEmail(email);
 
-        // Bcrypt sempre eseguito per evitare fuga di informazioni (stesso costo se passwordHash e utente esistono o meno)
-        const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+        // Eseguo anche una verifica fittizia quando manca l'hash, riducendo le differenze di tempo tra account esistenti e inesistenti.
+        const passwordOk = await verifyPassword(password, user?.passwordHash);
 
         // Se l'utente, l'hash della password a db o le password non corrispondono (o l'utente è anonimizzato) aggiungo una failure al loginRateLimiter
         if (!user || isDeletedUser(user) || !user.passwordHash || !passwordOk) {
@@ -132,8 +125,8 @@ export const authService = {
 
         await loginRateLimitService.resetPair(email, ip);
 
-        // Se l'hash salvato a db ha meno cicli del dovuto, aggiorno l'hash a db
-        if (bcrypt.getRounds(user.passwordHash) < BCRYPT_COST) {
+        // Se l'hash usa parametri Argon2 meno recenti, lo aggiorno al login riuscito.
+        if (needsRehash(user.passwordHash)) {
             void rehashPassword(user, password);
         }
 
