@@ -245,6 +245,3 @@ Le rotte amministrative richiedono autenticazione e autorizzazioni adeguate.
 2. Visualizzare la tessera personale.
 3. Usare il codice QR nelle operazioni che richiedono la verifica dell’utente.
 ![QR Code](docs/images/qr_code.png)
-
-> Gli screenshot non sono inclusi nel repository: sostituire i commenti
-> `INSERISCI QUI` con i percorsi delle immagini dopo averle aggiunte.
