@@ -2,7 +2,6 @@ import { userRepository } from "../repositories/user.repository.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import { AppError } from "../utils/appError.js";
 import { emailService } from "../features/email/email.service.js";
-import { db } from "../db/connection.js";
 import { logger } from "../config/logger.config.js";
 import {
     issuePasswordResetToken,
@@ -50,17 +49,19 @@ export const passwordService = {
         const userId = await consumePasswordResetToken(token);
         const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
 
-        // Transazione: cambio password e revoca di tutte le sessioni esistenti avvengono insieme
-        await db.transaction(async (tx) => {
-            const updated = await userRepository.updatePasswordHashIfActive(userId, passwordHash, tx);
-            if (!updated) {
-                throw new AppError("Invalid token", "INVALID_TOKEN", 400);
-            }
+        const updated = await userRepository.updatePasswordHashIfActive(userId, passwordHash);
+        if (!updated) {
+            throw new AppError("Invalid token", "INVALID_TOKEN", 400);
+        }
 
-            await refreshTokenRepository.revokeAllByUserId(userId, tx);
-        });
-
+        // Invalido eventuali altri token di reset/setup ancora attivi
         await invalidateUserPasswordTokens(userId);
+
+        // Revoco tutte le sessioni esistenti. Volutamente SENZA try/catch: se Redis fallisce l'errore
+        // deve emergere (500) e va loggato, perché qui non c'è altra rete di sicurezza e le vecchie
+        // sessioni resterebbero valide.
+        await refreshTokenRepository.revokeAllByUserId(userId);
+
         logger.info({ userId }, "Password reset completed");
     },
 

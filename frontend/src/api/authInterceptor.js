@@ -17,6 +17,15 @@ const processQueue = (error) => {
     failedQueue = [];
 };
 
+// Il refresh passa da un lock condiviso tra tutte le tab (Web Locks API): le tab fanno il refresh
+// una alla volta e la seconda parte con il cookie già aggiornato dalla prima. Senza questo, due tab
+// che rinnovano insieme userebbero lo stesso refresh token (monouso) e una delle due verrebbe disconnessa.
+// Se il browser non supporta i Web Locks si fa il refresh diretto.
+const requestRefresh = () =>
+    typeof navigator !== "undefined" && navigator.locks
+        ? navigator.locks.request("auth-refresh", () => api.post("/auth/refresh"))
+        : api.post("/auth/refresh");
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -31,23 +40,28 @@ api.interceptors.response.use(
         }
 
         if (isRefreshing) {
+            originalRequest._retry = true;
+
             return new Promise((resolve, reject) => {
                 failedQueue.push({ resolve, reject });
-            })
-                .then(() => api(originalRequest))
-                .catch((err) => Promise.reject(err));
+            }).then(() => api(originalRequest));
         }
 
         originalRequest._retry = true;
         isRefreshing = true;
 
         try {
-            await api.post("/auth/refresh");
+            await requestRefresh();
             processQueue(null);
             return api(originalRequest);
         } catch (refreshError) {
             processQueue(refreshError);
-            onAuthFailure?.();
+
+            // Logout forzato solo se il server ha rifiutato il token (401).
+            // Con Redis/DB giù (5xx) o rete assente la sessione non è invalidata.
+            if (refreshError.response?.status === 401) {
+                onAuthFailure?.();
+            }
             return Promise.reject(refreshError);
         } finally {
             isRefreshing = false;

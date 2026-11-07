@@ -1,5 +1,4 @@
 // @TODO Verificare una volta buildato il frontend il log con access token a 1m e refresh token a 2/3 m. Provare ad abbassare anche il maxAge dei cookie per test
-import { db } from "../db/connection.js";
 import { userRepository } from "../repositories/user.repository.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import { AppError } from "../utils/appError.js";
@@ -15,7 +14,7 @@ import crypto from "crypto";
 
 // Scadenze token auth
 const ACCESS_TOKEN_EXPIRY = "15m"; //15 minuti
-const REFRESH_TOKEN_EXPIRY_MS = 14 * 24 * 60 * 60 * 1000; // 14 giorni
+const REFRESH_TOKEN_TTL_SECONDS = 14 * 24 * 60 * 60; // 14 giorni
 
 // Costo factor di bcrypt
 const BCRYPT_COST = Number(process.env.BCRYPT_COST ?? 12);
@@ -36,12 +35,12 @@ if (!ALLOWED_GOOGLE_DOMAINS?.length) {
 // Generazione opaque refresh token
 const generateRefreshToken = () => crypto.randomBytes(48).toString("hex");
 
-// Hashing del refresh token dato che verrà salvato a db per le refresh rotation
+// Hashing del refresh token dato che verrà salvato (come hash) su Redis per la refresh rotation
 const hashRefreshToken = (token) =>
     crypto.createHash("sha256").update(token).digest("hex");
 
-// Emette access token (JWT stateless) + refresh token (persistito come hash). Punto unico riusato da login, Google login e refresh.
-const issueTokens = async (user, tx = db) => {
+// Emette access token (JWT stateless) + refresh token (persistito come hash su Redis). Punto unico riusato da login, Google login e refresh.
+const issueTokens = async (user) => {
     const payload = {
         userId: user.id,
         roleId: user.roleId,
@@ -52,15 +51,18 @@ const issueTokens = async (user, tx = db) => {
 
     const refreshToken = generateRefreshToken();
 
-    // Salvo il refresh token a database
+    // Salvo il refresh token su Redis
     await refreshTokenRepository.create({
         userId: user.id,
         tokenHash: hashRefreshToken(refreshToken),
-        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS)
-    }, tx);
+        ttlSeconds: REFRESH_TOKEN_TTL_SECONDS
+    });
 
     return { accessToken, refreshToken };
 };
+
+// Utente anonimizzato (soft-delete). ADATTA `deletedAt` al campo reale del tuo schema (anonymizedAt / isDeleted...)
+const isDeletedUser = (user) => Boolean(user?.deletedAt);
 
 // Rende la prima lettera di ogni parola maiuscola e il resto minuscole
 const capitalizeWords = (value) =>
@@ -121,8 +123,8 @@ export const authService = {
         // Bcrypt sempre eseguito per evitare fuga di informazioni (stesso costo se passwordHash e utente esistono o meno)
         const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
 
-        // Se l'utente, l'hash della password a db o le password non corrispondono aggiungo una failure al loginRateLimiter
-        if (!user || !user.passwordHash || !passwordOk) {
+        // Se l'utente, l'hash della password a db o le password non corrispondono (o l'utente è anonimizzato) aggiungo una failure al loginRateLimiter
+        if (!user || isDeletedUser(user) || !user.passwordHash || !passwordOk) {
             const failures = await loginRateLimitService.recordFailure(email, ip);
             logger.warn({ userId: user?.id, ip, failures }, "Failed login attempt");
             throw new AppError("Email or password incorrect", "INVALID_CREDENTIALS", 401);
@@ -167,36 +169,41 @@ export const authService = {
         if (!user) {
             const existingByEmail = await userRepository.findByEmail(email);
 
-                if (existingByEmail) {
-                    await userRepository.update(existingByEmail.id, { googleId: payload.sub });
+            if (existingByEmail) {
+                await userRepository.update(existingByEmail.id, { googleId: payload.sub });
 
-                    user = await userRepository.findById(existingByEmail.id);
+                user = await userRepository.findById(existingByEmail.id);
             } else {
-                    if (!isAllowedGoogleDomain(email)) {
-                        throw new AppError("Registration with Google is not allowed for this domain", "GOOGLE_DOMAIN_NOT_ALLOWED", 403);
-                    }
-                    try {
-                        const [newUser] = await userRepository.create({
-                            email: email,
-                            firstName: capitalizeWords(payload.given_name ?? null),
-                            lastName: capitalizeWords(payload.family_name ?? null),
-                            passwordHash: null,
-                            googleId: payload.sub,
-                            roleId: DEFAULT_USER_ROLE_ID
-                        });
-                        user = await userRepository.findById(newUser.id);
-                    } catch (error) {
-                        if (isUniqueViolation(error)) {
-                            user = await userRepository.findByGoogleId(payload.sub);
+                if (!isAllowedGoogleDomain(email)) {
+                    throw new AppError("Registration with Google is not allowed for this domain", "GOOGLE_DOMAIN_NOT_ALLOWED", 403);
+                }
+                try {
+                    const [newUser] = await userRepository.create({
+                        email: email,
+                        firstName: capitalizeWords(payload.given_name ?? null),
+                        lastName: capitalizeWords(payload.family_name ?? null),
+                        passwordHash: null,
+                        googleId: payload.sub,
+                        roleId: DEFAULT_USER_ROLE_ID
+                    });
+                    user = await userRepository.findById(newUser.id);
+                } catch (error) {
+                    if (isUniqueViolation(error)) {
+                        user = await userRepository.findByGoogleId(payload.sub);
 
-                            if (!user) {
-                                throw new AppError("Unable to authenticate with Google", "GOOGLE_AUTH_FAILED", 500);
-                            }
-                        } else {
-                            throw error;
+                        if (!user) {
+                            throw new AppError("Unable to authenticate with Google", "GOOGLE_AUTH_FAILED", 500);
                         }
+                    } else {
+                        throw error;
                     }
+                }
             }
+        }
+
+        // Un utente anonimizzato non può autenticarsi, qualunque strada abbia portato a trovarlo
+        if (isDeletedUser(user)) {
+            throw new AppError("Unable to authenticate with Google", "GOOGLE_AUTH_FAILED", 401);
         }
 
         logger.info({ userId: user.id }, "User logged via Google");
@@ -211,30 +218,32 @@ export const authService = {
             throw new AppError("Refresh token is missing", "NO_TOKEN", 401);
         }
 
-        const tokenHash = hashRefreshToken(refreshToken);
-        const record = await refreshTokenRepository.findValidByTokenHash(tokenHash);
-
-        if (!record || record.revokedAt || new Date() > record.expiresAt) {
+        // Consumo atomico: se due richieste arrivano insieme con lo stesso token, ne passa una sola
+        const userId = await refreshTokenRepository.consume(hashRefreshToken(refreshToken));
+        if (!userId) {
             throw new AppError("Expired or invalid refresh token", "INVALID_TOKEN", 401);
         }
 
-        const user = await userRepository.findById(record.userId);
-        if (!user) {
-            throw new AppError("User not found", "NOT_FOUND", 404);
+        const user = await userRepository.findById(userId);
+
+        // Utente inesistente o anonimizzato: nessuna sessione deve restare viva.
+        // Questo controllo garantisce sicurezza anche se la revoca su Redis dovesse fallire altrove.
+        if (!user || isDeletedUser(user)) {
+            try {
+                await refreshTokenRepository.revokeAllByUserId(userId);
+            } catch (err) {
+                logger.error({ err, userId }, "Failed to revoke sessions of deleted user");
+            }
+            throw new AppError("Expired or invalid refresh token", "INVALID_TOKEN", 401);
         }
 
-        return await db.transaction(async (tx) => {
-            const { accessToken, refreshToken: newRefreshToken } = await issueTokens(user, tx);
-            await refreshTokenRepository.revoke(record.id, hashRefreshToken(newRefreshToken), tx);
-            return { accessToken, refreshToken: newRefreshToken, user };
-        });
+        const { accessToken, refreshToken: newRefreshToken } = await issueTokens(user);
+        return { accessToken, refreshToken: newRefreshToken, user };
     },
 
-    // Revoca il refresh token lato server e i cookie lato client
+    // Revoca il refresh token lato server (i cookie li pulisce il controller)
     logout: async (refreshToken) => {
         if (!refreshToken) return;
-        const tokenHash = hashRefreshToken(refreshToken);
-        const record = await refreshTokenRepository.findValidByTokenHash(tokenHash);
-        if (record) await refreshTokenRepository.revoke(record.id);
+        await refreshTokenRepository.revoke(hashRefreshToken(refreshToken));
     }
 };

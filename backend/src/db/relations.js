@@ -50,17 +50,6 @@ export const relations = defineRelations(schema, (r) => ({
     },
 
     /*
-        ======== Relazioni della tabella Refresh_tokens (refresh tokens) ========
-    */
-
-    refreshTokens: {
-        user: r.one.users({
-            from: r.refreshTokens.userId,
-            to: r.users.id
-        })
-    },
-
-    /*
         ======== Relazioni della tabella Users (utenti) ========
     */
 

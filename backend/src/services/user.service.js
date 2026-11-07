@@ -46,6 +46,17 @@ const invalidatePasswordTokensSafely = async (userId) => {
     }
 };
 
+// Revoca i refresh token su Redis dopo che l'utente è già stato anonimizzato/eliminato a db.
+// Qui un errore non fa fallire la richiesta (il db è già a posto): la rete di sicurezza è il controllo
+// in authService.refresh, che rifiuta utenti inesistenti o anonimizzati.
+const revokeSessionsSafely = async (userId) => {
+    try {
+        await refreshTokenRepository.revokeAllByUserId(userId);
+    } catch (err) {
+        logger.error({ err, userId }, "Failed to revoke refresh tokens");
+    }
+};
+
 export const userService = {
 
     getAll: async ({ page, limit }) => {
@@ -142,7 +153,7 @@ export const userService = {
         await findUniqueOrThrow(id);
 
         return await userRepository.update(id, data);
-        },
+    },
 
     // Funzione che permette di anonimizzare l'account dell'utente al posto di cancellarlo definitivamente dal sistema, in modo da tenere lo storico e rispettare il diritto all'oblio
     softDelete: async (id) => {
@@ -164,13 +175,12 @@ export const userService = {
             // Se l'utente ha notifiche le elimino
             await notificationRepository.deleteAllByUserId(id, tx);
 
-            // Se l'utente ha refresh token attivi li revoco
-            await refreshTokenRepository.revokeAllByUserId(id, tx);
-
             // Eseguo la anonimizzazione dell'account
             await userRepository.softDelete(id, tx);
         })
-        // Se l'utente ha token attivi per il setup password o per il reset password li invalido
+
+        // Dopo il commit: revoco i refresh token (Redis) e invalido i token di setup/reset password
+        await revokeSessionsSafely(user.id);
         await invalidatePasswordTokensSafely(user.id);
 
         await Promise.all(sendEmails.map(fn => fn()));
@@ -183,7 +193,8 @@ export const userService = {
 
         await userRepository.delete(Number(id));
 
-        // Elimino anche i token di setup e reset password
+        // Elimino anche i refresh token e i token di setup e reset password
+        await revokeSessionsSafely(user.id);
         await invalidatePasswordTokensSafely(user.id);
 
         return { message: "User deleted successfully" };
