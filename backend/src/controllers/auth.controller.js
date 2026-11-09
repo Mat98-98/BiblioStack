@@ -9,9 +9,13 @@ import { passwordService } from "../services/password.service.js";
 
 export const authController = {
 
-    // La funzione register è la registrazione dell'utente tramite pagina di registrazione, per il momento bloccata
+    // Registrazione pubblica: disattivata di default (gli account vengono creati dall'admin o via Google con domini consentiti).
+    // Si abilita solo impostando esplicitamente ALLOW_PUBLIC_REGISTRATION=true
     register: async (req, res, next) => {
         try {
+            if (process.env.ALLOW_PUBLIC_REGISTRATION !== "true") {
+                throw new AppError("Public registration is disabled", "REGISTRATION_DISABLED", 403);
+            }
             const validatedData = RegisterSchema.parse(req.body);
             const user = await authService.register(validatedData);
             res.status(201).json(UserSafeDTO.parse(user));
