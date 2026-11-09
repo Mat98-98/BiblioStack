@@ -18,8 +18,13 @@ const FROM = "BiblioStack <onboarding@resend.dev>"
 export const BASE_URL =
     process.env.FRONTEND_URL ?? "http://localhost:5173"
 
-const send = async ({ to, subject, html, type }) => {
+const send = async ({ to, subject, html, type, link }) => {
     if (!resend) {
+        // In sviluppo (es. stack Docker locale) mostro il link nei log, così reset password e attivazione account restano testabili senza Resend
+        if (!isProduction && link) {
+            logger.info({ type, to, link }, "Email skipped (Resend not configured): use this link")
+            return
+        }
         logger.debug(
             { type },
             "Email skipped: Resend is not configured"
@@ -58,7 +63,8 @@ export const emailService = {
             to,
             subject,
             html,
-            type: "password_reset"
+            type: "password_reset",
+            link
         })
     },
 
@@ -75,7 +81,8 @@ export const emailService = {
             to,
             subject,
             html,
-            type: "account_setup"
+            type: "account_setup",
+            link
         })
     },
 
