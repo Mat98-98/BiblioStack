@@ -4,7 +4,6 @@ import { z } from 'zod';
 export const CreateLoanSchema = z.object({
     userId: z.coerce.number().int().positive(),
     itemId: z.string(),
-    handledBy: z.coerce.number().int().positive(),
 
     loanDate: z.coerce.date().default(() => new Date()),
     dueDate: z.coerce.date(),

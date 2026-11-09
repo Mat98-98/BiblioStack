@@ -8,10 +8,10 @@ const router = express.Router();
 
 
 // GET /notices?page=1&limit=20
-router.get('/', paginationMiddleware, noticeController.getAll);
+router.get('/', paginationMiddleware, verifyUser, permit("librarian", "admin"), noticeController.getAll);
 
 // GET /notices/:id
-router.get('/:id', noticeController.getById);
+router.get('/:id', verifyUser, permit("librarian", "admin"), noticeController.getById);
 
 
 // POST /notices

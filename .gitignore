@@ -1,5 +1,13 @@
+# Dipendenze e build
 node_modules
 .vite
 dist
+
+# Variabili d'ambiente (gli esempi restano versionati)
 .env
+.env.dev
+
+# IDE / OS
+.idea/
+.vscode/
 .DS_Store
