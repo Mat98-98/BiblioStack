@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import {AuthorDTO, ItemMiniDTO, UserMiniDTO} from "./shared.dto.js";
+import { AuthorDTO, ItemMiniDTO, UserMiniDTO } from "./shared.dto.js";
 import { WorkExternalDTO } from "../features/worksExternal/worksExternal.mapper.js";
 import { LocationBaseDTO } from "./location.dto.js";
+import { ItemStatusSchema } from "../schemas/item.schema.js";
 
 /* ---------------- COMMON ---------------- */
 
@@ -15,6 +16,7 @@ const ItemStaffSchema = z.object({
     price: z.coerce.number().nullable(),
     acquisitionDate: z.date().nullable(),
     location: LocationBaseDTO.nullable(),
+    status: ItemStatusSchema,
     available: z.boolean()
 });
 

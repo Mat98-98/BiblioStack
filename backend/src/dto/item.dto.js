@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import {WorkMiniDTO} from "./shared.dto.js";
+import { WorkMiniDTO } from "./shared.dto.js";
+import { ItemStatusSchema } from "../schemas/item.schema.js";
 
 // DTO di supporto
 const SchoolDTO = z.object({
@@ -17,6 +18,7 @@ const LocationDTO = z.object({
 const ItemCore = z.object ({
     id: z.string(),
     acquisitionDate: z.date().nullable(),
+    status: ItemStatusSchema,
     price: z.coerce.number().nullable().optional()
 });
 

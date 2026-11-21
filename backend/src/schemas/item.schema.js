@@ -7,13 +7,21 @@ export const CreateItemSchema = z.object({
     locationId:      z.number().int().positive().optional().nullable(),
     currencyCode:    z.string().length(3).optional().nullable(),
     acquisitionDate: z.coerce.date().optional().nullable(),
-    price:           z.coerce.number().positive().optional().nullable(),
+    price:           z.coerce.number().positive().optional().nullable()
 });
 
-// Schema di validazione dei dati per la modifica di una lingua
+// Schema di supporto per la validazione dello stato di una copia
+export const ItemStatusSchema = z.enum([
+    "active",
+    "damaged",
+    "lost"
+]);
+
+// Schema di validazione dei dati per la modifica della posizione, valuta, data di acquisizione, prezzo e stato di una copia
 export const UpdateItemSchema = z.object({
     locationId:      z.number().int().positive().optional().nullable(),
     currencyCode:    z.string().length(3).optional().nullable(),
     acquisitionDate: z.coerce.date().optional().nullable(),
     price:           z.coerce.number().positive().optional().nullable(),
+    status: ItemStatusSchema.optional()
 });
