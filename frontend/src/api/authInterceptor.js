@@ -30,9 +30,13 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const status = error.response?.status;
+        const code = error.response?.data?.code;
+
+        const isAuthError = status === 401 && (code === "NO_TOKEN" || code === "INVALID_TOKEN");
 
         if (
-            error.response?.status !== 401 ||
+            !isAuthError ||
             originalRequest._retry ||
             originalRequest.url === "/auth/refresh"
         ) {
