@@ -36,6 +36,10 @@ export function handleApiError(error, navigate) {
             notify.error("Non hai i permessi per eseguire questa operazione");
             break;
 
+        case "ITEM_HAS_DIPENDENCIES":
+            notify.error("Non puoi eliminare l'opera perché è associata a uno o più prestiti");
+            break;
+
         default:
             notify.error(data.message || "Errore server");
     }
