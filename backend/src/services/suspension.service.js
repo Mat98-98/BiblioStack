@@ -25,8 +25,21 @@ export const suspensionService = {
         return await suspensionRepository.findAll({ page, limit })
     },
 
-    getById: async (id) => {
-        return await findUniqueOrThrow(id);
+    getById: async (id, requestingUser) => {
+        const suspension = await suspensionRepository.findById(id);
+
+        // Lo staff vede tutte le sospensioni, gli altri utenti solo le proprie.
+        // 403 anche se il record non esiste, per non rivelarne l'esistenza (come per prestiti e prenotazioni)
+        const isStaff = ["admin", "librarian"].includes(requestingUser.role);
+        if (isStaff) {
+            if (!suspension) throw new AppError("Suspension not found", "NOT_FOUND", 404);
+            return suspension;
+        }
+        const ownerId = suspension?.userId ?? suspension?.user?.id;
+        if (!suspension || ownerId !== requestingUser.id) {
+            throw new AppError("Forbidden", "FORBIDDEN", 403);
+        }
+        return suspension;
     },
 
     endActiveByUserId: async (userId) => {

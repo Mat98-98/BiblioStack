@@ -15,7 +15,7 @@ export const suspensionController = {
 
     getById: async (req, res, next) => {
         try {
-            const suspension = await suspensionService.getById(req.params.id);
+            const suspension = await suspensionService.getById(req.params.id, req.user);
             res.json(SuspensionDetailDTO.parse(suspension));
         } catch (error) {
             next(error);
@@ -34,8 +34,9 @@ export const suspensionController = {
     create: async (req, res, next) => {
         try {
             const validatedData = CreateSuspensionSchema.parse(req.body);
-            const newSuspension = await suspensionService.create(validatedData);
-            res.status(200).json(newSuspension);
+            // L'operatore viene preso dal token, mai dal body (non falsificabile dal client)
+            const newSuspension = await suspensionService.create({ ...validatedData, handledBy: req.user.id });
+            res.status(201).json(newSuspension);
         } catch (error) {
             next(error);
         }
@@ -44,7 +45,7 @@ export const suspensionController = {
     update: async (req, res, next) => {
         try {
             const validatedData = UpdateSuspensionSchema.parse(req.body);
-            const updatedSuspension = await suspensionService.update(validatedData);
+            const updatedSuspension = await suspensionService.update(req.params.id, validatedData);
             res.json(updatedSuspension);
         } catch (error) {
             next(error);

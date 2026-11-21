@@ -3,7 +3,12 @@
 */
 
 CREATE SCHEMA IF NOT EXISTS school_library; -- Schema dedicato per isolare le tabelle della biblioteca
-ALTER DATABASE buonarroti SET search_path TO school_library, public; -- Configura il percorso di ricerca: dà priorità allo schema biblioteca, poi a public
+-- Configura il percorso di ricerca sul database corrente (qualunque sia POSTGRES_DB): dà priorità allo schema biblioteca, poi a public
+DO $$
+BEGIN
+    EXECUTE format('ALTER DATABASE %I SET search_path TO school_library, public', current_database());
+END
+$$;
 SET search_path TO school_library, public; -- Applica il search_path alla sessione corrente per l'esecuzione dello script
 
 

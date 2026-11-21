@@ -47,7 +47,8 @@ export const loanController = {
         try {
             const validatedData = CreateLoanSchema.parse(req.body);
 
-            const newLoan = await loanService.checkOut(validatedData);
+            // L'operatore che registra il prestito viene preso dal token, mai dal body
+            const newLoan = await loanService.checkOut({ ...validatedData, handledBy: req.user.id });
 
             res.status(201).json(LoanBaseDTO.parse(newLoan));
         } catch (error) {

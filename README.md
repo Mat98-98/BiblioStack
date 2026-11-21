@@ -30,7 +30,29 @@ Il repository è organizzato in due applicazioni:
 - **Backend:** Node.js, Express, Drizzle ORM, Zod, JWT, Argon2 e Pino.
 - **Database e servizi:** PostgreSQL e Redis, avviati tramite Docker Compose.
 
-## Istruzioni di installazione
+## Avvio rapido con Docker (nessuna installazione oltre a Docker)
+
+L'intero stack (PostgreSQL, Redis, backend e frontend con hot reload) può
+girare in container. Sull'host serve solo Docker con il plugin `docker compose`.
+
+```bash
+./bibliostack.sh up      # costruisce le immagini e avvia tutto
+./bibliostack.sh seed    # carica i dati di esempio (solo al primo avvio)
+./bibliostack.sh smoke   # verifica rapida delle API
+```
+
+- Frontend: http://localhost:5173 · Backend: http://localhost:5001
+- Utenti di test (password `password123`): `admin@biblioteca.it`,
+  `mario.rossi@biblioteca.it` (bibliotecario), `sara.neri@studenti.it` (studente)
+- Senza `RESEND_API_KEY` le email non partono: in sviluppo i link di reset
+  password e attivazione account vengono stampati in `./bibliostack.sh logs backend`.
+- `./bibliostack.sh reset` cancella e ricrea il database; `./bibliostack.sh help`
+  elenca tutti i comandi (psql, redis-cli, lint, build, shell nei container...).
+- Valori di default e override: `docker/compose.dev.yml` e `docker/.env.dev.example`.
+
+Su Windows usare WSL2 oppure Git Bash per lanciare lo script.
+
+## Istruzioni di installazione (manuale)
 
 ### Prerequisiti
 

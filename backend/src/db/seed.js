@@ -8,6 +8,7 @@ config();
 import * as schema from "./schema.js";
 import { relations } from "./relations.js";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { hashPassword } from "../utils/password.util.js";
 
 const db = drizzle(process.env.DATABASE_URL, { schema, relations });
 
@@ -130,8 +131,30 @@ async function seed() {
     // UTENTI
     // -----------------------------------------------------------------------
 
-    // passwordHash = bcrypt di "password123"
-    const HASH = "$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi";
+    // Password di test per tutti gli utenti seed: "password123" (hash Argon2 generato al momento)
+    const HASH = await hashPassword("password123");
+
+    // Amministratore e utente di sistema (quest'ultimo senza password: serve solo come handled_by per le operazioni automatiche)
+    const [adminUser] = await db
+        .insert(schema.users)
+        .values([
+            {
+                roleId: roleAdmin.id,
+                firstName: "Admin",
+                lastName: "Biblioteca",
+                email: "admin@biblioteca.it",
+                passwordHash: HASH,
+            },
+            {
+                roleId: roleSystem.id,
+                firstName: "Sistema",
+                lastName: "BiblioStack",
+                email: "system@biblioteca.local",
+                passwordHash: null,
+            },
+        ])
+        .returning();
+    console.log("✅ Admin e utente di sistema inseriti");
 
     const [librarianMario, librarianGiulia] = await db
         .insert(schema.users)
@@ -360,8 +383,10 @@ async function seed() {
     console.log("📋 RIFERIMENTI UTILI PER I TEST POSTMAN");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("\n👤 UTENTI");
+    console.log(`  Admin        : ID ${adminUser.id} (admin@biblioteca.it)`);
     console.log(`  Bibliotecari : ID ${librarianMario.id} (Mario Rossi), ID ${librarianGiulia.id} (Giulia Bianchi)`);
     console.log(`  Studenti     : ID ${patronLuca.id} (Luca), ID ${patronSara.id} (Sara), ID ${patronTomm.id} (Tommaso)`);
+    console.log(`  Password di tutti gli utenti di test: password123`);
     console.log("\n📚 OPERE");
     console.log(`  work1 "${work1.title}"   → ID: ${work1.id}`);
     console.log(`         2 copie disponibili (ITEM-001, ITEM-002) → status atteso: ready`);

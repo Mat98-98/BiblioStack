@@ -1,5 +1,6 @@
 import { AppError } from "../utils/appError.js";
 import { ZodError } from "zod";
+import { logger } from "../config/logger.config.js";
 
 export const errorMiddleware = (err, req, res, next) => {
 
