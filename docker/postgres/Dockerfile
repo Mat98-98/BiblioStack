@@ -6,5 +6,5 @@ RUN apt-get update && apt-get install -y locales \
     && locale-gen
 
 # Variabili d'ambiente per il sistema operativo
-ENV LANG it_IT.UTF-8
-ENV LC_ALL it_IT.UTF-8
+ENV LANG=it_IT.UTF-8
+ENV LC_ALL=it_IT.UTF-8
