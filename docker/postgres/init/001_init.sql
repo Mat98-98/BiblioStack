@@ -135,6 +135,12 @@ CREATE TABLE IF NOT EXISTS currencies (
                                           code CHAR(3) PRIMARY KEY
 );
 
+-- Enum per gestire lo stato delle copie
+CREATE TYPE item_status AS ENUM (
+    'active',
+    'damaged',
+    'lost'
+    );
 
 -- Tabella copie
 CREATE TABLE IF NOT EXISTS items (
@@ -143,6 +149,7 @@ CREATE TABLE IF NOT EXISTS items (
                                      location_id int REFERENCES locations(id) ON DELETE SET NULL,
                                      currency_code char(3) REFERENCES currencies(code) ON DELETE NO ACTION ON UPDATE CASCADE,
                                      acquisition_date date,
+                                     status item_status NOT NULL DEFAULT 'active',
                                      price numeric(12,2)
 );
 

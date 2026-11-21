@@ -7,7 +7,8 @@ SELECT
     i.location_id
 FROM items i
 WHERE
-    NOT EXISTS (
+    i.status = 'active'
+    AND NOT EXISTS (
         SELECT 1 FROM loans l
         WHERE l.item_id = i.id
           AND l.return_date IS NULL

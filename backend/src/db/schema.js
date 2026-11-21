@@ -30,6 +30,12 @@ export const reservationStatusEnum = pgEnum("reservation_status", [
     "expired"
 ]);
 
+export const itemStatusEnum = pgEnum("item_status", [
+    "active",
+    "damaged",
+    "lost"
+]);
+
 // --- TABELLE DI SUPPORTO E ANAGRAFICHE ---
 
 export const authors = pgTable('authors', {
@@ -142,7 +148,9 @@ export const items = pgTable('items', {
     workId: text('work_id').notNull().references(() => works.id, { onDelete: 'cascade' }),
     locationId: integer('location_id').references(() => locations.id, { onDelete: 'set null' }),
     currencyCode: char('currency_code', { length: 3 }).references(() => currencies.code, { onUpdate: 'cascade' }),
+    status: itemStatusEnum('status').notNull().default('active'),
     acquisitionDate: date('acquisition_date', {mode: 'date'}),
+
     price: numeric('price', { precision: 12, scale: 2 })
 });
 
