@@ -1,4 +1,3 @@
-// features/admin/items/editItem.schema.js
 import { z } from "zod";
 
 export const editItemSchema = z.object({
@@ -6,4 +5,5 @@ export const editItemSchema = z.object({
     currencyCode: z.string().nullable(),
     acquisitionDate: z.string().nullable(),
     price: z.coerce.number().nullable(),
+    status: z.enum(["active", "damaged", "lost"])
 });

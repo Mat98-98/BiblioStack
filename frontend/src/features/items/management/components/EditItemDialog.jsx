@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Euro, MapPin } from "lucide-react";
+import { Calendar, Euro, MapPin, CircleCheck } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { Label } from "@/components/ui/label.jsx";
@@ -19,6 +19,13 @@ import {
 import LocationSelect from "@/features/items/management/components/LocationSelect.jsx";
 import DateSelector from "@/components/common/DateSelector.jsx";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
+
+
+const ITEM_STATUS_OPTIONS = [
+    { value: "active", label: "Attiva" },
+    { value: "damaged", label: "Danneggiata" },
+    { value: "lost", label: "Smarrita" },
+];
 
 export default function EditItemDialog({ item, open, onClose, onConfirm }) {
     const { locations, loading: locationsLoading } = useLocations(open);
@@ -52,8 +59,10 @@ export default function EditItemDialog({ item, open, onClose, onConfirm }) {
     const summaryData = {
         acquisitionDate: watch("acquisitionDate"),
         price: watch("price"),
-        locationLabel: locations.find(l => l.id === locationId)?.shelfCode ?? (locationId ? `Scaffale ${locationId}` : null)
+        locationLabel: locations.find(l => l.id === locationId)?.shelfCode ?? (locationId ? `Scaffale ${locationId}` : null),
+        status: watch("status")
     };
+
 
     return (
         <>
@@ -104,6 +113,51 @@ export default function EditItemDialog({ item, open, onClose, onConfirm }) {
                             )}
                         </div>
 
+                        <div className="flex flex-col gap-2">
+                            <Label>Stato</Label>
+
+                            <div
+                                className="flex w-fit items-center rounded-lg border border-border bg-muted p-1"
+                                role="group"
+                                aria-label="Stato della copia"
+                            >
+                                {ITEM_STATUS_OPTIONS.map((option) => {
+                                    const active = watch("status") === option.value;
+
+                                    return (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() =>
+                                                setValue("status", option.value, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true,
+                                                })
+                                            }
+                                            aria-pressed={active}
+                                            className={[
+                                                "inline-flex items-center justify-center",
+                                                "rounded-md px-3 py-1.5",
+                                                "text-xs font-medium",
+                                                "transition-colors",
+                                                active
+                                                    ? "bg-background text-foreground shadow-sm"
+                                                    : "text-muted-foreground hover:text-foreground",
+                                            ].join(" ")}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {errors.status && (
+                                <span className="text-xs text-destructive">
+                                    {errors.status.message}
+                                </span>
+                            )}
+                        </div>
+
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={onClose}>
                                 Annulla
@@ -142,6 +196,15 @@ export default function EditItemDialog({ item, open, onClose, onConfirm }) {
                         icon={Euro}
                         label="Prezzo"
                         value={summaryData.price ? `€ ${Number(summaryData.price).toFixed(2)}` : "Non specificato"}
+                    />
+                    <SummaryRow
+                        icon={CircleCheck}
+                        label="Stato"
+                        value={
+                            ITEM_STATUS_OPTIONS.find(
+                                (option) => option.value === summaryData.status
+                            )?.label ?? "Non specificato"
+                        }
                     />
                 </div>
             </ConfirmDialog>

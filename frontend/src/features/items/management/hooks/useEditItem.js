@@ -3,9 +3,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { notify } from "@/lib/notify.js";
+import { editItemSchema } from "@/features/items/management/schemas/editItem.schema.js";
 import { handleApiError } from "@/lib/handleApiError.js";
 import api from "@/api/axios.js";
-import { editItemSchema } from "@/features/items/management/schemas/editItem.schema.js";
+
 
 export function useEditItem(item, open, onSuccess) {
     const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ export function useEditItem(item, open, onSuccess) {
             currencyCode: null,
             acquisitionDate: null,
             price: null,
+            status: null
         },
     });
 
@@ -31,6 +33,7 @@ export function useEditItem(item, open, onSuccess) {
                 ? new Date(item.acquisitionDate).toISOString().split("T")[0]
                 : null,
             price: item.price ?? null,
+            status: item.status
         });
     }, [item, open]);
 
