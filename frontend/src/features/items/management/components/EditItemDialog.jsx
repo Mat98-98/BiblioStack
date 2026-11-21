@@ -28,15 +28,23 @@ const ITEM_STATUS_OPTIONS = [
 ];
 
 export default function EditItemDialog({ item, open, onClose, onConfirm }) {
+
+    const [confirmOpen, setConfirmOpen] = useState(false);
+
+    // Chiusura totale con reset degli stati del dialog di conferma
+    const handleFullClose = () => {
+        setConfirmOpen(false);
+        onClose();
+    };
+
     const { locations, loading: locationsLoading } = useLocations(open);
+
     const { form, loading, submit } = useEditItem(item, open, () => {
         onConfirm?.();
         handleFullClose();
     });
 
-    const [confirmOpen, setConfirmOpen] = useState(false);
-
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = form;
+    const { register, watch, setValue, formState: { errors } } = form;
 
     if (!item) return null;
 
@@ -46,12 +54,6 @@ export default function EditItemDialog({ item, open, onClose, onConfirm }) {
         const valid = await form.trigger();
         if (!valid) return;
         setConfirmOpen(true);
-    };
-
-    // Chiusura totale con reset degli stati del dialog di conferma
-    const handleFullClose = () => {
-        setConfirmOpen(false);
-        onClose();
     };
 
     // Build dei dati per il riepilogo
