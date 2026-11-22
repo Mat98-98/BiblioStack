@@ -2,7 +2,6 @@
 import { userRepository } from "../repositories/user.repository.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import { AppError } from "../utils/appError.js";
-import { DEFAULT_USER_ROLE_ID } from "../constants.js";
 import { logger } from "../config/logger.config.js";
 import { OAuth2Client } from "google-auth-library";
 import { isUniqueViolation } from "../utils/db.util.js";
@@ -36,8 +35,7 @@ const hashRefreshToken = (token) =>
 const issueTokens = async (user) => {
     const payload = {
         userId: user.id,
-        roleId: user.roleId,
-        roleName: user.role?.name?.toLowerCase()
+        role: user.role
     };
 
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
@@ -98,7 +96,7 @@ export const authService = {
 
         const [user] = await userRepository.create({
             email, firstName, lastName, phone, passwordHash,
-            roleId: DEFAULT_USER_ROLE_ID
+            role: "user"
         });
 
         logger.info({ userId: user.id }, "New user registered");
@@ -177,7 +175,7 @@ export const authService = {
                         lastName: capitalizeWords(payload.family_name ?? null),
                         passwordHash: null,
                         googleId: payload.sub,
-                        roleId: DEFAULT_USER_ROLE_ID
+                        role: "user"
                     });
                     user = await userRepository.findById(newUser.id);
                 } catch (error) {

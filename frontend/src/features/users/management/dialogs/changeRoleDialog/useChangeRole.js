@@ -10,7 +10,7 @@ export function useChangeRole(user) {
     const form = useForm({
         resolver: zodResolver(changeRoleSchema),
         values: {
-            role: user?.role?.name
+            role: user?.role
         }
     });
 
@@ -28,7 +28,7 @@ export function useChangeRole(user) {
     const resetAll = () => {
         setPendingData(null);
         setConfirmDialogOpen(false);
-        reset({ role: user?.role?.name });
+        reset({ role: user?.role });
     };
 
     return {

@@ -87,11 +87,13 @@ CREATE TABLE IF NOT EXISTS roles (
 );
 
 
+CREATE TYPE user_role AS ENUM ('admin', 'librarian', 'user');
+
 -- Tabelle utenti
 CREATE TABLE IF NOT EXISTS users (
                                      id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
                                      google_id text UNIQUE,
-                                     role_id smallint NOT NULL REFERENCES roles(id) ON DELETE NO ACTION,
+                                     role user_role NOT NULL DEFAULT 'user',
                                      first_name text,
                                      last_name text,
                                      email text NOT NULL UNIQUE,

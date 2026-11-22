@@ -1,9 +1,7 @@
 import { userRepository } from "../repositories/user.repository.js";
-import { roleRepository } from "../repositories/role.repository.js";
 import { reservationService } from "./reservation.service.js";
 import { suspensionRepository } from "../repositories/suspension.repository.js";
 import { AppError } from "../utils/appError.js";
-import { DEFAULT_USER_ROLE_ID } from "../constants.js";
 import { db } from "../db/connection.js";
 import { refreshTokenRepository } from "../repositories/refreshToken.repository.js";
 import { passwordService } from "./password.service.js";
@@ -30,12 +28,6 @@ const findUniqueOrThrow = async (id) => {
     return user;
 };
 
-// Funzione per verificare l'esistenza di un ruolo, usata in setUserRole
-const findRoleOrThrow = async (name) => {
-    const role = await roleRepository.findByName(name)
-    if (!role) throw new AppError("Role not found", "NOT_FOUND", 404)
-    return role
-};
 
 // Funzione per invalidare i token di setup/reset password in Redis
 const invalidatePasswordTokensSafely = async (userId) => {
@@ -112,7 +104,7 @@ export const userService = {
     },
 
     // Per la creazione di un account tramite pannello admin. L'account viene generato senza password, viene quindi inviata una email all'utente per sceglierne una a suo piacimento e completare la registrazione
-    createByAdmin: async ({ email, firstName, lastName, phone, roleId }) => {
+    createByAdmin: async ({ email, firstName, lastName, phone, role }) => {
         const existing = await userRepository.findByEmail(email);
         if (existing) throw new AppError("Email already exists", "EMAIL_ALREADY_EXISTS", 409);
 
@@ -122,7 +114,7 @@ export const userService = {
             lastName,
             phone,
             passwordHash: null, //
-            roleId: roleId ?? DEFAULT_USER_ROLE_ID
+            role: role ?? "user"
         });
 
         const createdUser = await userRepository.findById(user.id);
@@ -133,17 +125,14 @@ export const userService = {
         return createdUser;
     },
 
-    setUserRole: async (userId, roleName) => {
-        const [role, user] = await Promise.all([
-            findRoleOrThrow(roleName),
-            findUniqueOrThrow(userId)
-        ])
+    setUserRole: async (userId, role) => {
+        const user = await findUniqueOrThrow(userId);
 
-        if (user.roleId === role.id) {
+        if (user.role === role) {
             throw new AppError("User already has this role", "NO_CHANGE", 400)
         }
 
-        await roleRepository.updateUserRole(userId, role.id)
+        await userRepository.update(userId, { role })
 
         return userRepository.findById(userId)
     },

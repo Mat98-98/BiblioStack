@@ -2,7 +2,6 @@ import { userService } from "../services/user.service.js";
 import { UserDashboardDTO, AdminDashboardDTO, UserBaseListDTO, UserSafeDTO, UserBaseDTO } from "../dto/user.dto.js";
 import { UpdateUserSchema, CreateUserSchema, UserSearchSchema } from "../schemas/user.schema.js";
 import { AppError } from "../utils/appError.js";
-import { ROLE_IDS } from "../constants.js";
 import { ChangeRoleSchema } from "../schemas/role.schema.js";
 
 export const userController = {
@@ -57,7 +56,7 @@ export const userController = {
             const user = await userService.getUserProfileData(userId);
             if (!user) throw new AppError("User not found", "NOT_FOUND", 404);
 
-            const isAdmin = req.user?.roleName === "admin" || req.user?.roleId === ROLE_IDS.ADMIN;
+            const isAdmin = req.user?.role === "admin";
 
             res.json(isAdmin
                 ? AdminDashboardDTO.parse(user)

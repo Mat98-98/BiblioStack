@@ -42,7 +42,7 @@ girare in container. Sull'host serve solo Docker con il plugin `docker compose`.
 ```
 
 - Frontend: http://localhost:5173 · Backend: http://localhost:5001
-- Utenti di test (password `password123`): `admin@biblioteca.it`,
+- Utenti di test (password `Password1!`): `admin@biblioteca.it`,
   `mario.rossi@biblioteca.it` (bibliotecario), `sara.neri@studenti.it` (studente)
 - Senza `RESEND_API_KEY` le email non partono: in sviluppo i link di reset
   password e attivazione account vengono stampati in `./bibliostack.sh logs backend`.

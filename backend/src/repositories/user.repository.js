@@ -26,7 +26,6 @@ export const userRepository = {
             limit: limit,
             where: { deletedAt: { isNull: true } },
             with: {
-                role: true,
                 activeSuspension: true
             }
         });
@@ -38,7 +37,6 @@ export const userRepository = {
         const user = await db.query.users.findFirst({
             where: {id: id},
             with: {
-                role: true,
                 activeSuspension: true,
                 loansAsPatron: {
                     with: {
@@ -61,14 +59,12 @@ export const userRepository = {
 
     findByGoogleId: async (googleId) =>
         await db.query.users.findFirst({
-            where: { googleId },
-            with: { role: true }
+            where: { googleId }
         }),
 
     findByEmail: async (email) =>
         await db.query.users.findFirst({
-            where: { email: email },
-            with: { role: true }
+            where: { email: email }
         }),
 
     // Query di estrazione dati per la dashboard utente (sia visione studente che admin)
@@ -76,7 +72,6 @@ export const userRepository = {
         const user = await db.query.users.findFirst({
             where: {id: id},
             with: {
-                role: true,
                 activeSuspension: true,
                 loansAsPatron: {
                     with:
@@ -126,8 +121,7 @@ export const userRepository = {
     update: async (id, data, tx = db) => {
         await tx.update(users).set(data).where(eq(users.id, id))
         return tx.query.users.findFirst({
-            where: { id },
-            with: { role: true }
+            where: { id }
         })
     },
 
@@ -183,7 +177,7 @@ export const userRepository = {
             firstName: users.firstName,
             lastName: users.lastName,
             email: users.email,
-            roleId: users.roleId,
+            role: users.role,
             relevance: sql`
                 CASE
                     WHEN CAST (${users.id} AS TEXT) = ${term} THEN 100                               -- Se l'id utente corrisponde assegno score di 100 
@@ -229,7 +223,6 @@ export const userRepository = {
         const fullUsers = await db.query.users.findMany({
             where: {id: {in: ids}},
             with: {
-                role: true,
                 activeSuspension: true
             }
         });

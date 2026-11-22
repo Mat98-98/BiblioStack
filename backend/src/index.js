@@ -17,7 +17,6 @@ import workRoutes from "./routes/work.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import accessRoutes from "./routes/access.routes.js";
-import roleRoutes from "./routes/role.routes.js";
 import worksExternalRoutes from "./features/worksExternal/worksExternal.routes.js";
 import deweyCodeRoutes from "./routes/dewey.code.routes.js";
 import noticeRoutes from "./routes/notice.routes.js";
@@ -80,8 +79,6 @@ app.use("/api/users", userRoutes)
 app.use("/api/auth", authRoutes)
 
 app.use("/api/access", accessRoutes)
-
-app.use("/api/roles", roleRoutes)
 
 app.use("/api/works-external", worksExternalRoutes)
 

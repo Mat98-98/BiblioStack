@@ -8,17 +8,12 @@ import { SummaryRow } from "@/components/common/SummaryRow.jsx";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.jsx";
 import { useChangeRole } from "@/features/users/management/dialogs/changeRoleDialog/useChangeRole.js";
 import { ShieldAlert, UserCog } from "lucide-react";
+import { roleLabels } from "@/features/users/management/table/usersTable.constants.js";
 import ConfirmDialog from "@/components/common/dialogs/ConfirmDialog.jsx";
 
 
 
-const roleLabels = {
-    student: "Studente",
-    librarian: "Bibliotecario",
-    admin: "Admin"
-};
-
-const roles = ["student", "librarian", "admin"];
+const roles = ["admin", "librarian", "user"];
 
 
 export default function ChangeRoleDialog({ user, open, onClose, onUpdated }) {
@@ -38,7 +33,7 @@ export default function ChangeRoleDialog({ user, open, onClose, onUpdated }) {
 
     if (!user) return null;
 
-    const currentRole = user.role?.name;
+    const currentRole = user.role;
 
     const onSubmit = handleSubmit(handlePreSubmit);
 

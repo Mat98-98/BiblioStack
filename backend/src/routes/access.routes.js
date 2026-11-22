@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/public", getPublic);
 
 // GET /access/member
-router.get("/member", verifyUser, permit("student", "librarian", "admin"), getMember);
+router.get("/member", verifyUser, permit("user", "librarian", "admin"), getMember);
 
 // GET /access/librarian
 router.get("/librarian", verifyUser, permit("librarian", "admin"), getLibrarian);

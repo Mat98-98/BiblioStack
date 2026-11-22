@@ -36,6 +36,12 @@ export const itemStatusEnum = pgEnum("item_status", [
     "lost"
 ]);
 
+export const userRoleEnum = pgEnum("user_role", [
+    "admin",
+    "librarian",
+    "user"
+]);
+
 // --- TABELLE DI SUPPORTO E ANAGRAFICHE ---
 
 export const authors = pgTable('authors', {
@@ -90,11 +96,6 @@ export const locations = pgTable('locations', {
     shelfCode: text('shelf_code'),
 });
 
-export const roles = pgTable('roles', {
-    id: smallint('id').primaryKey().generatedAlwaysAsIdentity(),
-    name: text('name').notNull().unique(),
-});
-
 export const currencies = pgTable('currencies', {
     code: char('code', { length: 3 }).primaryKey(),
 });
@@ -116,7 +117,7 @@ export const users = pgTable('users', {
     // Nota: mode 'number' fa sì che JS legga il bigint come numero normale e non come stringa
     id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
     googleId: text('google_id').unique(),
-    roleId: smallint('role_id').notNull().references(() => roles.id),
+    role: userRoleEnum('role').notNull().default('user'),
     firstName: text('first_name'),
     lastName: text('last_name'),
     email: text('email').notNull().unique(),

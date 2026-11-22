@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import {AuthorDTO, ItemMiniDTO, WorkMiniDTO} from "./shared.dto.js";
+import { AuthorDTO, ItemMiniDTO, WorkMiniDTO } from "./shared.dto.js";
 import { ReservationStatusEnum } from "./shared.dto.js";
+import { RoleSchema } from "../schemas/role.schema.js";
 
 // ======== DTO di supporto ========
 const ActiveSuspensionSchema = z.object({
@@ -32,11 +33,6 @@ const ReservationDashboardSchema = z.object({
             })
         }).nullable()
     }).optional().nullable()
-});
-
-const RoleSchema = z.object({
-    id: z.number(),
-    name: z.string()
 });
 
 const LoanSchema = z.object({

@@ -19,17 +19,6 @@ async function seed() {
     // LOOKUP TABLES
     // -----------------------------------------------------------------------
 
-    const [roleAdmin, roleLibrarian, roleSystem, roleStudent] = await db
-        .insert(schema.roles)
-        .values([
-            { name: "admin" },
-            { name: "librarian" },
-            { name: "system" },
-            { name: "student" },
-        ])
-        .returning();
-    console.log("✅ Roles inseriti");
-
     const [italian, english, french] = await db
         .insert(schema.languages)
         .values([
@@ -131,36 +120,29 @@ async function seed() {
     // UTENTI
     // -----------------------------------------------------------------------
 
-    // Password di test per tutti gli utenti seed: "password123" (hash Argon2 generato al momento)
-    const HASH = await hashPassword("password123");
+    // Password di test per tutti gli utenti seed: "Password1!" (hash Argon2 generato al momento)
+    const HASH = await hashPassword("Password1!");
 
-    // Amministratore e utente di sistema (quest'ultimo senza password: serve solo come handled_by per le operazioni automatiche)
+    // Amministratore
     const [adminUser] = await db
         .insert(schema.users)
         .values([
             {
-                roleId: roleAdmin.id,
+                role: "admin",
                 firstName: "Admin",
                 lastName: "Biblioteca",
                 email: "admin@biblioteca.it",
                 passwordHash: HASH,
-            },
-            {
-                roleId: roleSystem.id,
-                firstName: "Sistema",
-                lastName: "BiblioStack",
-                email: "system@biblioteca.local",
-                passwordHash: null,
-            },
+            }
         ])
         .returning();
-    console.log("✅ Admin e utente di sistema inseriti");
+    console.log("✅ Admin inserito");
 
     const [librarianMario, librarianGiulia] = await db
         .insert(schema.users)
         .values([
             {
-                roleId: roleLibrarian.id,
+                role: "librarian",
                 firstName: "Mario",
                 lastName: "Rossi",
                 email: "mario.rossi@biblioteca.it",
@@ -168,7 +150,7 @@ async function seed() {
                 passwordHash: HASH,
             },
             {
-                roleId: roleLibrarian.id,
+                role: "librarian",
                 firstName: "Giulia",
                 lastName: "Bianchi",
                 email: "giulia.bianchi@biblioteca.it",
@@ -183,21 +165,21 @@ async function seed() {
         .insert(schema.users)
         .values([
             {
-                roleId: roleStudent.id,
+                role: "user",
                 firstName: "Luca",
                 lastName: "Verdi",
                 email: "luca.verdi@studenti.it",
                 passwordHash: HASH,
             },
             {
-                roleId: roleStudent.id,
+                role: "user",
                 firstName: "Sara",
                 lastName: "Neri",
                 email: "sara.neri@studenti.it",
                 passwordHash: HASH,
             },
             {
-                roleId: roleStudent.id,
+                role: "user",
                 firstName: "Tommaso",
                 lastName: "Ferrari",
                 email: "tommaso.ferrari@studenti.it",

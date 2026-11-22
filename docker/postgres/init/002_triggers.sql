@@ -6,17 +6,20 @@
 CREATE OR REPLACE FUNCTION check_staff_role()
 RETURNS TRIGGER AS $$
 DECLARE
-user_role text;
+handler_role user_role;
 BEGIN
-    -- Recuperiamo il nome del ruolo dell'utente che sta gestendo l'operazione
-SELECT r.name INTO user_role
-FROM users u
-         JOIN roles r ON u.role_id = r.id
-WHERE u.id = NEW.handled_by;
+    -- Su UPDATE il controllo serve solo se handled_by cambia davvero
+    IF TG_OP = 'UPDATE' AND NEW.handled_by IS NOT DISTINCT FROM OLD.handled_by THEN
+        RETURN NEW;
+END IF;
 
--- Se l'utente non esiste o il suo ruolo non è tra quelli autorizzati, blocchiamo tutto
-IF user_role NOT IN ('admin', 'librarian', 'system') THEN
-        RAISE EXCEPTION 'Operation denied. User % (Role: %) does not have staff permissions.', NEW.handled_by, COALESCE(user_role, 'None');
+SELECT role INTO handler_role
+FROM users
+WHERE id = NEW.handled_by;
+
+IF handler_role IS NULL OR handler_role NOT IN ('admin', 'librarian') THEN
+        RAISE EXCEPTION 'Operation denied. User % (Role: %) does not have staff permissions.',
+            NEW.handled_by, COALESCE(handler_role::text, 'None');
 END IF;
 
 RETURN NEW;

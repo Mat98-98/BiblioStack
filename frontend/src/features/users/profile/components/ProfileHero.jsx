@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Mail, Phone, Shield, Wrench } from "lucide-react";
+import { roleLabels } from "@/features/users/management/table/usersTable.constants.js";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.jsx";
 import { Badge } from "@/components/ui/badge.jsx";
 import { Button } from "@/components/ui/button.jsx";
@@ -12,12 +13,6 @@ export default function ProfileHero({ user }) {
     const { sendChangePasswordLink } = useChangePassword();
 
     const initials = `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`;
-
-    const roleLabel = {
-        admin: "Amministratore",
-        librarian: "Bibliotecario",
-        student: "Studente",
-    }[user.role?.name] ?? user.role?.name;
 
     const handleConfirmPasswordReset = async () => {
         const success = await sendChangePasswordLink(user.email);
@@ -44,7 +39,7 @@ export default function ProfileHero({ user }) {
                             className="absolute -bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1 whitespace-nowrap"
                         >
                             <Shield className="h-3 w-3" />
-                            {roleLabel}
+                            { roleLabels[user.role] ?? user.role }
                         </Badge>
                     </div>
 

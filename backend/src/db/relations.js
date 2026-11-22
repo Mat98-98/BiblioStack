@@ -54,10 +54,6 @@ export const relations = defineRelations(schema, (r) => ({
     */
 
     users: {
-        role: r.one.roles({
-            from: r.users.roleId,
-            to: r.roles.id
-        }),
         loansAsPatron: r.many.loans({
             from: r.users.id,
             to: r.loans.userId,

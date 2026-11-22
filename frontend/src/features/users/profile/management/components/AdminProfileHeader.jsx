@@ -1,12 +1,8 @@
 import { Mail, Phone, Shield, AlertOctagon } from "lucide-react";
+import { roleLabels } from "@/features/users/management/table/usersTable.constants.js";
 import { Badge } from "@/components/ui/badge.jsx";
 
 export default function AdminProfileHeader({ user }) {
-    const roleLabel = {
-        admin: "Amministratore",
-        librarian: "Bibliotecario",
-        student: "Studente",
-    }[user.role?.name] ?? user.role?.name;
 
     const isSuspended = Boolean(user.suspension?.reason || user.suspension?.endDate);
 
@@ -19,7 +15,7 @@ export default function AdminProfileHeader({ user }) {
                     </h1>
                     <Badge variant="secondary" className="gap-1">
                         <Shield className="h-3 w-3" />
-                        {roleLabel}
+                        { roleLabels[user.role] ?? user.role }
                     </Badge>
                     {isSuspended && (
                         <Badge variant="destructive" className="gap-1">

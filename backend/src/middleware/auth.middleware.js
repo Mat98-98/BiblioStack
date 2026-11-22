@@ -14,8 +14,7 @@ export const verifyUser = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = {
             id: decoded.userId,
-            roleId: decoded.roleId,
-            role: decoded.roleName
+            role: decoded.role
         };
 
         next();
@@ -38,8 +37,7 @@ export const tryAuthenticate = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = {
             id: decoded.userId,
-            roleId: decoded.roleId,
-            role: decoded.roleName
+            role: decoded.role
         };
         return next();
     } catch (error) {

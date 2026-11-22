@@ -45,7 +45,7 @@ export default function UserAccountSheet({ trigger, side = "right" })  {
                                 {user?.firstName} {user?.lastName}
                             </span>
                             <span className="text-sm text-muted-foreground font-normal select-none cursor-default">
-                                {user?.role?.name}
+                                {user?.role}
                             </span>
                         </div>
                     </SheetTitle>

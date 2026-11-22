@@ -4,11 +4,11 @@
  *     ./bibliostack.sh smoke
  * Usa solo fetch nativo (Node >= 20), nessuna dipendenza.
  *
- * Variabili: API_BASE (default http://localhost:5001/api), SEED_PASSWORD (default password123)
+ * Variabili: API_BASE (default http://localhost:5001/api), SEED_PASSWORD (default Password1!)
  */
 
 const API = process.env.API_BASE ?? "http://localhost:5001/api";
-const PASSWORD = process.env.SEED_PASSWORD ?? "password123";
+const PASSWORD = process.env.SEED_PASSWORD ?? "Password1!";
 
 let failures = 0;
 let warnings = 0;
@@ -79,8 +79,8 @@ const main = async () => {
         return;
     }
     expectStatus("GET /auth/me (admin)", await admin.client("GET", "/auth/me"), 200);
-    expectStatus("GET /roles (admin)", await admin.client("GET", "/roles"), 200);
-    expectStatus("GET /roles (bibliotecario → vietato)", await librarian.client("GET", "/roles"), 403);
+    expectStatus("GET /users (admin)", await admin.client("GET", "/users"), 200);
+    expectStatus("GET /users (bibliotecario → vietato)", await librarian.client("GET", "/users"), 403);
     expectStatus("GET /users (studente → vietato)", await student.client("GET", "/users"), 403);
     expectStatus("GET /loans (bibliotecario)", await librarian.client("GET", "/loans"), 200);
     expectStatus("GET /loans/mine (studente)", await student.client("GET", "/loans/mine"), 200);
@@ -88,6 +88,18 @@ const main = async () => {
         await librarian.client("GET", "/operator-dashboard/stats"), 200);
     expectStatus("POST /auth/refresh", await student.client("POST", "/auth/refresh"), 200);
     expectStatus("GET /cards/me (studente)", await student.client("GET", "/cards/me"), 200);
+
+    expectStatus("GET /access/member (utente)", await student.client("GET", "/access/member"), 200);
+    expectStatus("GET /access/member (bibliotecario)", await librarian.client("GET", "/access/member"), 200);
+    expectStatus("GET /access/librarian (utente → vietato)", await student.client("GET", "/access/librarian"), 403);
+    expectStatus("GET /access/librarian (bibliotecario)", await librarian.client("GET", "/access/librarian"), 200);
+    expectStatus("GET /access/admin (bibliotecario → vietato)", await librarian.client("GET", "/access/admin"), 403);
+    expectStatus("GET /access/admin (admin)", await admin.client("GET", "/access/admin"), 200);
+
+    const me = await student.client("GET", "/access/member");
+    me.data?.role === "user"
+        ? ok("il ruolo dell'utente base è \"user\"")
+        : fail(`ruolo atteso "user", ottenuto ${JSON.stringify(me.data?.role)}`);
 
     section("Flusso prenotazione (studente)");
     const item = await anon("GET", "/items/ITEM-002");

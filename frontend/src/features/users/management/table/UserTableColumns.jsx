@@ -38,7 +38,7 @@ export function getUserColumns({ onUpdateRole, onDelete, onSuspend, onUnsuspend,
             id: "role",
             header: "Ruolo",
             cell: ({ row }) => {
-                const role = row.original.role?.name
+                const role = row.original.role
                 return (
                     <Badge variant="outline" className={roleColors[role]}>
                         {roleLabels[role] ?? role}

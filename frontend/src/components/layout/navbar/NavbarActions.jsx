@@ -38,7 +38,7 @@ export default function NavbarActions() {
                     {open ? <X /> : <Search />}
                 </Button>
 
-                {user?.role?.name === "admin" && (
+                {user?.role === "admin" && (
                     <Button variant="ghost" size="icon" asChild>
                         <Link to="/admin" aria-label="Dashboard">
                             <LayoutDashboard className="h-5 w-5 text-muted-foreground" />
